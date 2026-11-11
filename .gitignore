@@ -1,0 +1,15 @@
+# Runtime temp & logs (Zero C: drive redirected dirs)
+.temp/
+logs/
+
+# Python bytecode & temporary atomic write files
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.tmp
+
+# Intermediate runtime caches & checkpoints
+checkpoints/
+data/article_cache/
+data/market_cache/
+data/analyzed_cache.json
