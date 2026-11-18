@@ -1,0 +1,301 @@
+use crate::domain::types::Symbol;
+use crate::infrastructure::market_tencent::SimpleBar;
+use std::collections::HashMap;
+
+#[derive(Debug, Clone, Default)]
+pub struct ClistEnrichmentMeta {
+    pub industry_sw1: String,
+    pub listing_days: u32,
+    pub main_net_inflow_wan: f64,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct PitfallExternalSignals {
+    pub net_insider_reduction_90d_pct: f64,
+    pub holder_num_change_qoq_pct: Option<f64>,
+    pub holder_notice_date: Option<String>,
+    pub announcement_titles_60d: Vec<String>,
+}
+
+pub fn parse_eastmoney_kline_json(payload: &str) -> Result<Vec<SimpleBar>, String> {
+    let root: serde_json::Value =
+        serde_json::from_str(payload).map_err(|e| format!("解析东财K线JSON失败: {}", e))?;
+    let klines = root
+        .get("data")
+        .and_then(|d| d.get("klines"))
+        .and_then(|k| k.as_array())
+        .ok_or_else(|| "东财K线响应缺少 data.klines".to_string())?;
+
+    let mut out = Vec::with_capacity(klines.len());
+    for item in klines {
+        let Some(csv) = item.as_str() else {
+            continue;
+        };
+        let cols: Vec<&str> = csv.split(',').collect();
+        if cols.len() < 11 {
+            continue;
+        }
+        let pf = |idx: usize| cols[idx].trim().parse::<f64>().unwrap_or(0.0);
+        out.push(SimpleBar {
+            time: cols[0].trim().to_string(),
+            open: pf(1),
+            close: pf(2),
+            high: pf(3),
+            low: pf(4),
+            volume: pf(5),
+            amount_yuan: pf(6),
+            turnover_pct: pf(10),
+        });
+    }
+    if out.is_empty() {
+        return Err("东财K线数据为空".to_string());
+    }
+    Ok(out)
+}
+
+pub fn parse_holder_notice_json(payload: &str) -> (Option<f64>, Option<String>) {
+    let Ok(root) = serde_json::from_str::<serde_json::Value>(payload) else {
+        return (None, None);
+    };
+    let Some(first) = root
+        .get("result")
+        .and_then(|r| r.get("data"))
+        .and_then(|d| d.as_array())
+        .and_then(|a| a.first())
+    else {
+        return (None, None);
+    };
+    let ratio = first.get("HOLDER_NUM_RATIO").and_then(|v| v.as_f64());
+    let notice_dt = first
+        .get("HOLD_NOTICE_DATE")
+        .and_then(|v| v.as_str())
+        .map(|s| s.chars().take(10).collect::<String>())
+        .filter(|s| !s.is_empty());
+    (ratio, notice_dt)
+}
+
+pub async fn fetch_top_turnover_clist_meta(
+    client: &reqwest::Client,
+    clist_url: &str,
+    pages: usize,
+) -> HashMap<String, ClistEnrichmentMeta> {
+    use std::sync::Arc;
+    use tokio::sync::Semaphore;
+    use tokio::task::JoinSet;
+
+    let today = chrono::Utc::now().date_naive();
+    let sem = Arc::new(Semaphore::new(6));
+    let mut set = JoinSet::new();
+
+    for pn in 1..=pages.clamp(1, 10) {
+        let c = client.clone();
+        let u = format!(
+            "{}?pn={}&pz=100&po=1&np=1&fltt=2&invt=2&fid=f8&fs=m:0+t:6,m:0+t:80,m:1+t:2,m:1+t:23,m:0+t:81+s:2048&fields=f12,f14,f26,f62,f100",
+            clist_url, pn
+        );
+        let sem_clone = sem.clone();
+        set.spawn(async move {
+            let _permit = sem_clone.acquire_owned().await;
+            let Ok(resp) = c
+                .get(&u)
+                .header("Referer", "https://quote.eastmoney.com/")
+                .send()
+                .await
+            else {
+                return Vec::new();
+            };
+            let Ok(txt) = resp.text().await else {
+                return Vec::new();
+            };
+            let Ok(root) = serde_json::from_str::<serde_json::Value>(&txt) else {
+                return Vec::new();
+            };
+            let Some(diff) = root
+                .get("data")
+                .and_then(|d| d.get("diff"))
+                .and_then(|d| d.as_array())
+            else {
+                return Vec::new();
+            };
+            let mut page_out = Vec::with_capacity(diff.len());
+            for row in diff {
+                let Some(digits) = row.get("f12").and_then(|v| v.as_str()) else {
+                    continue;
+                };
+                let industry_sw1 = row
+                    .get("f100")
+                    .and_then(|v| v.as_str())
+                    .filter(|s| !s.is_empty() && *s != "-")
+                    .unwrap_or("通用制造")
+                    .to_string();
+                let f62_yuan = row.get("f62").and_then(|v| v.as_f64()).unwrap_or(0.0);
+                let listing_days = row
+                    .get("f26")
+                    .and_then(|v| {
+                        v.as_i64()
+                            .map(|n| n.to_string())
+                            .or_else(|| v.as_str().map(|s| s.to_string()))
+                    })
+                    .and_then(|s| chrono::NaiveDate::parse_from_str(&s, "%Y%m%d").ok())
+                    .map(|dt| (today - dt).num_days().max(1) as u32)
+                    .unwrap_or(365);
+
+                page_out.push((
+                    digits.to_string(),
+                    ClistEnrichmentMeta {
+                        industry_sw1,
+                        listing_days,
+                        main_net_inflow_wan: f62_yuan / 10_000.0,
+                    },
+                ));
+            }
+            page_out
+        });
+    }
+
+    let mut map = HashMap::with_capacity(pages * 100);
+    while let Some(res) = set.join_next().await {
+        if let Ok(page) = res {
+            for (k, v) in page {
+                map.insert(k, v);
+            }
+        }
+    }
+    map
+}
+
+pub async fn fetch_eastmoney_klines(
+    client: &reqwest::Client,
+    kline_url: &str,
+    symbol: &Symbol,
+    period: &str,
+    limit: usize,
+) -> Result<Vec<SimpleBar>, String> {
+    let klt = if period == "30m" { "30" } else { "101" };
+    let url = format!(
+        "{}?secid={}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt={}&fqt=1&end=20500101&lmt={}",
+        kline_url,
+        symbol.eastmoney_secid(),
+        klt,
+        limit.clamp(20, 240)
+    );
+    let body = client
+        .get(&url)
+        .header("Referer", "https://quote.eastmoney.com/")
+        .send()
+        .await
+        .map_err(|e| format!("请求东财K线失败: {}", e))?
+        .text()
+        .await
+        .map_err(|e| format!("读取东财K线响应失败: {}", e))?;
+    parse_eastmoney_kline_json(&body)
+}
+
+pub async fn fetch_candidate_pitfall_signals(
+    client: &reqwest::Client,
+    datacenter_url: &str,
+    notice_url: &str,
+    symbol: &Symbol,
+) -> PitfallExternalSignals {
+    let digits = &symbol.digits;
+    let holder_url = format!(
+        "{}?reportName=RPT_HOLDERNUM_DET&columns=SECURITY_CODE,HOLD_NOTICE_DATE,END_DATE,HOLDER_NUM,HOLDER_NUM_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=2&sortTypes=-1&sortColumns=HOLD_NOTICE_DATE&source=WEB&client=WEB",
+        datacenter_url, digits
+    );
+    let insider_url = format!(
+        "{}?reportName=RPT_SHARE_HOLDER_INCREASE&columns=SECURITY_CODE,NOTICE_DATE,HOLDER_NAME,DIRECTION,CHANGE_FREE_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=6&sortTypes=-1&sortColumns=NOTICE_DATE&source=WEB&client=WEB",
+        datacenter_url, digits
+    );
+    let ann_url = format!(
+        "{}?sr=-1&page_size=6&page_index=1&ann_type=A&stock_list={}",
+        notice_url, digits
+    );
+
+    let (h_res, i_res, a_res) = tokio::join!(
+        client.get(&holder_url).send(),
+        client.get(&insider_url).send(),
+        client.get(&ann_url).send()
+    );
+
+    let mut signals = PitfallExternalSignals::default();
+
+    if let Ok(resp) = h_res {
+        if let Ok(txt) = resp.text().await {
+            let (ratio, dt) = parse_holder_notice_json(&txt);
+            signals.holder_num_change_qoq_pct = ratio;
+            signals.holder_notice_date = dt;
+        }
+    }
+
+    if let Ok(resp) = i_res {
+        if let Ok(txt) = resp.text().await {
+            if let Ok(root) = serde_json::from_str::<serde_json::Value>(&txt) {
+                if let Some(arr) = root
+                    .get("result")
+                    .and_then(|r| r.get("data"))
+                    .and_then(|d| d.as_array())
+                {
+                    let cutoff = (chrono::Utc::now().date_naive() - chrono::Duration::days(90))
+                        .format("%Y-%m-%d")
+                        .to_string();
+                    let mut sum_pct = 0.0_f64;
+                    for row in arr {
+                        let dir = row.get("DIRECTION").and_then(|v| v.as_str()).unwrap_or("");
+                        let nd = row
+                            .get("NOTICE_DATE")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("");
+                        if dir.contains("减持") && nd >= cutoff.as_str() {
+                            sum_pct += row
+                                .get("CHANGE_FREE_RATIO")
+                                .and_then(|v| v.as_f64())
+                                .unwrap_or(0.0)
+                                .abs();
+                        }
+                    }
+                    signals.net_insider_reduction_90d_pct = sum_pct;
+                }
+            }
+        }
+    }
+
+    if let Ok(resp) = a_res {
+        if let Ok(txt) = resp.text().await {
+            if let Ok(root) = serde_json::from_str::<serde_json::Value>(&txt) {
+                if let Some(arr) = root
+                    .get("data")
+                    .and_then(|d| d.get("list"))
+                    .and_then(|l| l.as_array())
+                {
+                    for item in arr {
+                        if let Some(title) = item.get("title").and_then(|v| v.as_str()) {
+                            signals.announcement_titles_60d.push(title.to_string());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    signals
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parses_eastmoney_f61_turnover_klines_and_hold_notice_date() {
+        let kline_raw = r#"{"rc":0,"data":{"code":"300308","klines":["2026-11-17,532.74,508.90,567.89,506.39,626967,33622447403.00,11.35,-6.11,-33.10,5.65","2026-11-18,510.00,525.00,530.00,505.00,710000,36800000000.00,4.90,3.16,16.10,6.42"]}}"#;
+        let bars = parse_eastmoney_kline_json(kline_raw).unwrap();
+        assert_eq!(bars.len(), 2);
+        assert_eq!(bars[0].time, "2026-11-17");
+        assert!((bars[0].turnover_pct - 5.65).abs() < 1e-6);
+        assert!((bars[1].turnover_pct - 6.42).abs() < 1e-6);
+
+        let holder_raw = r#"{"result":{"data":[{"SECURITY_CODE":"300308","HOLD_NOTICE_DATE":"2026-10-28 00:00:00","HOLDER_NUM_RATIO":18.4}]}}"#;
+        let (ratio, dt) = parse_holder_notice_json(holder_raw);
+        assert!((ratio.unwrap() - 18.4).abs() < 1e-6);
+        assert_eq!(dt.as_deref(), Some("2026-10-28"));
+    }
+}

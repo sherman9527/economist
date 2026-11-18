@@ -65,7 +65,7 @@ function Invoke-WithMsvcX64 {
     if (-not $VcVars64) {
         throw "MSVC vcvars64.bat not found via vswhere or drive probe."
     }
-    $wrapped = "call `"$VcVars64`" >nul && cd /d `"$RepoRoot`" && $CommandLine"
+    $wrapped = "call `"$VcVars64`" >nul 2>nul && cd /d `"$RepoRoot`" && $CommandLine"
     & $env:ComSpec /c $wrapped
     if ($LASTEXITCODE -ne 0) {
         throw "MSVC command failed with exit code ${LASTEXITCODE}: $CommandLine"

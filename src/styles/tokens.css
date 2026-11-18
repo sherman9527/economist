@@ -1,0 +1,151 @@
+:root,
+:root[data-theme="dark"] {
+  --bg-canvas: #060913;
+  --bg-elevated-solid: #0d1426;
+  --mesh-blob-1: rgba(34, 211, 238, 0.17);
+  --mesh-blob-2: rgba(59, 130, 246, 0.16);
+  --mesh-blob-3: rgba(20, 184, 166, 0.13);
+
+  --text-primary: #f3f7ff;
+  --text-secondary: #a9bbd8;
+  --text-muted: #7689ab;
+
+  --accent: #38bdf8;
+  --accent-strong: #0ea5e9;
+  --accent-soft: rgba(56, 189, 248, 0.16);
+
+  /* Tier 1: Sidebar & Top Status Bar */
+  --glass-blur-1: blur(22px) saturate(175%);
+  --glass-tint-1: linear-gradient(155deg, rgba(16, 25, 46, 0.76), rgba(9, 15, 30, 0.64));
+  /* Tier 2: Bento Workspace Panels */
+  --glass-blur-2: blur(26px) saturate(180%);
+  --glass-tint-2: linear-gradient(160deg, rgba(21, 32, 58, 0.68), rgba(11, 18, 36, 0.56));
+  /* Tier 3: Floating Popovers & 30m Rotation Toast */
+  --glass-blur-3: blur(36px) saturate(200%);
+  --glass-tint-3: linear-gradient(160deg, rgba(24, 37, 68, 0.88), rgba(12, 20, 40, 0.82));
+
+  /* Nested Zero-Blur Optical Sub-card (60fps safe) */
+  --optical-card-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.068), rgba(255, 255, 255, 0.022));
+  --optical-card-hover: linear-gradient(165deg, rgba(255, 255, 255, 0.105), rgba(255, 255, 255, 0.036));
+
+  --glass-rim-bright: rgba(255, 255, 255, 0.22);
+  --glass-rim-subtle: rgba(255, 255, 255, 0.085);
+  --glass-shadow-1: 0 12px 32px rgba(2, 6, 18, 0.42);
+  --glass-shadow-2: 0 18px 44px rgba(2, 6, 18, 0.48);
+  --glass-shadow-3: 0 24px 60px rgba(1, 4, 14, 0.68);
+
+  /* Risk Semantic Colors (Strictly Decoupled from Market Polarity) */
+  --risk-veto: #ff2d55;
+  --risk-veto-bg: rgba(255, 45, 85, 0.18);
+  --risk-veto-border: rgba(255, 45, 85, 0.45);
+  --risk-veto-text: #ff6987;
+
+  --risk-stoploss: #ff9f0a;
+  --risk-stoploss-bg: rgba(255, 159, 10, 0.17);
+  --risk-stoploss-border: rgba(255, 159, 10, 0.44);
+  --risk-stoploss-text: #ffb946;
+
+  --risk-clear: #38bdf8;
+  --risk-clear-bg: rgba(56, 189, 248, 0.13);
+  --risk-clear-border: rgba(56, 189, 248, 0.3);
+  --risk-clear-text: #7dd3fc;
+
+  /* Chart Variable Tokens */
+  --chart-1: #38bdf8;
+  --chart-2: #818cf8;
+  --chart-3: #2dd4bf;
+  --chart-4: #fbbf24;
+  --chart-5: #fb7185;
+  --chart-6: #94a3b8;
+  --chart-grid: rgba(148, 163, 184, 0.13);
+}
+
+:root[data-theme="light"] {
+  --bg-canvas: #eef3fa;
+  --bg-elevated-solid: #e2ebf6;
+  --mesh-blob-1: rgba(14, 165, 233, 0.15);
+  --mesh-blob-2: rgba(59, 130, 246, 0.13);
+  --mesh-blob-3: rgba(16, 185, 129, 0.11);
+
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #5b6e88;
+
+  --accent: #0284c7;
+  --accent-strong: #0369a1;
+  --accent-soft: rgba(2, 132, 199, 0.13);
+
+  --glass-tint-1: linear-gradient(155deg, rgba(246, 250, 255, 0.8), rgba(233, 241, 251, 0.68));
+  --glass-tint-2: linear-gradient(160deg, rgba(248, 251, 255, 0.76), rgba(235, 243, 252, 0.62));
+  --glass-tint-3: linear-gradient(160deg, rgba(250, 252, 255, 0.92), rgba(238, 245, 253, 0.88));
+
+  --optical-card-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.72), rgba(241, 246, 253, 0.48));
+  --optical-card-hover: linear-gradient(165deg, rgba(255, 255, 255, 0.88), rgba(241, 246, 253, 0.64));
+
+  --glass-rim-bright: rgba(255, 255, 255, 0.92);
+  --glass-rim-subtle: rgba(15, 23, 42, 0.085);
+  --glass-shadow-1: 0 10px 28px rgba(15, 23, 42, 0.07);
+  --glass-shadow-2: 0 14px 36px rgba(15, 23, 42, 0.09);
+  --glass-shadow-3: 0 22px 50px rgba(15, 23, 42, 0.16);
+
+  --risk-veto: #e11d48;
+  --risk-veto-bg: rgba(225, 29, 72, 0.12);
+  --risk-veto-border: rgba(225, 29, 72, 0.34);
+  --risk-veto-text: #be123c;
+
+  --risk-stoploss: #d97706;
+  --risk-stoploss-bg: rgba(217, 119, 6, 0.13);
+  --risk-stoploss-border: rgba(217, 119, 6, 0.36);
+  --risk-stoploss-text: #b45309;
+
+  --risk-clear: #0284c7;
+  --risk-clear-bg: rgba(2, 132, 199, 0.11);
+  --risk-clear-border: rgba(2, 132, 199, 0.26);
+  --risk-clear-text: #0369a1;
+
+  --chart-1: #0284c7;
+  --chart-2: #4f46e5;
+  --chart-3: #0d9488;
+  --chart-4: #d97706;
+  --chart-5: #e11d48;
+  --chart-6: #64748b;
+  --chart-grid: rgba(15, 23, 42, 0.09);
+}
+
+/* Decoupled A-Share Red-Up / International Green-Up Polarity */
+:root,
+:root[data-polarity="cn-red-up"] {
+  --mkt-up: #ff453a;
+  --mkt-up-soft: rgba(255, 69, 58, 0.15);
+  --mkt-down: #30d158;
+  --mkt-down-soft: rgba(48, 209, 88, 0.15);
+}
+
+:root[data-theme="light"][data-polarity="cn-red-up"] {
+  --mkt-up: #dc2626;
+  --mkt-up-soft: rgba(220, 38, 38, 0.12);
+  --mkt-down: #16a34a;
+  --mkt-down-soft: rgba(22, 163, 74, 0.12);
+}
+
+:root[data-polarity="intl-green-up"] {
+  --mkt-up: #30d158;
+  --mkt-up-soft: rgba(48, 209, 88, 0.15);
+  --mkt-down: #ff453a;
+  --mkt-down-soft: rgba(255, 69, 58, 0.15);
+}
+
+:root[data-theme="light"][data-polarity="intl-green-up"] {
+  --mkt-up: #16a34a;
+  --mkt-up-soft: rgba(22, 163, 74, 0.12);
+  --mkt-down: #dc2626;
+  --mkt-down-soft: rgba(220, 38, 38, 0.12);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+  :root {
+    --glass-tint-1: var(--bg-elevated-solid);
+    --glass-tint-2: var(--bg-elevated-solid);
+    --glass-tint-3: var(--bg-elevated-solid);
+  }
+}

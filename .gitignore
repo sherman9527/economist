@@ -23,6 +23,7 @@ data/*.db-shm
 node_modules/
 dist/
 src-tauri/target/
+src-tauri/gen/
 portable-release/
 telemetry/
 webview_data/

@@ -1,0 +1,52 @@
+# Portable x64 A-Share Quant & Economist Terminal Runtime Configuration
+# Strictly relative paths only (Requirement #2 & #9).
+
+[app]
+name = "economist-ashare-quant-terminal"
+version = "1.0.0"
+portable_root = "./"
+default_polarity = "cn-red-up"
+default_theme = "dark"
+strategy_manifest_rel = "./plugins/strategies/smallcap_turnover_ignition.json"
+factors_manifest_rel = "./plugins/factors/core_factors_v1.json"
+
+[schedule]
+timezone = "Asia/Shanghai"
+weekdays_only = true
+trading_windows_cst = ["09:30-11:30", "13:00-15:00"]
+rotation_interval_minutes = 30
+telemetry_prune_interval_hours = 6
+build_hygiene_interval_minutes = 30
+
+[market_sources]
+tencent_batch_url = "https://qt.gtimg.cn/q="
+tencent_mkline_url = "https://ifzq.gtimg.cn/appstock/app/kline/mkline"
+tencent_fqkline_url = "https://ifzq.gtimg.cn/appstock/app/fqkline/get"
+eastmoney_kline_url = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
+eastmoney_clist_url = "https://82.push2.eastmoney.com/api/qt/clist/get"
+eastmoney_datacenter_url = "https://datacenter-web.eastmoney.com/api/data/v1/get"
+eastmoney_notice_url = "https://np-anotice-stock.eastmoney.com/api/security/ann"
+batch_chunk_size = 650
+max_concurrency = 8
+request_timeout_ms = 6000
+max_enrichment_candidates = 36
+
+[storage]
+sqlite_rel_path = "./data/economist_quant.db"
+ack_state_rel_path = "./data/ack_state.json"
+backtest_ledger_rel_path = "./data/backtest_ledger.json"
+runs_dir_rel = "./data/runs"
+reports_dir_rel = "./reports"
+logs_dir_rel = "./logs"
+telemetry_dir_rel = "./telemetry"
+webview_data_rel = "./webview_data"
+temp_dir_rel = "./.temp"
+retention_days = 28
+build_soft_cap_bytes = 4294967296
+build_cap_bytes = 5368709120
+
+[agents]
+locked_model = "gemini-4-carbon"
+locked_reasoning_effort = "high"
+agent_logs_rel = "./logs/agents"
+cli_binary = "copilot"

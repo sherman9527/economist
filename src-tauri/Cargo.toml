@@ -1,0 +1,45 @@
+[package]
+name = "economist-quant-terminal"
+version = "1.0.0"
+description = "Portable x64 China A-Share Small-Cap Turnover Quant & Economist Macro Terminal"
+edition = "2021"
+default-run = "economist-quant-terminal"
+
+[lib]
+name = "economist_quant_terminal_lib"
+crate-type = ["staticlib", "cdylib", "rlib"]
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+rusqlite = { version = "0.32", features = ["bundled"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time", "sync", "process"] }
+reqwest = { version = "0.12", features = ["json", "gzip"] }
+encoding_rs = "0.8"
+chrono = { version = "0.4", features = ["serde"] }
+
+[dev-dependencies]
+proptest = "1"
+
+[profile.dev]
+debug = 0
+strip = "debuginfo"
+
+[profile.dev.package."*"]
+opt-level = 1
+debug = false
+
+[profile.release]
+opt-level = 3
+lto = "thin"
+strip = "symbols"
+codegen-units = 1

@@ -1,0 +1,91 @@
+{
+  "plugin_set_id": "core_factors_v1",
+  "version": "1.1.0",
+  "neutralization": "SW1_INDUSTRY + LN_CIRC_MV + MAD_3SIGMA",
+  "factors": [
+    {
+      "factor_id": "F1_ideal_reversal",
+      "name_zh": "高换手理想反转因子",
+      "expr": "clip((ret_high_turn_5d - ret_low_turn_5d) * -1.0, -3.5, 3.5)",
+      "bar_freq": "1d",
+      "weight_pct": 22.0,
+      "rank_ic_mean": 0.058,
+      "ic_ir": 0.89,
+      "oos_win_rate_pct": 58.4,
+      "evidence_tag": "[OOS]",
+      "status": "ACTIVE",
+      "quantile_returns_pct": [-1.42, -0.98, -0.61, -0.24, 0.08, 0.34, 0.69, 1.05, 1.48, 2.16],
+      "ic_decay": [0.058, 0.054, 0.049, 0.043, 0.038, 0.031, 0.026, 0.021, 0.017, 0.013]
+    },
+    {
+      "factor_id": "F2_concave_abn_turnover",
+      "name_zh": "凹向异常换手点火因子",
+      "expr": "(turnover_2d_mean / max(turnover_20d_mean, 0.5)) - 0.18 * pow(turnover_2d_mean / max(turnover_20d_mean, 0.5), 2.0)",
+      "bar_freq": "1d",
+      "weight_pct": 20.0,
+      "rank_ic_mean": 0.051,
+      "ic_ir": 0.78,
+      "oos_win_rate_pct": 56.9,
+      "evidence_tag": "[OOS]",
+      "status": "ACTIVE",
+      "quantile_returns_pct": [-1.28, -0.84, -0.52, -0.19, 0.05, 0.29, 0.62, 0.94, 1.36, 1.92],
+      "ic_decay": [0.051, 0.048, 0.042, 0.036, 0.030, 0.024, 0.019, 0.015, 0.011, 0.008]
+    },
+    {
+      "factor_id": "F3_amihud_compression",
+      "name_zh": "Amihud非流动性压缩因子",
+      "expr": "(amihud_20d - amihud_5d) / max(amihud_20d, 0.0001)",
+      "bar_freq": "1d",
+      "weight_pct": 16.0,
+      "rank_ic_mean": 0.044,
+      "ic_ir": 0.71,
+      "oos_win_rate_pct": 55.2,
+      "evidence_tag": "[backtest]",
+      "status": "ACTIVE",
+      "quantile_returns_pct": [-1.09, -0.76, -0.44, -0.15, 0.04, 0.26, 0.53, 0.81, 1.18, 1.64],
+      "ic_decay": [0.044, 0.042, 0.039, 0.035, 0.031, 0.027, 0.023, 0.019, 0.016, 0.012]
+    },
+    {
+      "factor_id": "F4_intraday_apm_vwap",
+      "name_zh": "日内尾盘VWAP偏离动量",
+      "expr": "((close_price - vwap_price) / max(vwap_price, 0.01)) * 100.0 + 0.5 * tail30m_ret_pct",
+      "bar_freq": "30m",
+      "weight_pct": 16.0,
+      "rank_ic_mean": 0.047,
+      "ic_ir": 0.74,
+      "oos_win_rate_pct": 56.1,
+      "evidence_tag": "[OOS]",
+      "status": "ACTIVE",
+      "quantile_returns_pct": [-1.18, -0.82, -0.48, -0.18, 0.06, 0.28, 0.58, 0.88, 1.25, 1.79],
+      "ic_decay": [0.047, 0.041, 0.035, 0.029, 0.024, 0.019, 0.015, 0.012, 0.009, 0.007]
+    },
+    {
+      "factor_id": "F5_main_inflow_ir",
+      "name_zh": "主力净流入信息比因子",
+      "expr": "main_inflow_ratio_pct / max(intraday_range_pct, 1.2)",
+      "bar_freq": "1d",
+      "weight_pct": 14.0,
+      "rank_ic_mean": 0.042,
+      "ic_ir": 0.66,
+      "oos_win_rate_pct": 54.8,
+      "evidence_tag": "[OOS]",
+      "status": "ACTIVE",
+      "quantile_returns_pct": [-0.96, -0.68, -0.39, -0.12, 0.05, 0.24, 0.49, 0.76, 1.11, 1.55],
+      "ic_decay": [0.042, 0.037, 0.031, 0.026, 0.021, 0.017, 0.014, 0.011, 0.008, 0.006]
+    },
+    {
+      "factor_id": "F6_pv_efficiency",
+      "name_zh": "量价突破效率因子",
+      "expr": "((close_price - ma20_price) / max(atr14_price, 0.05)) * min(vol_expansion_ratio, 3.0)",
+      "bar_freq": "1d",
+      "weight_pct": 12.0,
+      "rank_ic_mean": 0.039,
+      "ic_ir": 0.62,
+      "oos_win_rate_pct": 54.1,
+      "evidence_tag": "[backtest]",
+      "status": "ACTIVE",
+      "quantile_returns_pct": [-0.88, -0.61, -0.35, -0.11, 0.04, 0.21, 0.44, 0.71, 1.03, 1.44],
+      "ic_decay": [0.039, 0.035, 0.030, 0.026, 0.022, 0.018, 0.015, 0.012, 0.010, 0.008]
+    }
+  ]
+}

@@ -22,6 +22,7 @@ IGNORED_DIRS = {
     "node_modules",
     "dist",
     "target",
+    "gen",
     "portable-release",
     "webview_data",
     "logs",

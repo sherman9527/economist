@@ -1,0 +1,262 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei UI", system-ui, sans-serif;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* CJK-Safe Anti-Clipping Typography Hierarchy */
+.lh-kpi {
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+}
+
+.lh-ui {
+  line-height: 1.45;
+}
+
+.lh-prose {
+  line-height: 1.72;
+}
+
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+.min-w-zero {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* 3-Tier Liquid Glass Surfaces: backdrop-filter ONLY when data-blur-slot="active" (<=8 budget) */
+.glass-tier-1 {
+  background: var(--glass-tint-1);
+  border: 1px solid var(--glass-rim-subtle);
+  box-shadow: inset 0 1px 0 var(--glass-rim-bright), inset 1px 0 0 rgba(255, 255, 255, 0.08),
+    var(--glass-shadow-1);
+  border-radius: 20px;
+}
+
+.glass-tier-1[data-blur-slot="active"] {
+  -webkit-backdrop-filter: var(--glass-blur-1);
+  backdrop-filter: var(--glass-blur-1);
+}
+
+.glass-tier-2 {
+  background: var(--glass-tint-2);
+  border: 1px solid var(--glass-rim-subtle);
+  box-shadow: inset 0 1px 0 var(--glass-rim-bright), inset 1px 0 0 rgba(255, 255, 255, 0.07),
+    var(--glass-shadow-2);
+  border-radius: 22px;
+  padding: 18px 20px;
+  min-width: 0;
+}
+
+.glass-tier-2[data-blur-slot="active"] {
+  -webkit-backdrop-filter: var(--glass-blur-2);
+  backdrop-filter: var(--glass-blur-2);
+}
+
+.glass-tier-3 {
+  background: var(--glass-tint-3);
+  border: 1px solid var(--glass-rim-bright);
+  box-shadow: inset 0 1px 0 var(--glass-rim-bright), var(--glass-shadow-3);
+  border-radius: 18px;
+}
+
+.glass-tier-3[data-blur-slot="active"] {
+  -webkit-backdrop-filter: var(--glass-blur-3);
+  backdrop-filter: var(--glass-blur-3);
+}
+
+/* Zero-Blur Optical Sub-card (Nested inside Tier 2 for 60fps smoothness) */
+.glass-optical-card {
+  background: var(--optical-card-bg);
+  border: 1px solid var(--glass-rim-subtle);
+  box-shadow: inset 0 1px 0 var(--glass-rim-bright);
+  border-radius: 16px;
+  padding: 14px 16px;
+  min-width: 0;
+  transition: transform 180ms ease-out, background 180ms ease-out, border-color 180ms ease-out;
+}
+
+.glass-optical-card-interactive:hover {
+  background: var(--optical-card-hover);
+  transform: translateY(-2px);
+}
+
+/* Ambient Mesh Backdrop (25s / 33s / 41s slow GPU translate3d) */
+.mesh-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background: var(--bg-canvas);
+}
+
+.mesh-blob {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(88px);
+  will-change: transform;
+}
+
+.mesh-blob-a {
+  width: 56vw;
+  min-height: 56vw;
+  top: -16%;
+  left: -8%;
+  background: radial-gradient(circle, var(--mesh-blob-1) 0%, transparent 72%);
+  animation: meshDriftA 25s ease-in-out infinite alternate;
+}
+
+.mesh-blob-b {
+  width: 52vw;
+  min-height: 52vw;
+  bottom: -18%;
+  right: -10%;
+  background: radial-gradient(circle, var(--mesh-blob-2) 0%, transparent 72%);
+  animation: meshDriftB 33s ease-in-out infinite alternate;
+}
+
+.mesh-blob-c {
+  width: 44vw;
+  min-height: 44vw;
+  top: 28%;
+  left: 34%;
+  background: radial-gradient(circle, var(--mesh-blob-3) 0%, transparent 72%);
+  animation: meshDriftC 41s ease-in-out infinite alternate;
+}
+
+@keyframes meshDriftA {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(6vw, 5vh, 0) scale(1.08); }
+}
+
+@keyframes meshDriftB {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-7vw, -6vh, 0) scale(1.06); }
+}
+
+@keyframes meshDriftC {
+  0% { transform: translate3d(0, 0, 0) scale(1); }
+  100% { transform: translate3d(-4vw, 6vh, 0) scale(1.09); }
+}
+
+/* App Shell Responsive Grid (390px -> 1280px@150% -> 2560px) */
+.terminal-shell {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 16px;
+  max-width: 2520px;
+  margin: 0 auto;
+  padding: 14px 16px 28px;
+  min-height: 100vh;
+}
+
+.terminal-main-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+
+.bento-grid-12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+.col-span-12 { grid-column: span 12 / span 12; min-width: 0; }
+.col-span-8 { grid-column: span 8 / span 8; min-width: 0; }
+.col-span-7 { grid-column: span 7 / span 7; min-width: 0; }
+.col-span-6 { grid-column: span 6 / span 6; min-width: 0; }
+.col-span-5 { grid-column: span 5 / span 5; min-width: 0; }
+.col-span-4 { grid-column: span 4 / span 4; min-width: 0; }
+.col-span-3 { grid-column: span 3 / span 3; min-width: 0; }
+
+/* Staggered Entrance Animation */
+@keyframes glassEnter {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.stagger-enter {
+  animation: glassEnter 240ms ease-out both;
+}
+.stagger-1 { animation-delay: 40ms; }
+.stagger-2 { animation-delay: 100ms; }
+.stagger-3 { animation-delay: 160ms; }
+.stagger-4 { animation-delay: 220ms; }
+
+@media (max-width: 1179px) {
+  .col-span-8,
+  .col-span-7,
+  .col-span-5,
+  .col-span-4 {
+    grid-column: span 12 / span 12;
+  }
+  .col-span-3 {
+    grid-column: span 6 / span 6;
+  }
+}
+
+.sidebar-mobile-tabs {
+  display: none;
+}
+
+@media (max-width: 639px) {
+  .sidebar-desktop {
+    display: none !important;
+  }
+  .sidebar-mobile-tabs {
+    display: flex;
+  }
+  .terminal-shell {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 10px 10px 88px;
+    gap: 12px;
+  }
+  .col-span-3,
+  .col-span-6 {
+    grid-column: span 12 / span 12;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mesh-blob-a,
+  .mesh-blob-b,
+  .mesh-blob-c,
+  .stagger-enter {
+    animation: none !important;
+  }
+  .glass-optical-card,
+  .glass-btn {
+    transition: none !important;
+  }
+}

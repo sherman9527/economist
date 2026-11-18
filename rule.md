@@ -69,3 +69,8 @@
 ### Pitfall #12：Copilot CLI 子进程唤醒时 MCP 初始化拖慢响应与日志写 C 盘
 - **现象**：后台唤醒专家 Agent 若加载默认外部 MCP 插件或使用默认日志路径，会导致单次响应阻塞 `>60s` 并在用户目录写日志。
 - **标准解法**：Rust Supervisor 唤醒 Agent 时统一携带 `--model gemini-4-carbon --reasoning-effort high --resume <session_id> --log-dir ./logs/agents --no-custom-instructions --disable-builtin-mcps --disable-client-telemetry`。
+
+### Pitfall #13：绕过 `@tauri-apps/cli` 直接用 `cargo build --release` 构建便携版 `.exe` 时未开启 `custom-protocol`
+- **现象**：为满足便携免安装（`bundle.active = false`）并规避外部打包器二进制下载，直接运行 `cargo build --release` 生成独立 `x64` `.exe` 时，若 `tauri` 依赖未开启 `custom-protocol` 特性，`tauri::generate_context!()` 会默认处于开发模式（尝试连接 `devUrl: http://localhost:1420`），导致独立便携 `.exe` 白屏且无法触发前端 IPC 初始化。
+- **标准解法**：先执行 `npm run build` 生成 `./dist/`，并在 `./src-tauri/Cargo.toml` 中显式声明 `[features] default = ["custom-protocol"]` 与 `custom-protocol = ["tauri/custom-protocol"]`，使 `tauri-codegen` 将全部前端静态资源静态内嵌至独立便携 `x64` `.exe` 中并通过 `http://tauri.localhost` 协议离线加载。
+

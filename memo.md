@@ -61,3 +61,8 @@
   - 初始化 OpenSpec `1.4.1`，加载 Superpowers 与 OpenSpec 技能组；
   - 并行调度 3 名 `gemini-4-carbon` (`high`) 专家子 Agent 完成 Apple Liquid Glass 视觉防穿模规范、5,576 只全 A 股实时行情/排雷 API 实测与单策略多因子数学建模、Tauri 2 DDD 四层架构与中国镜像源实测；
   - 当前进入治理文档落盘、OpenSpec 四大标准产物（`proposal` / `specs` / `design` / `tasks`）严格校验、Superpowers 实施计划定稿及便携 `x64` 应用 TDD+PBT 全量构建阶段。
+
+- **Compact #2 (`2026-11-18` · Checkpoint: `OpenSpec design, China toolchain, and hygiene refactor`)**：
+  - 完成 OpenSpec `tauri-ashare-quant-terminal` 严格校验（`4/4` 产物通过）、Superpowers 设计与计划文档、中国镜像便携 Rust `1.100.0` (`x86_64-pc-windows-msvc`) 工具链落盘及全仓遗留脚本零绝对路径 / `< 1000` 行重构（提交 `0710865`）；
+  - 并行调度 2 名 `gemini-4-carbon` (`high`) 专项实现 Agent 完成 `./config/**` + `./plugins/**` + `./src-tauri/**`（4 层 DDD + Bundled SQLite + 5,500+ 全 A 股实时扫描 + 100W/10 席位 T+1 账本 + `proptest` PBT）与 `./src/**`（React 19 + TypeScript Apple Liquid Glass 六页工作台 + `lightweight-charts` 买点/止损线 K 线 + ECharts + `vitest`/`fast-check` PBT）；
+  - 当前进入便携 `x64` 独立 `.exe`（`bundle.active = false`）联调打包、构建体积 `< 5 GB` 水位巡检、**5 轮深度专家 Code Review 与缺陷清零闭环**及最终 `git push origin main` 阶段。

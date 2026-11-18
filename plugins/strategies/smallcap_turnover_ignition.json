@@ -1,0 +1,66 @@
+{
+  "strategy_id": "smallcap_turnover_ignition",
+  "version": "1.2.0",
+  "description_zh": "唯一核心策略：总市值<200亿RMB + 连续2日换手率>5.0%放量点火 + 五维智能排雷一票否决 + 6因子截面正交中性化优选",
+  "max_total_mv_yi": 200.0,
+  "min_turnover_pct": 5.0,
+  "consecutive_days": 2,
+  "min_vol_ratio_t1_vs_ma20": 1.15,
+  "min_vol_ratio_t0_vs_t1": 1.02,
+  "min_listing_days": 60,
+  "limit_up_guard_pct": 0.20,
+  "intraday_u_curve_weights": {
+    "30": 0.24,
+    "60": 0.38,
+    "90": 0.49,
+    "120": 0.58,
+    "150": 0.69,
+    "180": 0.80,
+    "210": 0.89,
+    "240": 1.00
+  },
+  "min_intraday_projected_turnover_pct": 5.5,
+  "min_intraday_realized_turnover_pct": 2.5,
+  "pitfall_thresholds": {
+    "insider_sell_veto_pct": 0.5,
+    "holder_surge_veto_pct": 25.0,
+    "holder_surge_warn_pct": 10.0,
+    "main_outflow_veto_ratio": -0.08,
+    "upper_shadow_veto_ratio": 0.55,
+    "regulatory_veto_keywords": [
+      "立案",
+      "留置",
+      "行政处罚",
+      "退市风险",
+      "非标意见",
+      "违规担保"
+    ]
+  },
+  "initial_capital_yuan": 1000000,
+  "max_positions": 10,
+  "max_single_weight_pct": 10.0,
+  "max_single_risk_pct": 0.8,
+  "max_adv20_participation_pct": 1.5,
+  "transaction_fees": {
+    "stamp_duty_sell": 0.0005,
+    "commission_rate": 0.00025,
+    "min_commission_yuan": 5.0,
+    "slippage_rate": 0.0015
+  },
+  "stop_loss": {
+    "atr_stop_mult": 2.0,
+    "hard_stop_min_ratio": 0.925,
+    "hard_stop_max_ratio": 0.960,
+    "chandelier_trigger_gain_pct": 6.0,
+    "chandelier_atr_mult": 2.2
+  },
+  "market_polarity": "cn-red-up",
+  "factor_weights": {
+    "F1_ideal_reversal": 22.0,
+    "F2_concave_abn_turnover": 20.0,
+    "F3_amihud_compression": 16.0,
+    "F4_intraday_apm_vwap": 16.0,
+    "F5_main_inflow_ir": 14.0,
+    "F6_pv_efficiency": 12.0
+  }
+}
