@@ -21,6 +21,7 @@ pub struct PositionRecord {
     pub entry_rationale_zh: String,
     pub opened_trade_date: String,
     pub last_buy_trade_date: String,
+    pub t_plus1_unlock_date: String,
     pub opened_at_iso: String,
 }
 
@@ -85,6 +86,8 @@ pub struct PortfolioLedger {
     pub total_fees_paid_fen: Fen,
     pub current_trade_date: String,
     pub fee_schedule: FeeSchedule,
+    pub max_single_weight_pct: f64,
+    pub limit_guard_pct: f64,
     pub positions: BTreeMap<String, PositionRecord>,
     pub orders: Vec<OrderRecord>,
 }
@@ -97,6 +100,8 @@ impl PortfolioLedger {
             total_fees_paid_fen: Fen::ZERO,
             current_trade_date: trade_date.to_string(),
             fee_schedule,
+            max_single_weight_pct: 10.0,
+            limit_guard_pct: 0.25,
             positions: BTreeMap::new(),
             orders: Vec::new(),
         }
@@ -124,10 +129,14 @@ impl PortfolioLedger {
     }
 
     pub fn advance_trading_day(&mut self, new_trade_date: &str) {
+        use crate::domain::trading_calendar::is_ashare_trading_day_str;
+
         if new_trade_date > self.current_trade_date.as_str() {
             self.current_trade_date = new_trade_date.to_string();
+        }
+        if is_ashare_trading_day_str(new_trade_date) {
             for pos in self.positions.values_mut() {
-                if pos.locked_t0_qty > 0 && new_trade_date > pos.last_buy_trade_date.as_str() {
+                if pos.locked_t0_qty > 0 && new_trade_date >= pos.t_plus1_unlock_date.as_str() {
                     pos.sellable_qty += pos.locked_t0_qty;
                     pos.locked_t0_qty = 0;
                 }
@@ -142,6 +151,15 @@ impl PortfolioLedger {
     }
 
     pub fn execute_buy(&mut self, cmd: BuyOrderCommand) -> Result<OrderRecord, String> {
+        self.execute_buy_with_adv20(cmd, None)
+    }
+
+    pub fn execute_buy_with_adv20(
+        &mut self,
+        cmd: BuyOrderCommand,
+        adv20_amount_fen: Option<Fen>,
+    ) -> Result<OrderRecord, String> {
+        use crate::domain::trading_calendar::next_ashare_trading_date_str;
         use crate::domain::types::{is_limit_up_locked, validate_lot_size};
 
         if cmd.rationale_zh.trim().is_empty() {
@@ -153,7 +171,7 @@ impl PortfolioLedger {
             cmd.prev_close_fen,
             cmd.symbol.board,
             cmd.is_st,
-            0.20,
+            self.limit_guard_pct,
         ) {
             return Err(format!("{} 涨停锁死无法买入成交", cmd.symbol.canonical()));
         }
@@ -175,6 +193,18 @@ impl PortfolioLedger {
             ));
         }
 
+        if let Some(adv20) = adv20_amount_fen.filter(|a| a.0 > 0) {
+            let max_adv_fen = ((adv20.0 as f64) * 0.015).round() as i64;
+            if cost.gross_notional_fen.0 > max_adv_fen {
+                return Err(format!(
+                    "{} 委托金额 {:.2} 元超出 20日均成交额 1.5% 冲击红线 ({:.2} 元)",
+                    cmd.symbol.canonical(),
+                    cost.gross_notional_fen.to_yuan(),
+                    Fen(max_adv_fen).to_yuan()
+                ));
+            }
+        }
+
         let canonical = cmd.symbol.canonical();
         let is_new_slot = !self.positions.contains_key(&canonical);
         if is_new_slot && self.positions.len() >= MAX_POSITION_SLOTS {
@@ -185,6 +215,26 @@ impl PortfolioLedger {
             ));
         }
 
+        if self.max_single_weight_pct > 0.0 {
+            let existing_mv_fen = self
+                .positions
+                .get(&canonical)
+                .map(|p| cmd.quote_price_fen.0 * p.total_qty)
+                .unwrap_or(0);
+            let max_single_fen =
+                ((self.total_equity_fen().0 as f64) * (self.max_single_weight_pct / 100.0)).round()
+                    as i64;
+            if existing_mv_fen + cost.total_cash_delta_fen.0 > max_single_fen {
+                return Err(format!(
+                    "{} 建仓后单票总敞口 {:.2} 元超出单票集中度上限 {:.1}% ({:.2} 元)",
+                    canonical,
+                    Fen(existing_mv_fen + cost.total_cash_delta_fen.0).to_yuan(),
+                    self.max_single_weight_pct,
+                    Fen(max_single_fen).to_yuan()
+                ));
+            }
+        }
+
         if self.cash_fen < cost.total_cash_delta_fen {
             return Err(format!(
                 "可用现金不足：需 {:.2} 元，当前现金 {:.2} 元",
@@ -192,6 +242,15 @@ impl PortfolioLedger {
                 self.cash_fen.to_yuan()
             ));
         }
+
+        let unlock_date = {
+            let calc = next_ashare_trading_date_str(&cmd.trade_date);
+            if cmd.next_trade_date > calc {
+                cmd.next_trade_date.clone()
+            } else {
+                calc
+            }
+        };
 
         self.cash_fen = Fen(self.cash_fen.0 - cost.total_cash_delta_fen.0);
         self.total_fees_paid_fen = Fen(
@@ -201,23 +260,24 @@ impl PortfolioLedger {
         if let Some(existing) = self.positions.get_mut(&canonical) {
             let prev_cost_notional = existing.avg_cost_fen.0 * existing.total_qty;
             let new_total_qty = existing.total_qty + cmd.shares;
-            let blended_cost =
-                (prev_cost_notional + cost.total_cash_delta_fen.0) / new_total_qty.max(1);
+            let blended_cost = (prev_cost_notional
+                + cost.total_cash_delta_fen.0
+                + new_total_qty.max(1) / 2)
+                / new_total_qty.max(1);
             existing.total_qty = new_total_qty;
             existing.locked_t0_qty += cmd.shares;
             existing.avg_cost_fen = Fen(blended_cost);
             existing.mark_price_fen = cmd.quote_price_fen;
             existing.highest_price_fen = existing.highest_price_fen.max(cmd.quote_price_fen);
-            existing.stop_loss_price_fen = existing
-                .stop_loss_price_fen
-                .max(cmd.stop_loss_price_fen)
-                .min(Fen(cost.fill_price_fen.0 - 1));
+            existing.stop_loss_price_fen = existing.stop_loss_price_fen.max(cmd.stop_loss_price_fen);
             existing.last_buy_trade_date = cmd.trade_date.clone();
+            existing.t_plus1_unlock_date = unlock_date.clone();
         } else {
             let slot_no = self
                 .next_available_slot()
                 .ok_or_else(|| "无可用持仓席位编号(1..10)".to_string())?;
-            let avg_cost_fen = Fen(cost.total_cash_delta_fen.0 / cmd.shares.max(1));
+            let avg_cost_fen =
+                Fen((cost.total_cash_delta_fen.0 + cmd.shares.max(1) / 2) / cmd.shares.max(1));
             self.positions.insert(
                 canonical,
                 PositionRecord {
@@ -236,6 +296,7 @@ impl PortfolioLedger {
                     entry_rationale_zh: cmd.rationale_zh.clone(),
                     opened_trade_date: cmd.trade_date.clone(),
                     last_buy_trade_date: cmd.trade_date.clone(),
+                    t_plus1_unlock_date: unlock_date.clone(),
                     opened_at_iso: cmd.created_at_iso.clone(),
                 },
             );
@@ -258,7 +319,7 @@ impl PortfolioLedger {
             slippage_fen: cost.slippage_fen,
             rationale_zh: cmd.rationale_zh,
             trade_date: cmd.trade_date,
-            t_plus1_unlock_date: cmd.next_trade_date,
+            t_plus1_unlock_date: unlock_date,
             created_at_iso: cmd.created_at_iso,
         };
         self.orders.push(order.clone());
@@ -287,11 +348,8 @@ impl PortfolioLedger {
             ));
         }
         let is_full_sellable_exit = cmd.shares == existing.sellable_qty;
-        if !is_full_sellable_exit && cmd.symbol.board != BoardKind::Star && cmd.shares % 100 != 0 {
-            return Err("非全额清仓卖出委托股数必须为100股正整数倍".to_string());
-        }
-        if !is_full_sellable_exit && cmd.symbol.board == BoardKind::Star && cmd.shares < 200 {
-            return Err("科创板非全额清仓卖出委托股数不得低于200股".to_string());
+        if !is_full_sellable_exit {
+            crate::domain::types::validate_lot_size(cmd.symbol.board, cmd.shares)?;
         }
 
         if is_limit_down_locked(
@@ -299,7 +357,7 @@ impl PortfolioLedger {
             cmd.prev_close_fen,
             cmd.symbol.board,
             cmd.is_st,
-            0.20,
+            self.limit_guard_pct,
         ) {
             return Err(format!("{} 跌停封死流动性枯竭，延迟平仓", canonical));
         }
@@ -374,31 +432,70 @@ pub fn suggest_position_shares(
     max_single_weight_pct: f64,
     max_single_risk_pct: f64,
 ) -> i64 {
+    suggest_position_shares_for_slot(
+        board,
+        nav_fen,
+        cash_fen,
+        Fen::ZERO,
+        entry_price_fen,
+        stop_loss_fen,
+        max_single_weight_pct,
+        max_single_risk_pct,
+        FeeSchedule::default(),
+    )
+}
+
+#[allow(clippy::too_many_arguments)]
+pub fn suggest_position_shares_for_slot(
+    board: BoardKind,
+    nav_fen: Fen,
+    cash_fen: Fen,
+    existing_mv_fen: Fen,
+    entry_price_fen: Fen,
+    stop_loss_fen: Fen,
+    max_single_weight_pct: f64,
+    max_single_risk_pct: f64,
+    fee_schedule: FeeSchedule,
+) -> i64 {
     if entry_price_fen.0 <= 0 || cash_fen.0 <= 0 || nav_fen.0 <= 0 {
         return 0;
     }
-    let max_notional_fen = ((nav_fen.0 as f64) * (max_single_weight_pct / 100.0))
-        .min((cash_fen.0 as f64) * 0.985);
+    let single_cap_fen =
+        (((nav_fen.0 as f64) * (max_single_weight_pct / 100.0)).round() as i64) - existing_mv_fen.0;
+    if single_cap_fen <= 0 {
+        return 0;
+    }
+    let max_budget_fen = single_cap_fen.min(((cash_fen.0 as f64) * 0.992).floor() as i64);
+    let est_unit_cost_fen = (entry_price_fen.0 as f64)
+        * (1.0 + (fee_schedule.slippage_bps + fee_schedule.commission_bps) / 10_000.0);
     let risk_per_share_fen = (entry_price_fen.0 - stop_loss_fen.0).max(1) as f64;
     let max_risk_budget_fen = (nav_fen.0 as f64) * (max_single_risk_pct / 100.0);
 
-    let by_weight_shares = (max_notional_fen / (entry_price_fen.0 as f64)).floor() as i64;
+    let by_weight_shares = ((max_budget_fen as f64) / est_unit_cost_fen.max(1.0)).floor() as i64;
     let by_risk_shares = (max_risk_budget_fen / risk_per_share_fen).floor() as i64;
     let raw_shares = by_weight_shares.min(by_risk_shares);
-    if board == BoardKind::Star {
-        if raw_shares < board.min_lot_shares() {
-            0
-        } else {
-            raw_shares
-        }
+    let step = if matches!(board, BoardKind::Star | BoardKind::Bse) {
+        1_i64
     } else {
-        let rounded = (raw_shares / 100) * 100;
-        if rounded < board.min_lot_shares() {
-            0
-        } else {
-            rounded
+        100_i64
+    };
+    let mut candidate = if step == 1 {
+        raw_shares
+    } else {
+        (raw_shares / 100) * 100
+    };
+    let min_lot = board.min_lot_shares();
+    while candidate >= min_lot {
+        if let Ok(cost) = fee_schedule.compute_buy(entry_price_fen, candidate) {
+            if cost.total_cash_delta_fen.0 <= single_cap_fen
+                && cost.total_cash_delta_fen <= cash_fen
+            {
+                return candidate;
+            }
         }
+        candidate -= step;
     }
+    0
 }
 
 #[cfg(test)]

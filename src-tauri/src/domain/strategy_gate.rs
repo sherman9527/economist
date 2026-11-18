@@ -151,11 +151,10 @@ pub fn evaluate_strategy_gate(
     let intraday_mode = matches!(
         input.session,
         MarketSessionState::Trading | MarketSessionState::LunchBreak
-    ) && input.elapsed_trading_minutes > 0
-        && input.elapsed_trading_minutes < 240;
+    ) && input.elapsed_trading_minutes < 240;
 
     let u_weight = if intraday_mode {
-        interpolate_u_curve_weight(input.elapsed_trading_minutes.max(30), &params.u_curve_weights)
+        interpolate_u_curve_weight(input.elapsed_trading_minutes.max(15), &params.u_curve_weights)
     } else {
         1.0
     };

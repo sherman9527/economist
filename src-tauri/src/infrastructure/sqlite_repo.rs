@@ -237,7 +237,14 @@ impl SqliteRepository {
                     stop_loss_price_fen: Fen(r.get(11)?),
                     entry_rationale_zh: r.get(12)?,
                     opened_trade_date: r.get(13)?,
-                    last_buy_trade_date: r.get(14)?,
+                    last_buy_trade_date: {
+                        let d: String = r.get(14)?;
+                        d
+                    },
+                    t_plus1_unlock_date: {
+                        let d: String = r.get(14)?;
+                        crate::domain::trading_calendar::next_ashare_trading_date_str(&d)
+                    },
                     opened_at_iso: r.get(15)?,
                 })
             })
@@ -284,14 +291,20 @@ impl SqliteRepository {
             total_fees_paid_fen: total_fees_fen,
             current_trade_date: current_trade_date.to_string(),
             fee_schedule,
+            max_single_weight_pct: 10.0,
+            limit_guard_pct: 0.25,
             positions,
             orders,
         };
-        // Unlock T+1 positions if trading date rolled forward since last buy
-        for pos in ledger.positions.values_mut() {
-            if pos.locked_t0_qty > 0 && current_trade_date > pos.last_buy_trade_date.as_str() {
-                pos.sellable_qty += pos.locked_t0_qty;
-                pos.locked_t0_qty = 0;
+        // Unlock T+1 positions only on valid A-share trading sessions on or after t_plus1_unlock_date
+        if crate::domain::trading_calendar::is_ashare_trading_day_str(current_trade_date) {
+            for pos in ledger.positions.values_mut() {
+                if pos.locked_t0_qty > 0
+                    && current_trade_date >= pos.t_plus1_unlock_date.as_str()
+                {
+                    pos.sellable_qty += pos.locked_t0_qty;
+                    pos.locked_t0_qty = 0;
+                }
             }
         }
         Ok(ledger)

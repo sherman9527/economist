@@ -86,14 +86,36 @@ pub fn audit_five_pitfalls(
     input: &PitfallAuditInput,
     thresholds: &PitfallThresholds,
 ) -> PitfallAuditReport {
+    audit_five_pitfalls_with_context(input, thresholds, 0.0, false)
+}
+
+pub fn audit_five_pitfalls_with_context(
+    input: &PitfallAuditInput,
+    thresholds: &PitfallThresholds,
+    restricted_unlock_30d_pct: f64,
+    is_early_intraday_session: bool,
+) -> PitfallAuditReport {
+    use crate::domain::trading_calendar::matches_economist_bearish_sector;
+
     let mut items = Vec::with_capacity(5);
     let mut warn_penalty_pts = 0.0_f64;
 
-    // 1. Insider net reduction in trailing 90 days
-    if input.net_insider_reduction_90d_pct >= thresholds.insider_sell_veto_pct {
+    // 1. Insider net reduction in trailing 90 days & imminent restricted-share unlock
+    if restricted_unlock_30d_pct >= 5.0 {
         items.push(PitfallCheckItem {
             dimension: PitfallDimension::InsiderReduction,
-            label_zh: "大股东/高管减持".to_string(),
+            label_zh: "大股东减持与解禁".to_string(),
+            passed: false,
+            severity: PitfallSeverity::Veto,
+            detail_zh: format!(
+                "未来30日限售解禁占流通盘 {:.2}% >= 5.00% 一票否决线",
+                restricted_unlock_30d_pct
+            ),
+        });
+    } else if input.net_insider_reduction_90d_pct >= thresholds.insider_sell_veto_pct {
+        items.push(PitfallCheckItem {
+            dimension: PitfallDimension::InsiderReduction,
+            label_zh: "大股东减持与解禁".to_string(),
             passed: false,
             severity: PitfallSeverity::Veto,
             detail_zh: format!(
@@ -104,12 +126,13 @@ pub fn audit_five_pitfalls(
     } else {
         items.push(PitfallCheckItem {
             dimension: PitfallDimension::InsiderReduction,
-            label_zh: "大股东/高管减持".to_string(),
+            label_zh: "大股东减持与解禁".to_string(),
             passed: true,
             severity: PitfallSeverity::Clear,
             detail_zh: format!(
-                "近90日净减持 {:.2}%，无重要股东集中派发",
-                input.net_insider_reduction_90d_pct.max(0.0)
+                "近90日净减持 {:.2}%、30日解禁 {:.2}%，无集中抛压",
+                input.net_insider_reduction_90d_pct.max(0.0),
+                restricted_unlock_30d_pct.max(0.0)
             ),
         });
     }
@@ -122,18 +145,8 @@ pub fn audit_five_pitfalls(
             .find(|kw| title.contains(kw.as_str()))
             .map(|kw| (kw.clone(), title.clone()))
     });
-    let hit_bearish = if !input.industry_sw1.trim().is_empty() {
-        input
-            .economist_bearish_sectors
-            .iter()
-            .find(|sec| {
-                !sec.trim().is_empty()
-                    && (sec.contains(&input.industry_sw1) || input.industry_sw1.contains(sec.as_str()))
-            })
-            .cloned()
-    } else {
-        None
-    };
+    let hit_bearish =
+        matches_economist_bearish_sector(&input.industry_sw1, &input.economist_bearish_sectors);
 
     if let Some((kw, title)) = hit_kw {
         items.push(PitfallCheckItem {
@@ -273,7 +286,7 @@ pub fn audit_five_pitfalls(
                 input.close_yuan, input.ma20_yuan
             ),
         });
-    } else if upper_shadow_trap {
+    } else if upper_shadow_trap && !is_early_intraday_session {
         items.push(PitfallCheckItem {
             dimension: PitfallDimension::TechBreakdown,
             label_zh: "MA20与上影线形态".to_string(),
@@ -284,6 +297,19 @@ pub fn audit_five_pitfalls(
                 upper_shadow_ratio * 100.0,
                 thresholds.upper_shadow_veto_ratio * 100.0,
                 input.pct_chg
+            ),
+        });
+    } else if upper_shadow_trap {
+        warn_penalty_pts += 5.0;
+        items.push(PitfallCheckItem {
+            dimension: PitfallDimension::TechBreakdown,
+            label_zh: "MA20与上影线形态".to_string(),
+            passed: true,
+            severity: PitfallSeverity::Warn,
+            detail_zh: format!(
+                "盘中未收盘上影占比 {:.0}%，现价仍站稳MA20({:.2})上方，待尾盘确认",
+                upper_shadow_ratio * 100.0,
+                input.ma20_yuan
             ),
         });
     } else {

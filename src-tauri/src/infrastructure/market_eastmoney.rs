@@ -12,6 +12,7 @@ pub struct ClistEnrichmentMeta {
 #[derive(Debug, Clone, Default)]
 pub struct PitfallExternalSignals {
     pub net_insider_reduction_90d_pct: f64,
+    pub restricted_unlock_30d_pct: f64,
     pub holder_num_change_qoq_pct: Option<f64>,
     pub holder_notice_date: Option<String>,
     pub announcement_titles_60d: Vec<String>,
@@ -54,24 +55,68 @@ pub fn parse_eastmoney_kline_json(payload: &str) -> Result<Vec<SimpleBar>, Strin
 }
 
 pub fn parse_holder_notice_json(payload: &str) -> (Option<f64>, Option<String>) {
+    parse_holder_notice_json_as_of(payload, None)
+}
+
+pub fn parse_holder_notice_json_as_of(
+    payload: &str,
+    as_of_date: Option<&str>,
+) -> (Option<f64>, Option<String>) {
     let Ok(root) = serde_json::from_str::<serde_json::Value>(payload) else {
         return (None, None);
     };
-    let Some(first) = root
+    let Some(rows) = root
         .get("result")
         .and_then(|r| r.get("data"))
         .and_then(|d| d.as_array())
-        .and_then(|a| a.first())
     else {
         return (None, None);
     };
-    let ratio = first.get("HOLDER_NUM_RATIO").and_then(|v| v.as_f64());
-    let notice_dt = first
-        .get("HOLD_NOTICE_DATE")
-        .and_then(|v| v.as_str())
-        .map(|s| s.chars().take(10).collect::<String>())
-        .filter(|s| !s.is_empty());
-    (ratio, notice_dt)
+    let pit_rows: Vec<&serde_json::Value> = rows
+        .iter()
+        .filter(|row| {
+            let dt = row
+                .get("HOLD_NOTICE_DATE")
+                .and_then(|v| v.as_str())
+                .map(|s| s.chars().take(10).collect::<String>())
+                .unwrap_or_default();
+            if dt.len() < 10 {
+                return false;
+            }
+            match as_of_date {
+                Some(cutoff) if cutoff.len() >= 10 => dt.as_str() <= &cutoff[..10],
+                _ => true,
+            }
+        })
+        .collect();
+
+    for (idx, row) in pit_rows.iter().enumerate() {
+        let notice_dt = row
+            .get("HOLD_NOTICE_DATE")
+            .and_then(|v| v.as_str())
+            .map(|s| s.chars().take(10).collect::<String>())
+            .filter(|s| !s.is_empty());
+        if let Some(ratio) = row
+            .get("HOLDER_NUM_RATIO")
+            .and_then(|v| v.as_f64())
+            .filter(|x| x.is_finite())
+        {
+            return (Some(ratio), notice_dt);
+        }
+        if let (Some(curr_num), Some(prev_num)) = (
+            row.get("HOLDER_NUM").and_then(|v| v.as_f64()),
+            pit_rows
+                .get(idx + 1)
+                .and_then(|p| p.get("HOLDER_NUM"))
+                .and_then(|v| v.as_f64()),
+        ) {
+            if prev_num > 0.0 && curr_num > 0.0 {
+                let computed = ((curr_num - prev_num) / prev_num) * 100.0;
+                return (Some(computed), notice_dt);
+            }
+        }
+    }
+    (None, None)
 }
 
 pub async fn fetch_top_turnover_clist_meta(
@@ -83,7 +128,8 @@ pub async fn fetch_top_turnover_clist_meta(
     use tokio::sync::Semaphore;
     use tokio::task::JoinSet;
 
-    let today = chrono::Utc::now().date_naive();
+    let cst = chrono::FixedOffset::east_opt(8 * 3600).expect("valid CST");
+    let today = chrono::Utc::now().with_timezone(&cst).date_naive();
     let sem = Arc::new(Semaphore::new(6));
     let mut set = JoinSet::new();
 
@@ -137,8 +183,8 @@ pub async fn fetch_top_turnover_clist_meta(
                             .or_else(|| v.as_str().map(|s| s.to_string()))
                     })
                     .and_then(|s| chrono::NaiveDate::parse_from_str(&s, "%Y%m%d").ok())
-                    .map(|dt| (today - dt).num_days().max(1) as u32)
-                    .unwrap_or(365);
+                    .map(|dt| (((today - dt).num_days().max(1) * 5) / 7).max(1) as u32)
+                    .unwrap_or(250);
 
                 page_out.push((
                     digits.to_string(),
@@ -197,23 +243,59 @@ pub async fn fetch_candidate_pitfall_signals(
     notice_url: &str,
     symbol: &Symbol,
 ) -> PitfallExternalSignals {
+    let cst = chrono::FixedOffset::east_opt(8 * 3600).expect("valid CST");
+    let as_of = chrono::Utc::now()
+        .with_timezone(&cst)
+        .format("%Y-%m-%d")
+        .to_string();
+    fetch_candidate_pitfall_signals_as_of(client, datacenter_url, notice_url, symbol, &as_of).await
+}
+
+pub async fn fetch_candidate_pitfall_signals_as_of(
+    client: &reqwest::Client,
+    datacenter_url: &str,
+    notice_url: &str,
+    symbol: &Symbol,
+    as_of_date: &str,
+) -> PitfallExternalSignals {
     let digits = &symbol.digits;
+    let as_of_naive = chrono::NaiveDate::parse_from_str(
+        &as_of_date.chars().take(10).collect::<String>(),
+        "%Y-%m-%d",
+    )
+    .unwrap_or_else(|_| chrono::Utc::now().date_naive());
+    let as_of_str = as_of_naive.format("%Y-%m-%d").to_string();
+    let cutoff_90d = (as_of_naive - chrono::Duration::days(90))
+        .format("%Y-%m-%d")
+        .to_string();
+    let cutoff_60d = (as_of_naive - chrono::Duration::days(60))
+        .format("%Y-%m-%d")
+        .to_string();
+    let horizon_30d = (as_of_naive + chrono::Duration::days(30))
+        .format("%Y-%m-%d")
+        .to_string();
+
     let holder_url = format!(
-        "{}?reportName=RPT_HOLDERNUM_DET&columns=SECURITY_CODE,HOLD_NOTICE_DATE,END_DATE,HOLDER_NUM,HOLDER_NUM_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=2&sortTypes=-1&sortColumns=HOLD_NOTICE_DATE&source=WEB&client=WEB",
+        "{}?reportName=RPT_HOLDERNUM_DET&columns=SECURITY_CODE,HOLD_NOTICE_DATE,END_DATE,HOLDER_NUM,HOLDER_NUM_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=6&sortTypes=-1&sortColumns=HOLD_NOTICE_DATE&source=WEB&client=WEB",
         datacenter_url, digits
     );
     let insider_url = format!(
-        "{}?reportName=RPT_SHARE_HOLDER_INCREASE&columns=SECURITY_CODE,NOTICE_DATE,HOLDER_NAME,DIRECTION,CHANGE_FREE_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=6&sortTypes=-1&sortColumns=NOTICE_DATE&source=WEB&client=WEB",
+        "{}?reportName=RPT_SHARE_HOLDER_INCREASE&columns=SECURITY_CODE,NOTICE_DATE,HOLDER_NAME,DIRECTION,CHANGE_FREE_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=50&sortTypes=-1&sortColumns=NOTICE_DATE&source=WEB&client=WEB",
+        datacenter_url, digits
+    );
+    let unlock_url = format!(
+        "{}?reportName=RPT_LIFT_STAGE&columns=SECURITY_CODE,LIFT_DATE,FREE_SHARES_RATIO&filter=(SECURITY_CODE%3D%22{}%22)&pageNumber=1&pageSize=20&sortTypes=-1&sortColumns=LIFT_DATE&source=WEB&client=WEB",
         datacenter_url, digits
     );
     let ann_url = format!(
-        "{}?sr=-1&page_size=6&page_index=1&ann_type=A&stock_list={}",
+        "{}?sr=-1&page_size=50&page_index=1&ann_type=A&stock_list={}",
         notice_url, digits
     );
 
-    let (h_res, i_res, a_res) = tokio::join!(
+    let (h_res, i_res, u_res, a_res) = tokio::join!(
         client.get(&holder_url).send(),
         client.get(&insider_url).send(),
+        client.get(&unlock_url).send(),
         client.get(&ann_url).send()
     );
 
@@ -221,7 +303,7 @@ pub async fn fetch_candidate_pitfall_signals(
 
     if let Ok(resp) = h_res {
         if let Ok(txt) = resp.text().await {
-            let (ratio, dt) = parse_holder_notice_json(&txt);
+            let (ratio, dt) = parse_holder_notice_json_as_of(&txt, Some(&as_of_str));
             signals.holder_num_change_qoq_pct = ratio;
             signals.holder_notice_date = dt;
         }
@@ -235,25 +317,62 @@ pub async fn fetch_candidate_pitfall_signals(
                     .and_then(|r| r.get("data"))
                     .and_then(|d| d.as_array())
                 {
-                    let cutoff = (chrono::Utc::now().date_naive() - chrono::Duration::days(90))
-                        .format("%Y-%m-%d")
-                        .to_string();
-                    let mut sum_pct = 0.0_f64;
+                    let mut net_reduction_pct = 0.0_f64;
                     for row in arr {
                         let dir = row.get("DIRECTION").and_then(|v| v.as_str()).unwrap_or("");
-                        let nd = row
+                        let nd: String = row
                             .get("NOTICE_DATE")
                             .and_then(|v| v.as_str())
-                            .unwrap_or("");
-                        if dir.contains("减持") && nd >= cutoff.as_str() {
-                            sum_pct += row
+                            .unwrap_or("")
+                            .chars()
+                            .take(10)
+                            .collect();
+                        if nd.as_str() >= cutoff_90d.as_str() && nd.as_str() <= as_of_str.as_str() {
+                            let pct = row
                                 .get("CHANGE_FREE_RATIO")
                                 .and_then(|v| v.as_f64())
                                 .unwrap_or(0.0)
                                 .abs();
+                            if dir.contains("减持") {
+                                net_reduction_pct += pct;
+                            } else if dir.contains("增持") {
+                                net_reduction_pct -= pct;
+                            }
                         }
                     }
-                    signals.net_insider_reduction_90d_pct = sum_pct;
+                    signals.net_insider_reduction_90d_pct = net_reduction_pct.max(0.0);
+                }
+            }
+        }
+    }
+
+    if let Ok(resp) = u_res {
+        if let Ok(txt) = resp.text().await {
+            if let Ok(root) = serde_json::from_str::<serde_json::Value>(&txt) {
+                if let Some(arr) = root
+                    .get("result")
+                    .and_then(|r| r.get("data"))
+                    .and_then(|d| d.as_array())
+                {
+                    let mut unlock_sum = 0.0_f64;
+                    for row in arr {
+                        let ld: String = row
+                            .get("LIFT_DATE")
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .chars()
+                            .take(10)
+                            .collect();
+                        if ld.as_str() >= as_of_str.as_str() && ld.as_str() <= horizon_30d.as_str()
+                        {
+                            unlock_sum += row
+                                .get("FREE_SHARES_RATIO")
+                                .and_then(|v| v.as_f64())
+                                .unwrap_or(0.0)
+                                .max(0.0);
+                        }
+                    }
+                    signals.restricted_unlock_30d_pct = unlock_sum;
                 }
             }
         }
@@ -268,8 +387,21 @@ pub async fn fetch_candidate_pitfall_signals(
                     .and_then(|l| l.as_array())
                 {
                     for item in arr {
-                        if let Some(title) = item.get("title").and_then(|v| v.as_str()) {
-                            signals.announcement_titles_60d.push(title.to_string());
+                        let nd: String = item
+                            .get("notice_date")
+                            .or_else(|| item.get("display_time"))
+                            .and_then(|v| v.as_str())
+                            .unwrap_or("")
+                            .chars()
+                            .take(10)
+                            .collect();
+                        let in_window = nd.is_empty()
+                            || (nd.as_str() >= cutoff_60d.as_str()
+                                && nd.as_str() <= as_of_str.as_str());
+                        if in_window {
+                            if let Some(title) = item.get("title").and_then(|v| v.as_str()) {
+                                signals.announcement_titles_60d.push(title.to_string());
+                            }
                         }
                     }
                 }

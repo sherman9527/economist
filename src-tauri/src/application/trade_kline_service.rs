@@ -3,9 +3,9 @@ use crate::application::dto_mapper::{
 };
 use crate::application::portfolio_seeder::current_cst_dates;
 use crate::application::terminal_service::TerminalService;
-use crate::domain::factor_engine::compute_initial_hard_stop_fen;
+use crate::domain::factor_engine::compute_initial_hard_stop_fen_with_band;
 use crate::domain::portfolio_ledger::{
-    suggest_position_shares, BuyOrderCommand, SellOrderCommand,
+    suggest_position_shares_for_slot, BuyOrderCommand, SellOrderCommand,
 };
 use crate::domain::types::{Fen, Symbol};
 use crate::infrastructure::market_eastmoney::fetch_eastmoney_klines;
@@ -126,13 +126,41 @@ impl TerminalService {
             .resolve_symbol_quote_context(&sym, &bundle, input.stop_loss_price_yuan)
             .await;
 
+        let (prev_low_fen_opt, adv20_fen_opt) = {
+            let guard = self.scan_cache.read().await;
+            if let Some(st) = guard.as_ref() {
+                if let Some(bars) = st.output.kline_cache_1d.get(&sym.canonical()) {
+                    let prior: Vec<_> = bars
+                        .iter()
+                        .filter(|b| b.time.as_str() < today_cst.as_str())
+                        .collect();
+                    let prev_low = prior.last().map(|b| Fen::from_yuan(b.low));
+                    let slice = &prior[prior.len().saturating_sub(20)..];
+                    let adv20 = if slice.is_empty() {
+                        None
+                    } else {
+                        let avg =
+                            slice.iter().map(|b| b.amount_yuan).sum::<f64>() / (slice.len() as f64);
+                        Some(Fen::from_yuan(avg))
+                    };
+                    (prev_low, adv20)
+                } else {
+                    (None, None)
+                }
+            } else {
+                (None, None)
+            }
+        };
+
         let stop_fen = match input.stop_loss_price_yuan {
             Some(y) if y > 0.0 => Fen::from_yuan(y),
-            _ => compute_initial_hard_stop_fen(
+            _ => compute_initial_hard_stop_fen_with_band(
                 quote_fen,
-                Fen::from_yuan(quote_fen.to_yuan() * 0.955),
+                prev_low_fen_opt.unwrap_or_else(|| Fen::from_yuan(quote_fen.to_yuan() * 0.955)),
                 Fen::from_yuan(atr_yuan),
                 bundle.strategy.stop_loss.atr_stop_mult,
+                bundle.strategy.stop_loss.hard_stop_min_ratio,
+                bundle.strategy.stop_loss.hard_stop_max_ratio,
             ),
         };
         let rationale_zh = input
@@ -149,14 +177,23 @@ impl TerminalService {
         let (ledger, filled) = {
             let _guard = self.ledger_lock.lock().await;
             let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
-            let suggested = suggest_position_shares(
+            ledger.max_single_weight_pct = bundle.strategy.max_single_weight_pct;
+            ledger.limit_guard_pct = bundle.strategy.limit_up_guard_pct;
+            let existing_mv_fen = ledger
+                .positions
+                .get(&sym.canonical())
+                .map(|p| Fen(quote_fen.0 * p.total_qty))
+                .unwrap_or(Fen::ZERO);
+            let suggested = suggest_position_shares_for_slot(
                 sym.board,
                 ledger.total_equity_fen(),
                 ledger.cash_fen,
+                existing_mv_fen,
                 quote_fen,
                 stop_fen,
                 bundle.strategy.max_single_weight_pct,
                 bundle.strategy.max_single_risk_pct,
+                ledger.fee_schedule,
             );
             let default_shares = if suggested >= sym.board.min_lot_shares() {
                 suggested
@@ -170,22 +207,25 @@ impl TerminalService {
                 sym.digits,
                 chrono::Utc::now().timestamp_millis() % 1_000_000
             );
-            let filled = ledger.execute_buy(BuyOrderCommand {
-                order_id,
-                rec_id: None,
-                symbol: sym.clone(),
-                name_zh: name_zh.clone(),
-                industry_sw1,
-                quote_price_fen: quote_fen,
-                prev_close_fen: prev_fen,
-                is_st,
-                shares,
-                stop_loss_price_fen: stop_fen,
-                rationale_zh,
-                trade_date: today_cst,
-                next_trade_date: next_cst,
-                created_at_iso: now_iso,
-            })?;
+            let filled = ledger.execute_buy_with_adv20(
+                BuyOrderCommand {
+                    order_id,
+                    rec_id: None,
+                    symbol: sym.clone(),
+                    name_zh: name_zh.clone(),
+                    industry_sw1,
+                    quote_price_fen: quote_fen,
+                    prev_close_fen: prev_fen,
+                    is_st,
+                    shares,
+                    stop_loss_price_fen: stop_fen,
+                    rationale_zh,
+                    trade_date: today_cst,
+                    next_trade_date: next_cst,
+                    created_at_iso: now_iso,
+                },
+                adv20_fen_opt,
+            )?;
             self.repo.save_ledger(&ledger)?;
             (ledger, filled)
         };
@@ -248,6 +288,8 @@ impl TerminalService {
         let (ledger, filled) = {
             let _guard = self.ledger_lock.lock().await;
             let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
+            ledger.max_single_weight_pct = bundle.strategy.max_single_weight_pct;
+            ledger.limit_guard_pct = bundle.strategy.limit_up_guard_pct;
             let existing = ledger
                 .positions
                 .get(&sym.canonical())

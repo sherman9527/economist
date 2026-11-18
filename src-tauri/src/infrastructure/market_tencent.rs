@@ -127,6 +127,8 @@ pub fn parse_tencent_quote_batch(decoded_text: &str) -> Vec<RawTencentQuote> {
         let vwap_raw = pf(51);
         let vwap_yuan = if vwap_raw > 0.0 {
             vwap_raw
+        } else if amount_wan > 0.0 && volume_lots > 0.0 {
+            (amount_wan * 100.0) / volume_lots
         } else if latest_yuan > 0.0 {
             latest_yuan
         } else {
@@ -148,7 +150,7 @@ pub fn parse_tencent_quote_batch(decoded_text: &str) -> Vec<RawTencentQuote> {
         let is_suspended = status_flag.starts_with('S')
             || status_flag.starts_with('D')
             || status_flag.contains('停')
-            || (open_yuan <= 0.0 && volume_lots <= 0.0 && (931..=1505).contains(&hhmm));
+            || (open_yuan <= 0.0 && volume_lots <= 0.0 && hhmm >= 931);
 
         out.push(RawTencentQuote {
             symbol,
@@ -288,8 +290,20 @@ pub async fn fetch_tencent_fallback_klines(
         .await
         .map_err(|e| format!("读取腾讯备用K线失败: {}", e))?;
 
+    parse_tencent_fallback_kline_json(&body, symbol, period, circ_mv_yi)
+}
+
+pub fn parse_tencent_fallback_kline_json(
+    body: &str,
+    symbol: &Symbol,
+    period: &str,
+    circ_mv_yi: f64,
+) -> Result<Vec<SimpleBar>, String> {
+    use crate::domain::types::BoardKind;
+
+    let tc = symbol.tencent_code();
     let root: serde_json::Value =
-        serde_json::from_str(&body).map_err(|e| format!("解析腾讯备用K线JSON失败: {}", e))?;
+        serde_json::from_str(body).map_err(|e| format!("解析腾讯备用K线JSON失败: {}", e))?;
     let stock_obj = root
         .get("data")
         .and_then(|d| d.get(&tc))
@@ -304,6 +318,25 @@ pub async fn fetch_tencent_fallback_klines(
             .and_then(|v| v.as_array())
     }
     .ok_or_else(|| "腾讯备用K线列表缺失".to_string())?;
+
+    let pv = |v: &serde_json::Value| -> f64 {
+        v.as_str()
+            .and_then(|s| s.parse::<f64>().ok())
+            .or_else(|| v.as_f64())
+            .unwrap_or(0.0)
+    };
+
+    let ref_latest_close = arr
+        .iter()
+        .rev()
+        .find_map(|item| item.as_array().and_then(|r| r.get(2)).map(pv))
+        .filter(|c| *c > 0.0)
+        .unwrap_or(0.0);
+    let est_float_shares = if circ_mv_yi > 0.0 && ref_latest_close > 0.0 {
+        (circ_mv_yi * 100_000_000.0) / ref_latest_close
+    } else {
+        0.0
+    };
 
     let mut bars = Vec::with_capacity(arr.len());
     for item in arr {
@@ -326,19 +359,34 @@ pub async fn fetch_tencent_fallback_klines(
         } else {
             raw_t.to_string()
         };
-        let pv = |v: &serde_json::Value| -> f64 {
-            v.as_str()
-                .and_then(|s| s.parse::<f64>().ok())
-                .or_else(|| v.as_f64())
-                .unwrap_or(0.0)
-        };
         let open = pv(&row[1]);
         let close = pv(&row[2]);
         let high = pv(&row[3]);
         let low = pv(&row[4]);
-        let volume = pv(&row[5]);
-        let amount_yuan = volume * 100.0 * close;
-        let turnover_pct = if circ_mv_yi > 0.0 {
+        let raw_vol = pv(&row[5]);
+        let explicit_amount_wan = row.get(8).map(pv).unwrap_or(0.0);
+
+        let volume = if explicit_amount_wan > 0.0 && close > 0.0 && raw_vol > 0.0 {
+            let implied_shares = (explicit_amount_wan * 10_000.0) / close;
+            if (raw_vol - implied_shares).abs() < (raw_vol * 100.0 - implied_shares).abs() {
+                raw_vol / 100.0
+            } else {
+                raw_vol
+            }
+        } else if matches!(symbol.board, BoardKind::Star | BoardKind::Bse) && period != "30m" {
+            raw_vol / 100.0
+        } else {
+            raw_vol
+        };
+
+        let amount_yuan = if explicit_amount_wan > 0.0 {
+            explicit_amount_wan * 10_000.0
+        } else {
+            volume * 100.0 * close
+        };
+        let turnover_pct = if est_float_shares > 0.0 {
+            ((volume * 100.0) / est_float_shares) * 100.0
+        } else if circ_mv_yi > 0.0 {
             (amount_yuan / (circ_mv_yi * 100_000_000.0)) * 100.0
         } else {
             0.0

@@ -202,8 +202,7 @@ pub fn map_portfolio_overview_dto(
     for p in pos_vec {
         let avg_cost = p.avg_cost_fen.to_yuan();
         let mark = p.mark_price_fen.to_yuan();
-        let stop_ceiling = (avg_cost.max(mark) - 0.01).max(0.01);
-        let stop = p.stop_loss_price_fen.to_yuan().clamp(0.01, stop_ceiling);
+        let stop = p.stop_loss_price_fen.to_yuan().max(0.01);
         let stop_dist = if mark > 0.0 {
             round_2(((mark - stop) / mark) * 100.0)
         } else {
@@ -313,18 +312,29 @@ pub fn map_portfolio_overview_dto(
         .collect();
 
     let current_nav = round_4(total_yuan / initial_yuan.max(1.0));
-    if equity_curve.is_empty() {
-        equity_curve.push(EquityPointDto {
-            date: ledger.current_trade_date.clone(),
-            portfolio_nav: current_nav,
-            csi1000_nav: 1.0,
-            cni2000_nav: 1.0,
-            excess_pct: round_2((current_nav - 1.0) * 100.0),
-        });
+    match equity_curve.last_mut() {
+        Some(last) if last.date == ledger.current_trade_date => {
+            last.portfolio_nav = current_nav;
+            last.excess_pct = round_2((current_nav - last.csi1000_nav) * 100.0);
+        }
+        _ => {
+            let last_csi = equity_curve.last().map(|p| p.csi1000_nav).unwrap_or(1.0);
+            let last_cni = equity_curve.last().map(|p| p.cni2000_nav).unwrap_or(1.0);
+            equity_curve.push(EquityPointDto {
+                date: ledger.current_trade_date.clone(),
+                portfolio_nav: current_nav,
+                csi1000_nav: last_csi,
+                cni2000_nav: last_cni,
+                excess_pct: round_2((current_nav - last_csi) * 100.0),
+            });
+        }
     }
 
-    let (daily_pnl_yuan, daily_return_pct) = if snaps.len() >= 2 {
-        let prev = &snaps[snaps.len() - 2];
+    let (daily_pnl_yuan, daily_return_pct) = if let Some(prev) = snaps
+        .iter()
+        .rev()
+        .find(|s| s.snap_date.as_str() < ledger.current_trade_date.as_str())
+    {
         let prev_eq = (prev.total_equity_fen as f64) / 100.0;
         let diff = total_yuan - prev_eq;
         (round_2(diff), round_2((diff / prev_eq.max(1.0)) * 100.0))

@@ -23,7 +23,7 @@ describe("1. A-Share Board Price-Limit & Lot-Size Invariants (PBT)", () => {
     expect(getBoardTradingRule("MAIN")).toEqual({ limitRatio: 0.1, minLotQty: 100, lotStep: 100 });
     expect(getBoardTradingRule("CHINEXT")).toEqual({ limitRatio: 0.2, minLotQty: 100, lotStep: 100 });
     expect(getBoardTradingRule("STAR")).toEqual({ limitRatio: 0.2, minLotQty: 200, lotStep: 1 });
-    expect(getBoardTradingRule("BSE")).toEqual({ limitRatio: 0.3, minLotQty: 100, lotStep: 100 });
+    expect(getBoardTradingRule("BSE")).toEqual({ limitRatio: 0.3, minLotQty: 100, lotStep: 1 });
   });
 
   it("accepts in-band valid-lot orders and rejects out-of-band or invalid-lot orders", () => {
@@ -34,7 +34,8 @@ describe("1. A-Share Board Price-Limit & Lot-Size Invariants (PBT)", () => {
         fc.integer({ min: 1, max: 50 }),
         (board, prevCloseYuan, mult) => {
           const rule = getBoardTradingRule(board);
-          const validQty = board === "STAR" ? 200 + mult : mult * 100;
+          const validQty =
+            board === "STAR" ? 200 + mult : board === "BSE" ? 100 + mult : mult * 100;
           const okRes = validateAShareOrderInput({
             board,
             prevCloseYuan,

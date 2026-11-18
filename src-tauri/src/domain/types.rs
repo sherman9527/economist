@@ -197,9 +197,14 @@ impl fmt::Display for Symbol {
 
 pub fn compute_price_limits(prev_close: Fen, board: BoardKind, is_st: bool) -> (Fen, Fen) {
     let base = prev_close.0.max(1);
-    let pct = board.limit_pct(is_st);
-    let down = (((base as f64) * (1.0 - pct)).round() as i64).clamp(1, base);
-    let up = (((base as f64) * (1.0 + pct)).round() as i64).max(base);
+    let bps: i64 = match (board, is_st) {
+        (BoardKind::Bse, _) => 3000,
+        (BoardKind::Star | BoardKind::Chinext, _) => 2000,
+        (BoardKind::Main, true) => 500,
+        (BoardKind::Main, false) => 1000,
+    };
+    let down = ((base * (10_000 - bps) + 5_000) / 10_000).clamp(1, base);
+    let up = ((base * (10_000 + bps) + 5_000) / 10_000).max(base);
     (Fen(down), Fen(up))
 }
 
@@ -243,7 +248,7 @@ pub fn validate_lot_size(board: BoardKind, shares: i64) -> Result<(), String> {
             shares, min_shares
         ));
     }
-    if board != BoardKind::Star && shares % 100 != 0 {
+    if !matches!(board, BoardKind::Star | BoardKind::Bse) && shares % 100 != 0 {
         return Err(format!("委托股数 {} 必须为 100 股整数倍", shares));
     }
     Ok(())

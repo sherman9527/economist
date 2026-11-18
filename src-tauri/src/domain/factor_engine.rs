@@ -83,6 +83,20 @@ fn tokenize_expr(expr: &str) -> Result<Vec<Token>, String> {
                 while i < bytes.len() && ((bytes[i] as char).is_ascii_digit() || bytes[i] == b'.') {
                     i += 1;
                 }
+                if i < bytes.len() && (bytes[i] == b'e' || bytes[i] == b'E') {
+                    let exp_start = i;
+                    i += 1;
+                    if i < bytes.len() && (bytes[i] == b'+' || bytes[i] == b'-') {
+                        i += 1;
+                    }
+                    let digits_start = i;
+                    while i < bytes.len() && (bytes[i] as char).is_ascii_digit() {
+                        i += 1;
+                    }
+                    if i == digits_start {
+                        i = exp_start;
+                    }
+                }
                 let s = &expr[start..i];
                 let val = s
                     .parse::<f64>()
@@ -289,14 +303,10 @@ pub fn eval_factor_ast(node: &ExprNode, vars: &BTreeMap<String, f64>) -> f64 {
 }
 
 fn median_of(slice: &[f64]) -> f64 {
-    if slice.is_empty() {
+    let mut sorted: Vec<f64> = slice.iter().copied().filter(|x| x.is_finite()).collect();
+    if sorted.is_empty() {
         return 0.0;
     }
-    let mut sorted: Vec<f64> = slice
-        .iter()
-        .copied()
-        .map(|x| if x.is_finite() { x } else { 0.0 })
-        .collect();
     sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let mid = sorted.len() / 2;
     if sorted.len() % 2 == 1 {
@@ -311,7 +321,11 @@ pub fn winsorize_mad(values: &[f64], mad_mult: f64) -> Vec<f64> {
         return Vec::new();
     }
     let med = median_of(values);
-    let abs_dev: Vec<f64> = values.iter().map(|v| (v - med).abs()).collect();
+    let abs_dev: Vec<f64> = values
+        .iter()
+        .filter(|v| v.is_finite())
+        .map(|v| (v - med).abs())
+        .collect();
     let mad = median_of(&abs_dev);
     let scaled_mad = (1.4826 * mad).max(1e-6);
     let band = mad_mult.max(1.0) * scaled_mad;
@@ -357,8 +371,37 @@ pub fn neutralize_and_score_cross_section(
         .iter()
         .map(|s| s.circ_mv_yi.max(1.0).ln())
         .collect();
-    let mean_x = ln_caps.iter().sum::<f64>() / (n as f64);
-    let var_x: f64 = ln_caps.iter().map(|x| (x - mean_x).powi(2)).sum();
+
+    // Empirical-Bayes industry demeaning around global mean 0.0 (FWL-orthogonal for both y and x)
+    let demean_by_ind = |vec: &[f64]| -> Vec<f64> {
+        let g_mean = vec.iter().sum::<f64>() / (n as f64);
+        let centered: Vec<f64> = vec.iter().map(|v| v - g_mean).collect();
+        let mut ind_sum: BTreeMap<&str, (f64, usize)> = BTreeMap::new();
+        for (idx, s) in samples.iter().enumerate() {
+            let entry = ind_sum.entry(s.industry_sw1.as_str()).or_insert((0.0, 0));
+            entry.0 += centered[idx];
+            entry.1 += 1;
+        }
+        samples
+            .iter()
+            .enumerate()
+            .map(|(idx, s)| {
+                let (sum, cnt) = ind_sum
+                    .get(s.industry_sw1.as_str())
+                    .copied()
+                    .unwrap_or((0.0, 1));
+                if cnt >= 2 {
+                    let shrunk_mean = sum / ((cnt as f64) + 1.0);
+                    centered[idx] - shrunk_mean
+                } else {
+                    centered[idx]
+                }
+            })
+            .collect()
+    };
+
+    let x_tilde = demean_by_ind(&ln_caps);
+    let var_x_tilde: f64 = x_tilde.iter().map(|x| x * x).sum();
 
     let mut per_sample_z: Vec<BTreeMap<String, f64>> = vec![BTreeMap::new(); n];
     let total_weight: f64 = factor_weights.values().map(|w| w.abs()).sum::<f64>().max(1e-6);
@@ -369,43 +412,15 @@ pub fn neutralize_and_score_cross_section(
             .map(|s| s.raw_factors.get(factor_id).copied().unwrap_or(0.0))
             .collect();
         let clipped = winsorize_mad(&raw_vec, 3.0);
+        let y_tilde = demean_by_ind(&clipped);
 
-        // Industry SW1 demeaning
-        let mut ind_sum: BTreeMap<&str, (f64, usize)> = BTreeMap::new();
-        for (idx, s) in samples.iter().enumerate() {
-            let entry = ind_sum.entry(s.industry_sw1.as_str()).or_insert((0.0, 0));
-            entry.0 += clipped[idx];
-            entry.1 += 1;
-        }
-        let ind_demeaned: Vec<f64> = samples
-            .iter()
-            .enumerate()
-            .map(|(idx, s)| {
-                let (sum, cnt) = ind_sum
-                    .get(s.industry_sw1.as_str())
-                    .copied()
-                    .unwrap_or((0.0, 1));
-                if cnt >= 2 {
-                    clipped[idx] - (sum / (cnt as f64))
-                } else {
-                    clipped[idx]
-                }
-            })
-            .collect();
-
-        // OLS orthogonalization against ln(circ_mv_yi)
-        let mean_y = ind_demeaned.iter().sum::<f64>() / (n as f64);
-        let beta = if var_x > 1e-8 && n >= 3 {
-            let cov_xy: f64 = (0..n)
-                .map(|i| (ln_caps[i] - mean_x) * (ind_demeaned[i] - mean_y))
-                .sum();
-            cov_xy / var_x
+        let beta = if var_x_tilde > 1e-8 && n >= 3 {
+            let cov_xy: f64 = (0..n).map(|i| x_tilde[i] * y_tilde[i]).sum();
+            cov_xy / var_x_tilde
         } else {
             0.0
         };
-        let residuals: Vec<f64> = (0..n)
-            .map(|i| (ind_demeaned[i] - mean_y) - beta * (ln_caps[i] - mean_x))
-            .collect();
+        let residuals: Vec<f64> = (0..n).map(|i| y_tilde[i] - beta * x_tilde[i]).collect();
 
         let res_mean = residuals.iter().sum::<f64>() / (n as f64);
         let res_std = (residuals
@@ -450,6 +465,24 @@ pub fn compute_initial_hard_stop_fen(
     atr14_fen: Fen,
     atr_mult: f64,
 ) -> Fen {
+    compute_initial_hard_stop_fen_with_band(
+        entry_price_fen,
+        prev_low_fen,
+        atr14_fen,
+        atr_mult,
+        0.925,
+        0.960,
+    )
+}
+
+pub fn compute_initial_hard_stop_fen_with_band(
+    entry_price_fen: Fen,
+    prev_low_fen: Fen,
+    atr14_fen: Fen,
+    atr_mult: f64,
+    min_ratio: f64,
+    max_ratio: f64,
+) -> Fen {
     let entry = entry_price_fen.0.max(2);
     let atr_stop = (entry as f64) - atr_mult.max(0.5) * (atr14_fen.0.max(1) as f64);
     let raw_candidate = if prev_low_fen.0 > 0 {
@@ -457,8 +490,10 @@ pub fn compute_initial_hard_stop_fen(
     } else {
         atr_stop
     };
-    let lower = ((entry as f64) * 0.925).round().max(1.0);
-    let upper = ((entry as f64) * 0.960)
+    let lo_r = min_ratio.clamp(0.75, 0.99);
+    let hi_r = max_ratio.clamp(lo_r, 0.995);
+    let lower = ((entry as f64) * lo_r).round().max(1.0);
+    let upper = ((entry as f64) * hi_r)
         .round()
         .min((entry - 1) as f64)
         .max(lower.min((entry - 1) as f64));
@@ -484,8 +519,7 @@ pub fn compute_chandelier_stop_fen(
     let trail = (highest as f64
         - chandelier_atr_mult.max(1.0) * (atr14_fen.0.max(1) as f64))
     .round() as i64;
-    let ceiling = (mark_price_fen.0 - 1).max(1);
-    Fen(trail.max(current_stop_fen.0).min(ceiling))
+    Fen(trail.max(current_stop_fen.0).max(1))
 }
 
 #[cfg(test)]

@@ -40,7 +40,7 @@ export function getBoardTradingRule(board: BoardKind): BoardTradingRule {
     case "STAR":
       return { limitRatio: 0.2, minLotQty: 200, lotStep: 1 };
     case "BSE":
-      return { limitRatio: 0.3, minLotQty: 100, lotStep: 100 };
+      return { limitRatio: 0.3, minLotQty: 100, lotStep: 1 };
   }
 }
 
@@ -145,7 +145,17 @@ export function validatePortfolioInvariants(portfolio: PortfolioOverviewDto): {
       );
     }
     const stopCeilingYuan = Math.max(pos.avgCostYuan, pos.markPriceYuan);
-    if (!(pos.stopLossPriceYuan > 0 && pos.stopLossPriceYuan < stopCeilingYuan)) {
+    const isValidBreachedRatchetedStop =
+      pos.stopLossPriceYuan > 0 &&
+      pos.stopLossPriceYuan > pos.avgCostYuan &&
+      pos.markPriceYuan <= pos.stopLossPriceYuan &&
+      pos.stopDistancePct <= 0;
+    if (
+      !(
+        (pos.stopLossPriceYuan > 0 && pos.stopLossPriceYuan < stopCeilingYuan) ||
+        isValidBreachedRatchetedStop
+      )
+    ) {
       violations.push(
         `${pos.symbol} 止损价 (¥${pos.stopLossPriceYuan}) 必须严格低于 max(建仓均价 ¥${pos.avgCostYuan}, 现价 ¥${pos.markPriceYuan})`
       );

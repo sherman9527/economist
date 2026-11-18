@@ -31,8 +31,8 @@ pub fn compute_ma_and_atr14(bars: &[SimpleBar]) -> (f64, f64, f64) {
 #[allow(clippy::too_many_arguments)]
 pub fn build_factor_vars(
     quote: &RawTencentQuote,
-    bars: &[SimpleBar],
-    turnover_t0: f64,
+    completed_bars: &[SimpleBar],
+    turnover_t0_effective: f64,
     turnover_t1: f64,
     ma20_price: f64,
     atr14_price: f64,
@@ -40,7 +40,7 @@ pub fn build_factor_vars(
     main_net_inflow_wan: f64,
 ) -> BTreeMap<String, f64> {
     let mut vars = BTreeMap::new();
-    let n = bars.len();
+    let n = completed_bars.len();
     let window_start = n.saturating_sub(20);
     let mut ret_turn_pairs: Vec<(f64, f64)> = Vec::new();
     let mut amihud_vals: Vec<f64> = Vec::new();
@@ -48,15 +48,29 @@ pub fn build_factor_vars(
     let mut turn_cnt = 0.0_f64;
 
     for i in window_start..n {
-        let b = &bars[i];
+        let b = &completed_bars[i];
         turn_sum += b.turnover_pct;
         turn_cnt += 1.0;
-        if i > 0 && bars[i - 1].close > 0.0 {
-            let ret_pct = ((b.close - bars[i - 1].close) / bars[i - 1].close) * 100.0;
+        if i > 0 && completed_bars[i - 1].close > 0.0 {
+            let ret_pct =
+                ((b.close - completed_bars[i - 1].close) / completed_bars[i - 1].close) * 100.0;
             ret_turn_pairs.push((b.turnover_pct, ret_pct));
             let amt_yi = (b.amount_yuan / 100_000_000.0).max(0.005);
             amihud_vals.push(ret_pct.abs() / amt_yi);
         }
+    }
+
+    if quote.prev_close_yuan > 0.0 && quote.latest_yuan > 0.0 && turnover_t0_effective > 0.0 {
+        let live_ret_pct =
+            ((quote.latest_yuan - quote.prev_close_yuan) / quote.prev_close_yuan) * 100.0;
+        let proj_factor = if quote.turnover_pct > 0.0 {
+            (turnover_t0_effective / quote.turnover_pct).clamp(1.0, 12.5)
+        } else {
+            1.0
+        };
+        let eff_amt_yi = ((quote.amount_wan * 10_000.0 * proj_factor) / 100_000_000.0).max(0.005);
+        ret_turn_pairs.push((turnover_t0_effective, live_ret_pct));
+        amihud_vals.push(live_ret_pct.abs() / eff_amt_yi);
     }
 
     ret_turn_pairs.sort_by(|a, b| a.0.partial_cmp(&b.0).unwrap_or(std::cmp::Ordering::Equal));
@@ -106,7 +120,7 @@ pub fn build_factor_vars(
     vars.insert("ret_low_turn_5d".to_string(), ret_low_turn_5d);
     vars.insert(
         "turnover_2d_mean".to_string(),
-        0.5 * (turnover_t0 + turnover_t1),
+        0.5 * (turnover_t0_effective + turnover_t1),
     );
     vars.insert("turnover_20d_mean".to_string(), turnover_20d_mean);
     vars.insert("amihud_20d".to_string(), amihud_20d);

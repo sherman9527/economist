@@ -1,3 +1,7 @@
+use crate::application::scan_alignment::{
+    align_daily_bars_to_quote, build_screener_candidate_dto, project_shortlist_turnover_pct,
+    EnrichedIntermediate,
+};
 use crate::application::scan_factors::{build_factor_vars, compute_ma_and_atr14};
 use crate::domain::strategy_gate::MarketSessionState;
 use crate::infrastructure::market_eastmoney::ClistEnrichmentMeta;
@@ -25,24 +29,21 @@ pub async fn execute_live_market_scan(
     _agent_session_id: &str,
 ) -> Result<ScanExecutionOutput, String> {
     use crate::domain::factor_engine::{
-        compute_initial_hard_stop_fen, eval_factor_ast, neutralize_and_score_cross_section,
-        parse_factor_expr, CrossSectionSample,
+        eval_factor_ast, neutralize_and_score_cross_section, parse_factor_expr, CrossSectionSample,
     };
     use crate::domain::pitfall_veto::{
-        audit_five_pitfalls, PitfallAuditInput, PitfallDimension, PitfallSeverity,
-        PitfallThresholds,
+        audit_five_pitfalls_with_context, PitfallAuditInput, PitfallThresholds,
     };
     use crate::domain::strategy_gate::{
         evaluate_strategy_gate, is_st_or_delisting_name, StrategyCandidateInput, StrategyGateParams,
     };
-    use crate::domain::types::{is_limit_up_locked, BoardKind, ExchangeCode, Fen};
+    use crate::domain::types::{is_limit_up_locked, Fen};
     use crate::infrastructure::market_eastmoney::{
         fetch_candidate_pitfall_signals, fetch_eastmoney_klines, fetch_top_turnover_clist_meta,
     };
     use crate::infrastructure::market_tencent::{
         fetch_tencent_fallback_klines, fetch_tencent_full_universe,
     };
-    use crate::interface::dto::{round_2, PitfallDimensionStatusDto};
     use std::collections::BTreeMap;
     use std::sync::Arc;
     use tokio::sync::Semaphore;
@@ -74,32 +75,34 @@ pub async fn execute_live_market_scan(
         .collect();
     u_weights.sort_by_key(|x| x.0);
 
+    let max_mv_cap = bundle.strategy.max_total_mv_yi.clamp(10.0, 200.0);
+    let min_daily_turn = bundle.strategy.min_turnover_pct.max(5.0);
     let gate_params = StrategyGateParams {
-        max_total_mv_yi: 200.0,
-        min_turnover_pct: 5.0,
-        consecutive_days: 2,
+        max_total_mv_yi: max_mv_cap,
+        min_turnover_pct: min_daily_turn,
+        consecutive_days: bundle.strategy.consecutive_days.max(2),
         min_vol_ratio_t1_vs_ma20: bundle.strategy.min_vol_ratio_t1_vs_ma20,
         min_vol_ratio_t0_vs_t1: bundle.strategy.min_vol_ratio_t0_vs_t1,
         min_listing_days: bundle.strategy.min_listing_days,
         limit_up_guard_pct: bundle.strategy.limit_up_guard_pct,
         min_intraday_projected_turnover_pct: bundle.strategy.min_intraday_projected_turnover_pct,
         min_intraday_realized_turnover_pct: bundle.strategy.min_intraday_realized_turnover_pct,
-        u_curve_weights: u_weights,
+        u_curve_weights: u_weights.clone(),
     };
 
     // 2. Full-universe Stage 1..3 funnel & shortlist top <200亿 high-turnover candidates
     let mut tradable_count = 0_usize;
     let mut under_200_yi_count = 0_usize;
-    let mut pre_shortlist: Vec<&RawTencentQuote> = Vec::new();
+    let mut pre_shortlist: Vec<(&RawTencentQuote, f64)> = Vec::new();
 
-    let min_t0_threshold = if matches!(
+    let is_intraday = matches!(
         session_state,
         MarketSessionState::Trading | MarketSessionState::LunchBreak
-    ) && elapsed_minutes < 240
-    {
+    ) && elapsed_minutes < 240;
+    let min_t0_threshold = if is_intraday {
         bundle.strategy.min_intraday_realized_turnover_pct.min(2.5)
     } else {
-        5.0
+        min_daily_turn
     };
 
     for q in &raw_quotes {
@@ -107,7 +110,7 @@ pub async fn execute_live_market_scan(
         let listing_days = clist_meta
             .get(&q.symbol.digits)
             .map(|m| m.listing_days)
-            .unwrap_or(365);
+            .unwrap_or(250);
         let latest_fen = Fen::from_yuan(q.latest_yuan);
         let prev_fen = Fen::from_yuan(q.prev_close_yuan);
         let limit_locked = is_limit_up_locked(
@@ -126,26 +129,37 @@ pub async fn execute_live_market_scan(
             continue;
         }
         tradable_count += 1;
-        if q.total_mv_yi > 0.0 && q.total_mv_yi < 200.0 {
+        if q.total_mv_yi > 0.0 && q.total_mv_yi < max_mv_cap {
             under_200_yi_count += 1;
-            if q.turnover_pct >= min_t0_threshold {
-                pre_shortlist.push(q);
+            let proj_turn = project_shortlist_turnover_pct(
+                q.turnover_pct,
+                session_state,
+                elapsed_minutes,
+                &u_weights,
+            );
+            let proj_ok = if is_intraday {
+                proj_turn >= bundle.strategy.min_intraday_projected_turnover_pct
+            } else {
+                proj_turn >= min_daily_turn
+            };
+            if q.turnover_pct >= min_t0_threshold && proj_ok {
+                pre_shortlist.push((q, proj_turn));
             }
         }
     }
 
-    // Sort <200亿 high-turnover shortlist prioritizing 6%..24% healthy ignition band + volume ratio
-    pre_shortlist.sort_by(|a, b| {
-        let score_q = |q: &RawTencentQuote| -> f64 {
-            let band_bonus = if (5.5..=22.0).contains(&q.turnover_pct) {
+    // Sort <200亿 high-turnover shortlist prioritizing 5.5%..24% projected ignition band + volume ratio
+    pre_shortlist.sort_by(|(a, proj_a), (b, proj_b)| {
+        let score_q = |q: &RawTencentQuote, proj: f64| -> f64 {
+            let band_bonus = if (5.5..=24.0).contains(&proj) {
                 20.0
             } else {
                 0.0
             };
-            band_bonus + q.turnover_pct.min(28.0) + q.vol_ratio.min(5.0) * 2.5
+            band_bonus + proj.min(28.0) + q.vol_ratio.min(5.0) * 2.5
         };
-        score_q(b)
-            .partial_cmp(&score_q(a))
+        score_q(b, *proj_b)
+            .partial_cmp(&score_q(a, *proj_a))
             .unwrap_or(std::cmp::Ordering::Equal)
     });
 
@@ -153,7 +167,7 @@ pub async fn execute_live_market_scan(
     let mut enrich_quotes: Vec<RawTencentQuote> = pre_shortlist
         .into_iter()
         .take(max_enrich)
-        .cloned()
+        .map(|(q, _)| q.clone())
         .collect();
 
     // Ensure currently held portfolio symbols also get fresh K-lines cached
@@ -211,6 +225,17 @@ pub async fn execute_live_market_scan(
         .factors
         .factors
         .iter()
+        .filter(|f| {
+            f.status.eq_ignore_ascii_case("ACTIVE")
+                && bundle
+                    .strategy
+                    .factor_weights
+                    .get(&f.factor_id)
+                    .copied()
+                    .unwrap_or(0.0)
+                    .abs()
+                    > 0.0
+        })
         .filter_map(|f| parse_factor_expr(&f.expr).ok().map(|ast| (f.factor_id.clone(), ast)))
         .collect();
 
@@ -227,23 +252,6 @@ pub async fn execute_live_market_scan(
             .clone(),
     };
 
-    struct EnrichedIntermediate {
-        quote: RawTencentQuote,
-        industry_sw1: String,
-        main_inflow_wan: f64,
-        turnover_t0: f64,
-        turnover_t1: f64,
-        projected_turnover: f64,
-        vol_expansion: f64,
-        ma20: f64,
-        atr14: f64,
-        prev_low_yuan: f64,
-        bar_date: String,
-        gate_passed: bool,
-        gate_reject_reason: Option<String>,
-        pit_report: crate::domain::pitfall_veto::PitfallAuditReport,
-    }
-
     let mut kline_cache_1d: HashMap<String, Vec<SimpleBar>> = HashMap::new();
     let mut intermediates: Vec<EnrichedIntermediate> = Vec::new();
     let mut cs_samples: Vec<CrossSectionSample> = Vec::new();
@@ -259,26 +267,39 @@ pub async fn execute_live_market_scan(
         if bars.len() < 3 {
             continue;
         }
+        let Some(aligned) = align_daily_bars_to_quote(&q, &bars) else {
+            continue;
+        };
         let canonical = q.symbol.canonical();
-        let n = bars.len();
-        let bar_t0 = &bars[n - 1];
-        let bar_t1 = &bars[n - 2];
-        if bar_t0.turnover_pct <= 0.0 {
+        if aligned.bar_t1.turnover_pct <= 0.0 {
             used_fallback = true;
         }
 
         let turnover_t0 = if q.turnover_pct > 0.0 {
             q.turnover_pct
         } else {
-            bar_t0.turnover_pct
+            aligned
+                .today_bar
+                .map(|b| b.turnover_pct)
+                .unwrap_or(aligned.bar_t1.turnover_pct)
         };
-        let turnover_t1 = bar_t1.turnover_pct;
-        let (ma20, atr14, vol_ma20) = compute_ma_and_atr14(&bars[..n - 1]);
+        let turnover_t1 = aligned.bar_t1.turnover_pct;
+        let vol_t0 = q
+            .volume_lots
+            .max(aligned.today_bar.map(|b| b.volume).unwrap_or(0.0));
+        let (_, _, vol_ma20_t1) = compute_ma_and_atr14(aligned.completed_prior_bars);
+        let bars_through_today = if aligned.today_bar.is_some() {
+            &bars[..]
+        } else {
+            aligned.completed_prior_bars
+        };
+        let (ma20, atr14, _) = compute_ma_and_atr14(bars_through_today);
+
         let meta = clist_meta.get(&q.symbol.digits);
         let industry_sw1 = meta
             .map(|m| m.industry_sw1.clone())
             .unwrap_or_else(|| "高端装备".to_string());
-        let listing_days = meta.map(|m| m.listing_days).unwrap_or(365);
+        let listing_days = meta.map(|m| m.listing_days).unwrap_or(250);
         let main_inflow_wan = meta.map(|m| m.main_net_inflow_wan).unwrap_or(0.0);
 
         let gate_verdict = evaluate_strategy_gate(
@@ -292,9 +313,9 @@ pub async fn execute_live_market_scan(
                 total_mv_yi: q.total_mv_yi,
                 turnover_t0_pct: turnover_t0,
                 turnover_t1_pct: turnover_t1,
-                vol_t0: bar_t0.volume.max(q.volume_lots),
-                vol_t1: bar_t1.volume,
-                vol_ma20_t1: vol_ma20,
+                vol_t0,
+                vol_t1: aligned.bar_t1.volume,
+                vol_ma20_t1,
                 session: session_state,
                 elapsed_trading_minutes: (elapsed_minutes as u16).min(240),
             },
@@ -311,8 +332,30 @@ pub async fn execute_live_market_scan(
         } else {
             0.0
         };
+        let is_pre_tail_intraday = matches!(
+            session_state,
+            MarketSessionState::Trading | MarketSessionState::LunchBreak
+        ) && elapsed_minutes < 210;
+        let open_y = if q.open_yuan > 0.0 {
+            q.open_yuan
+        } else {
+            aligned
+                .today_bar
+                .map(|b| b.open)
+                .unwrap_or(aligned.bar_t1.close)
+        };
+        let high_y = if q.high_yuan > 0.0 {
+            q.high_yuan
+        } else {
+            aligned.today_bar.map(|b| b.high).unwrap_or(q.latest_yuan)
+        };
+        let low_y = if q.low_yuan > 0.0 {
+            q.low_yuan
+        } else {
+            aligned.today_bar.map(|b| b.low).unwrap_or(q.latest_yuan)
+        };
 
-        let pit_report = audit_five_pitfalls(
+        let pit_report = audit_five_pitfalls_with_context(
             &PitfallAuditInput {
                 net_insider_reduction_90d_pct: pit_ext.net_insider_reduction_90d_pct,
                 announcement_titles_60d: pit_ext.announcement_titles_60d,
@@ -321,39 +364,43 @@ pub async fn execute_live_market_scan(
                 holder_num_change_qoq_pct: pit_ext.holder_num_change_qoq_pct,
                 holder_notice_date: pit_ext.holder_notice_date,
                 main_net_inflow_ratio: main_inflow_ratio,
-                open_yuan: if q.open_yuan > 0.0 { q.open_yuan } else { bar_t0.open },
-                high_yuan: if q.high_yuan > 0.0 { q.high_yuan } else { bar_t0.high },
-                low_yuan: if q.low_yuan > 0.0 { q.low_yuan } else { bar_t0.low },
+                open_yuan: open_y,
+                high_yuan: high_y,
+                low_yuan: low_y,
                 close_yuan: q.latest_yuan,
                 ma20_yuan: ma20,
                 pct_chg,
             },
             &pit_thresholds,
+            pit_ext.restricted_unlock_30d_pct,
+            is_pre_tail_intraday,
         );
 
-        let vars = build_factor_vars(
-            &q,
-            &bars,
-            turnover_t0,
-            turnover_t1,
-            ma20,
-            atr14,
-            gate_verdict.vol_expansion_ratio,
-            main_inflow_wan,
-        );
-        let mut raw_factors = BTreeMap::new();
-        for (fid, ast) in &parsed_asts {
-            raw_factors.insert(fid.clone(), eval_factor_ast(ast, &vars));
+        if q.total_mv_yi > 0.0 && q.total_mv_yi < max_mv_cap {
+            let vars = build_factor_vars(
+                &q,
+                aligned.completed_prior_bars,
+                gate_verdict.projected_turnover_pct,
+                turnover_t1,
+                ma20,
+                atr14,
+                gate_verdict.vol_expansion_ratio,
+                main_inflow_wan,
+            );
+            let mut raw_factors = BTreeMap::new();
+            for (fid, ast) in &parsed_asts {
+                raw_factors.insert(fid.clone(), eval_factor_ast(ast, &vars));
+            }
+            cs_samples.push(CrossSectionSample {
+                symbol: canonical.clone(),
+                industry_sw1: industry_sw1.clone(),
+                circ_mv_yi: q.circ_mv_yi,
+                raw_factors,
+            });
         }
-        cs_samples.push(CrossSectionSample {
-            symbol: canonical.clone(),
-            industry_sw1: industry_sw1.clone(),
-            circ_mv_yi: q.circ_mv_yi,
-            raw_factors,
-        });
 
-        let bar_date = bar_t0.time.clone();
-        let prev_low_yuan = bar_t1.low;
+        let bar_date = aligned.quote_date.clone();
+        let prev_low_yuan = aligned.bar_t1.low;
         kline_cache_1d.insert(canonical, bars);
 
         intermediates.push(EnrichedIntermediate {
@@ -375,8 +422,18 @@ pub async fn execute_live_market_scan(
     }
 
     // 4. Cross-sectional 3*MAD winsorization + SW1 industry + ln(circ_mv) neutralization
-    let scored_list =
-        neutralize_and_score_cross_section(&cs_samples, &bundle.strategy.factor_weights);
+    let active_weights: std::collections::BTreeMap<String, f64> = parsed_asts
+        .iter()
+        .filter_map(|(fid, _)| {
+            bundle
+                .strategy
+                .factor_weights
+                .get(fid)
+                .copied()
+                .map(|w| (fid.clone(), w))
+        })
+        .collect();
+    let scored_list = neutralize_and_score_cross_section(&cs_samples, &active_weights);
     let scored_map: HashMap<String, _> = scored_list
         .into_iter()
         .map(|s| (s.symbol.clone(), s))
@@ -389,150 +446,22 @@ pub async fn execute_live_market_scan(
 
     for item in intermediates {
         // Skip held large-cap symbols from the <200亿 screener table while keeping their K-lines cached
-        if item.quote.total_mv_yi >= 200.0 {
+        if item.quote.total_mv_yi >= max_mv_cap {
             continue;
         }
-        let canonical = item.quote.symbol.canonical();
-        let scored = scored_map.get(&canonical);
-        let raw_conv = scored.map(|s| s.conviction_score).unwrap_or(60.0);
-        let conviction_score =
-            round_2((raw_conv - item.pit_report.warn_penalty_pts).clamp(5.0, 99.5));
-
         if item.gate_passed {
             consecutive_turnover_vol_count += 1;
             if !item.pit_report.vetoed {
                 pitfall_cleared_count += 1;
             }
         }
-
-        let decision = if item.pit_report.vetoed {
-            "REJECTED_BY_MINE".to_string()
-        } else if item.gate_passed && conviction_score >= 54.0 {
+        let canonical = item.quote.symbol.canonical();
+        let scored = scored_map.get(&canonical);
+        let dto = build_screener_candidate_dto(item, scored, &bundle.strategy.stop_loss);
+        if dto.decision == "BUY" {
             qualified_buy_count += 1;
-            "BUY".to_string()
-        } else {
-            "WATCH".to_string()
-        };
-
-        let entry_fen = Fen::from_yuan(item.quote.latest_yuan);
-        let stop_fen = compute_initial_hard_stop_fen(
-            entry_fen,
-            Fen::from_yuan(item.prev_low_yuan),
-            Fen::from_yuan(item.atr14),
-            bundle.strategy.stop_loss.atr_stop_mult,
-        );
-        let risk_fen = (entry_fen.0 - stop_fen.0).max(1);
-        let target_fen = Fen(entry_fen.0 + (risk_fen as f64 * 2.4).round() as i64);
-
-        let pct_chg = if item.quote.prev_close_yuan > 0.0 {
-            round_2(
-                ((item.quote.latest_yuan - item.quote.prev_close_yuan)
-                    / item.quote.prev_close_yuan)
-                    * 100.0,
-            )
-        } else {
-            0.0
-        };
-
-        let pitfalls_dto: Vec<PitfallDimensionStatusDto> = item
-            .pit_report
-            .items
-            .iter()
-            .map(|p| PitfallDimensionStatusDto {
-                dimension: match p.dimension {
-                    PitfallDimension::InsiderReduction => "INSIDER_REDUCTION",
-                    PitfallDimension::NegativeNews => "NEGATIVE_NEWS",
-                    PitfallDimension::HolderSurge => "HOLDER_SURGE",
-                    PitfallDimension::MainOutflow => "MAIN_OUTFLOW",
-                    PitfallDimension::TechBreakdown => "TECH_BREAKDOWN",
-                }
-                .to_string(),
-                label_zh: p.label_zh.clone(),
-                passed: p.passed,
-                severity: match p.severity {
-                    PitfallSeverity::Clear => "CLEAR",
-                    PitfallSeverity::Warn => "WARN",
-                    PitfallSeverity::Veto => "VETO",
-                }
-                .to_string(),
-                detail_zh: p.detail_zh.clone(),
-            })
-            .collect();
-
-        let rationale_zh = if decision == "BUY" {
-            format!(
-                "总市值 {:.1}亿 (<200亿硬红线)，两日连续换手 {:.2}%→{:.2}% 放量 {:.2}x 站稳MA20({:.2})，五维排雷 {}/5 通过，多因子中性化得分 {:.1}，硬止损 ¥{:.2}。",
-                item.quote.total_mv_yi,
-                item.turnover_t1,
-                item.turnover_t0,
-                item.vol_expansion,
-                item.ma20,
-                item.pit_report.passed_count,
-                conviction_score,
-                stop_fen.to_yuan()
-            )
-        } else if decision == "REJECTED_BY_MINE" {
-            let veto_msg = pitfalls_dto
-                .iter()
-                .find(|p| p.severity == "VETO")
-                .map(|p| p.detail_zh.as_str())
-                .unwrap_or("触发五维排雷一票否决");
-            format!("排雷一票否决拦截：{}", veto_msg)
-        } else {
-            format!(
-                "观察候选：{}（前日换手 {:.2}% / 今日换手 {:.2}%，多因子得分 {:.1}）",
-                item.gate_reject_reason
-                    .as_deref()
-                    .unwrap_or("等待放量突破确认"),
-                item.turnover_t1,
-                item.turnover_t0,
-                conviction_score
-            )
-        };
-
-        let exchange = match item.quote.symbol.exchange {
-            ExchangeCode::Sh => "SH",
-            ExchangeCode::Sz => "SZ",
-            ExchangeCode::Bj => "BJ",
         }
-        .to_string();
-        let board = match item.quote.symbol.board {
-            BoardKind::Main => "MAIN",
-            BoardKind::Chinext => "CHINEXT",
-            BoardKind::Star => "STAR",
-            BoardKind::Bse => "BSE",
-        }
-        .to_string();
-
-        candidates.push(ScreenerCandidateDto {
-            symbol: canonical,
-            name_zh: item.quote.name_zh,
-            exchange,
-            board,
-            industry_sw1: item.industry_sw1,
-            latest_price_yuan: round_2(item.quote.latest_yuan),
-            pct_chg,
-            total_mv_yi: round_2(item.quote.total_mv_yi),
-            circ_mv_yi: round_2(item.quote.circ_mv_yi),
-            turnover_t0_pct: round_2(item.turnover_t0),
-            turnover_t1_pct: round_2(item.turnover_t1),
-            projected_turnover_pct: round_2(item.projected_turnover),
-            vol_expansion_ratio: round_2(item.vol_expansion),
-            main_net_inflow_wan: round_2(item.main_inflow_wan),
-            ma20_price_yuan: round_2(item.ma20),
-            atr14_yuan: round_2(item.atr14),
-            conviction_score,
-            suggested_stop_loss_yuan: stop_fen.to_yuan(),
-            suggested_target_yuan: target_fen.to_yuan(),
-            decision,
-            pitfalls_passed_count: item.pit_report.passed_count,
-            pitfalls: pitfalls_dto,
-            factor_z_scores: scored
-                .map(|s| s.factor_z_scores.clone())
-                .unwrap_or_default(),
-            rationale_zh,
-            kline_bar_date: item.bar_date,
-        });
+        candidates.push(dto);
     }
 
     // Rank BUY first by convictionScore DESC, then WATCH, then REJECTED_BY_MINE

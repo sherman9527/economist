@@ -72,5 +72,13 @@
   - 完成第 1 轮深度专家 Code Review（DDD 四层隔离、并发账本锁与单飞扫描、UTF-8 多字节安全切片、`"1d" | "30m"` 与标准 `TelemetrySubsystem` 契约对齐、吊灯追踪止损保本上移、科创板零股规则及便携释放目录完整性），当前立即按 TDD 红绿循环落地第 1 轮全部修复，随后推进第 2–5 轮深度 Code Review 并推送至远程 `origin/main`。
 
 - **Compact #4 (`2026-11-18` · Checkpoint: `Round 1 TDD red-green fixes applied`)**：
-  - 完成第 1 轮深度 Code Review 全部 13 项修复的 TDD 红绿闭环（`42/42` Rust 单测/集成/红线/PBT 零警告全绿，`20/20` Vitest + `fast-check` PBT 全绿）；
-  - 当前立即验证前端生产编译与全仓路径/行数卫生门禁后提交第 1 轮修复，并继续推进第 2 轮（A 股量化数学模型、排雷 PIT、`T+1`/费用/`100W` 账本）、第 3 轮（Apple Liquid Glass 三层光学、`<= 8` 模糊预算、防截断排版与 K 线交互）、第 4 轮（安全审计、因子 AST、SQL/路径/子进程隔离与行情源容灾）及第 5 轮（25 条需求总验收、便携 `.exe` 重打包实测、治理文档同步与 `git push origin main`）。
+  - 完成第 1 轮深度 Code Review 全部 13 项修复的 TDD 红绿闭环（`42/42` Rust 单测/集成/红线/PBT 零警告全绿，`20/20` Vitest + `fast-check` PBT 全绿），并提交基线 `62c2a31`；
+  - 启动第 2 轮机构级量化与 `100W/<=10` 账本深度审计。
+
+- **Compact #5 (`2026-11-18` · Checkpoint: `Round 1 committed; Round 2 quant TDD underway`)**：
+  - 第 1 轮深度 Code Review 已全绿提交（`62c2a31`）；第 2 轮机构级量化审计（`rubber-duck` · `gemini-4-carbon` · `high`）已完成全部领域数学缺陷定位与 `./src-tauri/tests/round2_quant_regressions.rs` TDD 红灯复现（`5/5` 精准失败），并已完成 `./src-tauri/src/domain/`（沪深北交易日历、涨跌停精确基点四舍五入、科创/北交零股步长、`09:30` U 型分时折算、五维排雷解禁与盘中上影线细化、FWL 行业收缩中性化、吊灯止损单调性、`T+1` 跨周末/节假日锁仓、含摩擦成本 `<=10%` 单票仓位计算）改造；
+  - 当前立即完成行情源单位标准化（腾讯备用 K 线科创/北交股转手 `100x` 修正、流通股本换手率、东财 `HOLD_NOTICE_DATE` PIT 截断与 90 日净减持/30 日解禁）、应用层日线日期严格对齐与止损自动平仓执行，验证全量测试全绿后提交第 2 轮修复，继续推进第 3–5 轮深度 Code Review 并执行 `git push origin main`。
+
+- **Compact #6 (`2026-11-18` · Checkpoint: `Round 2 quant fixes implemented; modularizing scan pipeline`)**：
+  - 完成第 2 轮深度量化与 `100W/<=10` 账本全部修复及模块化拆分（新增 `./src-tauri/src/domain/trading_calendar.rs` 与 `./src-tauri/src/application/scan_alignment.rs`，确保全仓每个源码文件严格 `<= 600` 行），通过 `49/49` Rust 单测/架构红线/PBT/回归测试（零警告）与 `20/20` Vitest + `fast-check` PBT；
+  - 当前立即提交第 2 轮修复并标记完成，随后依次推进第 3 轮（Apple Liquid Glass 光学层级、`<= 8` 模糊预算、零文字截断与图表 UX）、第 4 轮（安全审计、因子 AST 防注入、并发与行情降级韧性）、第 5 轮（25 项需求全量终审、便携版 `.exe` 重新构建冒烟校验与文档同步），最终执行 `git push origin main`。
