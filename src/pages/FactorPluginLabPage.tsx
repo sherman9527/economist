@@ -27,7 +27,7 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
   onSavePluginConfig,
 }) => {
   const [selectedFactorId, setSelectedFactorId] = useState<string>(
-    pluginConfig.factors[0]?.factorId ?? "turnover_ignition_2d"
+    pluginConfig.factors[0]?.factorId ?? "F1_ideal_reversal"
   );
   const [diagChartMode, setDiagChartMode] = useState<"quantile" | "decay">("quantile");
 
@@ -43,8 +43,19 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
   const [statusMsg, setStatusMsg] = useState<string | null>(null);
 
   useEffect(() => {
+    setProjTurnover(pluginConfig.minIntradayProjectedTurnoverPct);
+    setInsiderVeto(pluginConfig.insiderSellVetoPct);
+    setHolderVeto(pluginConfig.holderSurgeVetoPct);
+    setOutflowVeto(pluginConfig.mainOutflowVetoRatio);
+    setAtrMult(pluginConfig.atrStopMult);
     setCfgPolarity(pluginConfig.marketPolarity);
-  }, [pluginConfig.marketPolarity]);
+    setWeights(Object.fromEntries(pluginConfig.factors.map((f) => [f.factorId, f.weightPct])));
+    setSelectedFactorId((prev) =>
+      pluginConfig.factors.some((f) => f.factorId === prev)
+        ? prev
+        : (pluginConfig.factors[0]?.factorId ?? "F1_ideal_reversal")
+    );
+  }, [pluginConfig]);
 
   const activeFactor: FactorDiagnosticDto | undefined =
     pluginConfig.factors.find((f) => f.factorId === selectedFactorId) ?? pluginConfig.factors[0];
@@ -136,7 +147,7 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
             <Cpu size={16} style={{ color: "var(--accent)", flexShrink: 0 }} />
           </div>
 
-          <div className="glass-table-wrap">
+          <div className="glass-table-wrap responsive-table-only">
             <table className="glass-table">
               <thead>
                 <tr>
@@ -172,7 +183,10 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
                         </span>
                       </td>
                       <td className="tabular-nums">{f.barFreq}</td>
-                      <td className="tabular-nums text-mkt-up">+{f.rankIcMean.toFixed(3)}</td>
+                      <td className={`tabular-nums ${f.rankIcMean >= 0 ? "text-mkt-up" : "text-mkt-down"}`}>
+                        {f.rankIcMean >= 0 ? "+" : ""}
+                        {f.rankIcMean.toFixed(3)}
+                      </td>
                       <td className="tabular-nums">{f.icIr.toFixed(2)}</td>
                       <td className="tabular-nums">{f.oosWinRatePct.toFixed(1)}%</td>
                       <td>
@@ -183,6 +197,37 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
                 })}
               </tbody>
             </table>
+          </div>
+
+          <div className="responsive-cards-only">
+            {pluginConfig.factors.map((f) => {
+              const selected = f.factorId === activeFactor?.factorId;
+              return (
+                <div
+                  key={f.factorId}
+                  onClick={() => setSelectedFactorId(f.factorId)}
+                  className="glass-optical-card glass-optical-card-interactive"
+                  style={{
+                    cursor: "pointer",
+                    outline: selected ? "1px solid var(--accent)" : undefined,
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "6px",
+                  }}
+                >
+                  <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
+                    <SafeText text={f.nameZh} as="strong" />
+                    <span className="glass-pill pill-risk-clear tabular-nums">{f.evidenceTag}</span>
+                  </div>
+                  <div className="tabular-nums" style={{ fontSize: "12px", color: "var(--text-secondary)" }}>
+                    周期 {f.barFreq} · RankIC {f.rankIcMean >= 0 ? "+" : ""}
+                    {f.rankIcMean.toFixed(3)} · IR {f.icIr.toFixed(2)} · OOS胜率{" "}
+                    {f.oosWinRatePct.toFixed(1)}%
+                  </div>
+                  <SafeText text={f.expr} showPopover />
+                </div>
+              );
+            })}
           </div>
         </section>
 
@@ -353,10 +398,28 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
           </div>
 
           <div className="col-span-5 glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <div className="tabular-nums" style={{ display: "flex", justifyContent: "space-between", fontSize: "12.5px" }}>
+            <div className="tabular-nums" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px", fontSize: "12.5px" }}>
               <strong>六维因子权重配比 (%)</strong>
-              <span className={weightSum === 100 ? "text-mkt-up" : "text-stoploss"}>
-                合计 {weightSum}%
+              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <span className={weightSum === 100 ? "text-risk-clear" : "text-stoploss"}>
+                  合计 {weightSum}%
+                </span>
+                {weightSum > 0 && weightSum !== 100 && (
+                  <button
+                    type="button"
+                    className="glass-btn glass-btn-ghost glass-btn-sm"
+                    style={{ minHeight: "22px", paddingInline: "6px", fontSize: "11px" }}
+                    onClick={() => {
+                      const entries = pluginConfig.factors.map((f) => [
+                        f.factorId,
+                        Math.round(((weights[f.factorId] ?? f.weightPct) / weightSum) * 100),
+                      ] as const);
+                      setWeights(Object.fromEntries(entries));
+                    }}
+                  >
+                    归一100%
+                  </button>
+                )}
               </span>
             </div>
             {pluginConfig.factors.map((f) => (
@@ -399,6 +462,7 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
             label="校验并热加载至SQLite/插件"
             loadingLabel="校验并写入插件..."
             successLabel="插件热加载生效"
+            disabled={weightSum <= 0}
             icon={<SlidersHorizontal size={15} />}
             onClick={async () => {
               await onSavePluginConfig({

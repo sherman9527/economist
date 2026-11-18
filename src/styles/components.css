@@ -73,6 +73,7 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 1.45;
+  font-variant-numeric: tabular-nums;
   border: 1px solid var(--glass-rim-subtle);
   background: var(--optical-card-bg);
   color: var(--text-secondary);
@@ -113,6 +114,7 @@
 .text-mkt-up { color: var(--mkt-up); }
 .text-mkt-down { color: var(--mkt-down); }
 .text-stoploss { color: var(--risk-stoploss-text); }
+.text-risk-clear { color: var(--risk-clear-text); }
 .text-veto { color: var(--risk-veto-text); }
 
 /* Segmented Controls */
@@ -196,6 +198,7 @@
 
 .glass-table {
   width: 100%;
+  min-width: 620px;
   table-layout: fixed;
   border-collapse: separate;
   border-spacing: 0 6px;
@@ -225,6 +228,8 @@
   border-bottom: 1px solid var(--glass-rim-subtle);
   vertical-align: middle;
   min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .glass-table tr td:first-child {

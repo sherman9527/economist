@@ -159,7 +159,7 @@ export const TelemetrySessionsPage: React.FC<TelemetrySessionsPageProps> = ({
         <div
           style={{
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(275px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 275px), 1fr))",
             gap: "12px",
           }}
         >
@@ -167,7 +167,7 @@ export const TelemetrySessionsPage: React.FC<TelemetrySessionsPageProps> = ({
             <div
               key={sess.agentRole}
               className="glass-optical-card"
-              style={{ display: "flex", flexDirection: "column", gap: "8px" }}
+              style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: 0 }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
                 <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 700, fontSize: "13.5px" }}>
@@ -216,7 +216,9 @@ export const TelemetrySessionsPage: React.FC<TelemetrySessionsPageProps> = ({
           <strong style={{ fontSize: "15px" }}>28 天结构化 Telemetry 事件审计流</strong>
 
           <div className="glass-segmented" role="group" aria-label="子系统过滤">
-            {(["ALL", "MARKET", "QUANT", "TRADING", "AGENT", "NEWS", "CLEANER"] as const).map(
+            {(
+              ["ALL", "MARKET", "QUANT", "TRADING", "AGENT", "NEWS", "CLEANER", "UI"] as const
+            ).map(
               (sub) => (
                 <button
                   key={sub}

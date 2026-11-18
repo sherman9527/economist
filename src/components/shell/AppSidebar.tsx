@@ -83,11 +83,26 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   onSelectPage,
   onToggleCollapse,
 }) => {
+  const [isMobileViewport, setIsMobileViewport] = React.useState<boolean>(() =>
+    typeof window !== "undefined" && typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 640px)").matches
+      : false
+  );
+
+  React.useEffect(() => {
+    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    const mql = window.matchMedia("(max-width: 640px)");
+    const onChange = (e: MediaQueryListEvent) => setIsMobileViewport(e.matches);
+    setIsMobileViewport(mql.matches);
+    mql.addEventListener?.("change", onChange);
+    return () => mql.removeEventListener?.("change", onChange);
+  }, []);
+
   return (
     <>
       <aside
         aria-label="主工作区导航"
-        data-blur-slot={blurActive ? "active" : "optical"}
+        data-blur-slot={!isMobileViewport && blurActive ? "active" : "optical"}
         className="glass-tier-1 sidebar-desktop"
         style={{
           width: collapsed ? "74px" : "238px",
@@ -178,9 +193,33 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     transition: "background 160ms ease-out, transform 160ms ease-out",
                   }}
                 >
-                  <span style={{ display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
+                  <span style={{ position: "relative", display: "flex", alignItems: "center", gap: "10px", minWidth: 0 }}>
                     {item.icon}
                     {!collapsed && <SafeText text={item.fullZh} />}
+                    {collapsed && badgeCount > 0 && (
+                      <span
+                        aria-label={`${badgeCount}`}
+                        className="tabular-nums"
+                        style={{
+                          position: "absolute",
+                          top: "-5px",
+                          right: "-7px",
+                          minWidth: "16px",
+                          height: "16px",
+                          paddingInline: "4px",
+                          borderRadius: "999px",
+                          fontSize: "10px",
+                          lineHeight: "16px",
+                          textAlign: "center",
+                          fontWeight: 700,
+                          background: item.badgeType === "economist" ? "var(--risk-stoploss-bg)" : "var(--risk-clear-bg)",
+                          color: item.badgeType === "economist" ? "var(--risk-stoploss-text)" : "var(--risk-clear-text)",
+                          border: "1px solid var(--glass-rim-bright)",
+                        }}
+                      >
+                        {badgeCount}
+                      </span>
+                    )}
                   </span>
                   {!collapsed && badgeCount > 0 && (
                     <span
@@ -221,6 +260,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       {/* Mobile <640px Responsive Bottom Glass Bar */}
       <nav
         aria-label="移动端底部导航"
+        data-blur-slot={isMobileViewport && blurActive ? "active" : "optical"}
         className="glass-tier-1 sidebar-mobile-tabs"
         style={{
           position: "fixed",
@@ -235,6 +275,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       >
         {NAV_ITEMS.map((item) => {
           const selected = activePage === item.id;
+          const mobileBadge =
+            item.badgeType === "economist"
+              ? unackedEconomistCount
+              : item.badgeType === "picks"
+                ? qualifiedPicksCount
+                : 0;
           return (
             <button
               key={item.id}
@@ -242,6 +288,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               onClick={() => onSelectPage(item.id)}
               aria-current={selected ? "page" : undefined}
               style={{
+                position: "relative",
                 flex: "1 1 0",
                 minWidth: 0,
                 minHeight: "44px",
@@ -261,6 +308,27 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               }}
             >
               {item.icon}
+              {mobileBadge > 0 && (
+                <span
+                  className="tabular-nums"
+                  style={{
+                    position: "absolute",
+                    top: "2px",
+                    right: "6px",
+                    minWidth: "15px",
+                    height: "15px",
+                    paddingInline: "3px",
+                    borderRadius: "999px",
+                    fontSize: "9.5px",
+                    lineHeight: "15px",
+                    fontWeight: 700,
+                    background: item.badgeType === "economist" ? "var(--risk-stoploss-bg)" : "var(--risk-clear-bg)",
+                    color: item.badgeType === "economist" ? "var(--risk-stoploss-text)" : "var(--risk-clear-text)",
+                  }}
+                >
+                  {mobileBadge}
+                </span>
+              )}
               <span className="safe-text-single">{item.shortZh}</span>
             </button>
           );

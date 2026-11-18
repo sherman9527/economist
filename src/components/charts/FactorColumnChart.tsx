@@ -9,6 +9,15 @@ export interface FactorColumnChartProps {
   polarity: MarketPolarity;
 }
 
+function shortFactorAxisTag(factorId: string, labelZh: string): string {
+  const code = factorId.match(/^(F\d)/)?.[1];
+  const clean = labelZh.replace(/因子$/, "");
+  if (code) {
+    return `${code} ${clean.length > 5 ? clean.slice(-4) : clean}`;
+  }
+  return clean;
+}
+
 export const FactorColumnChart: React.FC<FactorColumnChartProps> = ({
   klinePayload,
   theme,
@@ -21,7 +30,7 @@ export const FactorColumnChart: React.FC<FactorColumnChartProps> = ({
       const isTurnover = mode === "turnover";
       const categories = isTurnover
         ? klinePayload.recentTurnoversPct.map((t) => t.date)
-        : klinePayload.factorBreakdown.map((f) => f.labelZh.slice(0, 6));
+        : klinePayload.factorBreakdown.map((f) => shortFactorAxisTag(f.factorId, f.labelZh));
 
       const values = isTurnover
         ? klinePayload.recentTurnoversPct.map((t) => ({

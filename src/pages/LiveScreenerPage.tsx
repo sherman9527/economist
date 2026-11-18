@@ -1,5 +1,5 @@
-import React, { useMemo, useState } from "react";
-import { CandlestickChart, Filter, Search, ShoppingBag } from "lucide-react";
+import React, { useEffect, useMemo, useState } from "react";
+import { Search } from "lucide-react";
 import type {
   BoardKind,
   MarketPolarity,
@@ -13,21 +13,21 @@ import {
   formatSignedPct,
   getBoardTradingRule,
   normalizeStockDisplayLabel,
-  validateAShareOrderInput,
 } from "../domain/uiInvariants";
 import { SafeText } from "../components/common/SafeText";
 import { PitfallAuditBadges } from "../components/common/PitfallAuditBadges";
-import { AsyncGlassButton } from "../components/common/AsyncGlassButton";
-import { QuantKlineTerminal } from "../components/charts/QuantKlineTerminal";
+import { ScreenerInspectorPane } from "./ScreenerInspectorPane";
 
 export interface LiveScreenerPageProps {
   funnel: UniverseFunnelSummaryDto;
   candidates: ScreenerCandidateDto[];
   portfolio: PortfolioOverviewDto;
   klinePayload: StockKlinePayloadDto;
+  inspectedSymbol?: string;
   theme: ThemeMode;
   polarity: MarketPolarity;
   isBlurActive: (slotId: string) => boolean;
+  onPopoverOpenChange?: (open: boolean) => void;
   onChangeKline: (symbol: string, period: "1d" | "30m") => void;
   onPlaceBuy: (cand: ScreenerCandidateDto, lotQty: number) => Promise<void>;
 }
@@ -37,9 +37,11 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
   candidates,
   portfolio,
   klinePayload,
+  inspectedSymbol,
   theme,
   polarity,
   isBlurActive,
+  onPopoverOpenChange,
   onChangeKline,
   onPlaceBuy,
 }) => {
@@ -47,10 +49,17 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
   const [boardFilter, setBoardFilter] = useState<"ALL" | BoardKind>("ALL");
   const [decisionFilter, setDecisionFilter] = useState<"ALL" | ScreenerCandidateDto["decision"]>("ALL");
   const [selectedSymbol, setSelectedSymbol] = useState<string>(
-    candidates[0]?.symbol ?? "300624.SZ"
+    inspectedSymbol ?? candidates[0]?.symbol ?? "300624.SZ"
   );
   const [customLots, setCustomLots] = useState<number>(300);
   const [orderNotice, setOrderNotice] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (inspectedSymbol) {
+      setSelectedSymbol(inspectedSymbol);
+      setOrderNotice(null);
+    }
+  }, [inspectedSymbol]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -66,10 +75,23 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
     });
   }, [candidates, query, boardFilter, decisionFilter]);
 
-  const activeCandidate =
-    candidates.find((c) => c.symbol === selectedSymbol) ??
-    filtered[0] ??
-    candidates[0];
+  const matchedCandidate = candidates.find((c) => c.symbol === selectedSymbol);
+  const isNonCandidateInspect = Boolean(
+    selectedSymbol &&
+      !matchedCandidate &&
+      (klinePayload.symbol === selectedSymbol || inspectedSymbol === selectedSymbol)
+  );
+  const activeCandidate = isNonCandidateInspect
+    ? undefined
+    : (matchedCandidate ?? filtered[0] ?? candidates[0]);
+
+  useEffect(() => {
+    if (!activeCandidate) return;
+    const rule = getBoardTradingRule(activeCandidate.board);
+    setCustomLots((prev) =>
+      prev < rule.minLotQty ? Math.max(rule.minLotQty, 300) : prev
+    );
+  }, [activeCandidate?.symbol, activeCandidate?.board]);
 
   const handleSelectCandidate = (cand: ScreenerCandidateDto) => {
     setSelectedSymbol(cand.symbol);
@@ -87,22 +109,6 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
     { label: "5. 五维排雷全通过", count: funnel.pitfallClearedCount },
     { label: "6. 量化优选买点", count: funnel.qualifiedBuyCount },
   ];
-
-  const alreadyHeld = activeCandidate
-    ? portfolio.positions.some((p) => p.symbol === activeCandidate.symbol)
-    : false;
-  const slotsFull = !alreadyHeld && portfolio.openSlotsCount >= portfolio.maxSlots;
-  const prevCloseApprox = activeCandidate
-    ? activeCandidate.latestPriceYuan / (1 + activeCandidate.pctChg / 100)
-    : 10;
-  const orderCheck = activeCandidate
-    ? validateAShareOrderInput({
-        board: activeCandidate.board,
-        prevCloseYuan: prevCloseApprox,
-        orderPriceYuan: activeCandidate.latestPriceYuan,
-        lotQty: customLots,
-      })
-    : null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
@@ -316,106 +322,34 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
         </section>
 
         {/* Right Side Inspector Pane with Instant K-Line Buy/Stop Preview */}
-        <section
-          aria-label="单股买点K线预览与模拟盘委托台"
-          data-blur-slot={isBlurActive("screener-inspector") ? "active" : "optical"}
-          className="col-span-5 glass-tier-2 stagger-enter stagger-3"
-          style={{ display: "flex", flexDirection: "column", gap: "12px" }}
-        >
-          {activeCandidate ? (
-            <>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
-                <div className="min-w-zero">
-                  <SafeText
-                    text={`${activeCandidate.nameZh} (${activeCandidate.symbol}) · 五维排雷审阅`}
-                    as="strong"
-                  />
-                  <div className="tabular-nums" style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-                    建议止损 ¥{activeCandidate.suggestedStopLossYuan.toFixed(2)} · 目标 ¥
-                    {activeCandidate.suggestedTargetYuan.toFixed(2)} · 席位 {portfolio.openSlotsCount}/
-                    {portfolio.maxSlots}
-                  </div>
-                </div>
-                <Filter size={15} style={{ color: "var(--accent)", flexShrink: 0 }} />
-              </div>
-
-              <QuantKlineTerminal
-                payload={klinePayload}
-                watchlist={candidates.slice(0, 4)}
-                theme={theme}
-                polarity={polarity}
-                popoverBlurActive={isBlurActive("kline-rationale-popover")}
-                onChangeSymbolPeriod={(sym, per) => {
-                  setSelectedSymbol(sym);
-                  onChangeKline(sym, per);
-                }}
-              />
-
-              <div className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                <div className="lh-prose" style={{ fontSize: "12.5px" }}>
-                  {activeCandidate.rationaleZh}
-                </div>
-                <PitfallAuditBadges pitfalls={activeCandidate.pitfalls} compact={false} />
-              </div>
-
-              <div
-                className="glass-optical-card"
-                style={{
-                  display: "flex",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  gap: "10px",
-                }}
-              >
-                <label style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "12.5px" }}>
-                  <span>委托股数</span>
-                  <input
-                    type="number"
-                    min={100}
-                    step={activeCandidate.board === "STAR" ? 10 : 100}
-                    value={customLots}
-                    onChange={(e) => setCustomLots(Number(e.target.value) || 0)}
-                    className="glass-input tabular-nums"
-                    style={{ width: "110px" }}
-                  />
-                </label>
-
-                <AsyncGlassButton
-                  label={
-                    activeCandidate.decision === "REJECTED_BY_MINE"
-                      ? "排雷一票否决禁买"
-                      : slotsFull
-                        ? "已满 10 席上限"
-                        : "记入100W模拟盘"
-                  }
-                  loadingLabel="写入SQLite..."
-                  successLabel="已记入模拟盘"
-                  disabled={
-                    activeCandidate.decision === "REJECTED_BY_MINE" ||
-                    slotsFull ||
-                    Boolean(orderCheck && !orderCheck.valid)
-                  }
-                  icon={<ShoppingBag size={14} />}
-                  onClick={async () => {
-                    await onPlaceBuy(activeCandidate, customLots);
-                    setOrderNotice(
-                      `已建仓 ${activeCandidate.nameZh} ${customLots} 股，止损锚定 ¥${activeCandidate.suggestedStopLossYuan.toFixed(2)}（T+1锁仓生效）`
-                    );
-                  }}
-                />
-              </div>
-
-              {orderCheck && !orderCheck.valid && (
-                <div className="glass-pill pill-risk-veto">
-                  <CandlestickChart size={13} />
-                  <span>{orderCheck.reasons.join("；")}</span>
-                </div>
-              )}
-              {orderNotice && <div className="glass-pill pill-risk-clear">{orderNotice}</div>}
-            </>
-          ) : null}
-        </section>
+        <ScreenerInspectorPane
+          selectedSymbol={selectedSymbol}
+          isNonCandidateInspect={isNonCandidateInspect}
+          activeCandidate={activeCandidate}
+          fallbackLeadCandidate={filtered[0] ?? candidates[0]}
+          watchlist={candidates.slice(0, 4)}
+          portfolio={portfolio}
+          klinePayload={klinePayload}
+          customLots={customLots}
+          orderNotice={orderNotice}
+          theme={theme}
+          polarity={polarity}
+          inspectorBlurActive={isBlurActive("screener-inspector")}
+          popoverBlurActive={isBlurActive("kline-rationale-popover")}
+          onPopoverOpenChange={onPopoverOpenChange}
+          onChangeCustomLots={setCustomLots}
+          onSelectCandidate={handleSelectCandidate}
+          onSwitchKlineSymbolPeriod={(sym, per) => {
+            setSelectedSymbol(sym);
+            onChangeKline(sym, per);
+          }}
+          onConfirmBuy={async (cand, lots) => {
+            await onPlaceBuy(cand, lots);
+            setOrderNotice(
+              `已建仓 ${cand.nameZh} ${lots} 股，止损锚定 ¥${cand.suggestedStopLossYuan.toFixed(2)}（T+1锁仓生效）`
+            );
+          }}
+        />
       </div>
     </div>
   );

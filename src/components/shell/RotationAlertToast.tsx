@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { BellRing, CandlestickChart, ShoppingBag, X } from "lucide-react";
 import type { RotationAlertEventDto, ScreenerCandidateDto } from "../../types/terminal";
 import { formatSignedPct, normalizeStockDisplayLabel } from "../../domain/uiInvariants";
@@ -20,11 +20,31 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
   onInspectKline,
   onSimulatedBuy,
 }) => {
+  const [selectedIdx, setSelectedIdx] = useState(0);
+  const [inlineError, setInlineError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setSelectedIdx(0);
+    setInlineError(null);
+  }, [alert?.slotTimestampCst]);
+
+  useEffect(() => {
+    if (!alert || alert.topPicks.length === 0) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onDismiss();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [alert, onDismiss]);
+
   if (!alert || alert.topPicks.length === 0) {
     return null;
   }
 
-  const lead = alert.topPicks[0];
+  const safeIdx = Math.min(selectedIdx, alert.topPicks.length - 1);
+  const lead = alert.topPicks[safeIdx];
   const upTone = lead.pctChg >= 0 ? "text-mkt-up" : "text-mkt-down";
 
   return (
@@ -54,10 +74,10 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
           minWidth: 0,
         }}
       >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: "1 1 0%", minWidth: 0 }}>
           <BellRing size={16} style={{ color: "var(--accent)", flexShrink: 0 }} />
           <SafeText
-            text={`30m 轮动雷达命中 ${alert.qualifiedCount} 只优选买点`}
+            text={`30m 轮动雷达命中 (${alert.qualifiedCount}) · ${alert.slotTimestampCst}`}
             as="strong"
           />
         </div>
@@ -66,11 +86,31 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
           onClick={onDismiss}
           className="glass-btn glass-btn-ghost glass-btn-sm"
           aria-label="关闭30分钟轮动提醒"
-          style={{ paddingInline: "7px", minHeight: "28px" }}
+          style={{ paddingInline: "7px", minHeight: "28px", flexShrink: 0 }}
         >
           <X size={14} />
         </button>
       </div>
+
+      {alert.topPicks.length > 1 && (
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }} role="tablist" aria-label="轮动候选切换">
+          {alert.topPicks.map((pick, idx) => (
+            <button
+              key={pick.symbol}
+              type="button"
+              role="tab"
+              aria-selected={idx === safeIdx}
+              onClick={() => {
+                setSelectedIdx(idx);
+                setInlineError(null);
+              }}
+              className={`glass-btn glass-btn-sm ${idx === safeIdx ? "" : "glass-btn-ghost"}`}
+            >
+              <span>{pick.nameZh}</span>
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="glass-optical-card" style={{ padding: "11px 12px" }}>
         <div
@@ -117,6 +157,12 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
         </div>
       </div>
 
+      {inlineError && (
+        <div role="alert" className="glass-pill pill-risk-veto" style={{ fontSize: "11.5px" }}>
+          <span>{inlineError}</span>
+        </div>
+      )}
+
       <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "flex-end" }}>
         <button
           type="button"
@@ -132,7 +178,15 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
           loadingLabel="委托入库..."
           successLabel="已记入模拟盘"
           icon={<ShoppingBag size={14} aria-hidden="true" />}
-          onClick={() => onSimulatedBuy(lead)}
+          onClick={async () => {
+            setInlineError(null);
+            try {
+              await onSimulatedBuy(lead);
+            } catch (err: unknown) {
+              setInlineError(err instanceof Error ? err.message : "模拟买入被风控拦截");
+              throw err;
+            }
+          }}
         />
       </div>
     </aside>

@@ -70,7 +70,7 @@ export const OrdersLedgerPage: React.FC<OrdersLedgerPageProps> = ({
     { label: "可用现金安全垫", value: formatCurrencyYuan(portfolio.cashYuan) },
     { label: "持仓总市值", value: formatCurrencyYuan(portfolio.marketValueYuan) },
     { label: "持仓席位占用", value: `${portfolio.openSlotsCount} / ${portfolio.maxSlots} 只` },
-    { label: "累计印花税/佣金/滑点", value: formatCurrencyYuan(portfolio.totalFeesPaidYuan) },
+    { label: "累计印花税与佣金", value: formatCurrencyYuan(portfolio.totalFeesPaidYuan) },
   ];
 
   return (
@@ -266,7 +266,7 @@ export const OrdersLedgerPage: React.FC<OrdersLedgerPageProps> = ({
           </div>
         </div>
 
-        <div className="glass-table-wrap">
+        <div className="glass-table-wrap responsive-table-only">
           <table className="glass-table">
             <thead>
               <tr>
@@ -324,6 +324,29 @@ export const OrdersLedgerPage: React.FC<OrdersLedgerPageProps> = ({
               ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="responsive-cards-only">
+          {portfolio.recentOrders.map((ord) => (
+            <div
+              key={ord.orderId}
+              className="glass-optical-card"
+              style={{ display: "flex", flexDirection: "column", gap: "6px" }}
+            >
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "8px" }}>
+                <SafeText text={`${ord.nameZh} (${ord.symbol})`} as="strong" />
+                <span className={`glass-pill ${ord.side === "BUY" ? "pill-mkt-up" : "pill-mkt-down"}`}>
+                  {ord.side === "BUY" ? "买入" : "卖出"} · {ord.lotQty.toLocaleString()}股
+                </span>
+              </div>
+              <div className="tabular-nums" style={{ fontSize: "11.5px", color: "var(--text-secondary)" }}>
+                成交 ¥{ord.fillPriceYuan.toFixed(2)} · 止损 ¥{ord.stopLossPriceYuan.toFixed(2)} · 佣 ¥
+                {ord.commissionYuan.toFixed(2)} · 税 ¥{ord.stampDutyYuan.toFixed(2)} · 滑点 ¥
+                {ord.slippageYuan.toFixed(2)}
+              </div>
+              <SafeText text={ord.rationaleZh} maxLines={2} showPopover />
+            </div>
+          ))}
         </div>
       </section>
     </div>

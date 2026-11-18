@@ -21,6 +21,8 @@ pub struct ScreenerCandidateDto {
     #[serde(rename = "industrySw1")]
     pub industry_sw1: String,
     pub latest_price_yuan: f64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub prev_close_yuan: Option<f64>,
     pub pct_chg: f64,
     pub total_mv_yi: f64,
     pub circ_mv_yi: f64,

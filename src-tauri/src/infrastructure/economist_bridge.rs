@@ -93,25 +93,74 @@ fn inject_embed_flag_on_html(raw: &str) -> String {
     }
 }
 
+fn inline_echarts_script_tags(html: &str, echarts_js: &str) -> String {
+    if !html.contains("echarts.min.js") {
+        return html.to_string();
+    }
+    let safe_js = echarts_js
+        .replace("</script", "<\\/script")
+        .replace("</SCRIPT", "<\\/SCRIPT");
+    let inline_tag = format!("<script data-inlined-echarts=\"1\">{}</script>", safe_js);
+
+    let mut out = String::with_capacity(html.len() + safe_js.len() + 64);
+    let mut cursor = 0usize;
+    while let Some(rel_pos) = html[cursor..].find("echarts.min.js") {
+        let hit = cursor + rel_pos;
+        let before = &html[cursor..hit];
+        let after = &html[hit..];
+        let script_open = before
+            .rfind("<script")
+            .or_else(|| before.rfind("<SCRIPT"));
+        let script_close = after
+            .find("</script>")
+            .or_else(|| after.find("</SCRIPT>"));
+        if let (Some(open_rel), Some(close_rel)) = (script_open, script_close) {
+            let open_abs = cursor + open_rel;
+            let close_end_abs = hit + close_rel + "</script>".len();
+            out.push_str(&html[cursor..open_abs]);
+            out.push_str(&inline_tag);
+            cursor = close_end_abs;
+        } else {
+            out.push_str(&html[cursor..hit + "echarts.min.js".len()]);
+            cursor = hit + "echarts.min.js".len();
+        }
+    }
+    out.push_str(&html[cursor..]);
+    out
+}
+
+fn prepare_embedded_report_html(raw: &str, echarts_js: Option<&str>) -> String {
+    let with_flag = inject_embed_flag_on_html(raw);
+    let with_echarts = match echarts_js {
+        Some(js) if !js.is_empty() => inline_echarts_script_tags(&with_flag, js),
+        _ => with_flag,
+    };
+    let embed_style = "<style data-economist-embed=\"1\">html[data-embed=\"1\"] #ackBtn,html[data-embed=\"1\"] .ack-btn{display:none!important;}</style>";
+    if with_echarts.contains("data-economist-embed=") {
+        return with_echarts;
+    }
+    let lower = with_echarts.to_ascii_lowercase();
+    if let Some(head_close) = lower.find("</head>") {
+        let mut out = String::with_capacity(with_echarts.len() + embed_style.len());
+        out.push_str(&with_echarts[..head_close]);
+        out.push_str(embed_style);
+        out.push_str(&with_echarts[head_close..]);
+        out
+    } else {
+        format!("{}{}", embed_style, with_echarts)
+    }
+}
+
 fn extract_date_token(text: &str) -> Option<String> {
     let bytes = text.as_bytes();
-    if bytes.len() < 10 {
-        return None;
-    }
-    for i in 0..=(bytes.len() - 10) {
-        let s = &bytes[i..i + 10];
-        if s[0].is_ascii_digit()
-            && s[1].is_ascii_digit()
-            && s[2].is_ascii_digit()
-            && s[3].is_ascii_digit()
-            && s[4] == b'-'
-            && s[5].is_ascii_digit()
-            && s[6].is_ascii_digit()
-            && s[7] == b'-'
-            && s[8].is_ascii_digit()
-            && s[9].is_ascii_digit()
+    for w in bytes.windows(10) {
+        if w[..4].iter().all(|b| b.is_ascii_digit())
+            && w[4] == b'-'
+            && w[5..7].iter().all(|b| b.is_ascii_digit())
+            && w[7] == b'-'
+            && w[8..10].iter().all(|b| b.is_ascii_digit())
         {
-            return std::str::from_utf8(s).ok().map(|v| v.to_string());
+            return std::str::from_utf8(w).ok().map(|v| v.to_string());
         }
     }
     None
@@ -473,7 +522,9 @@ impl EconomistBridge {
             .paths
             .resolve_guarded_report_path(rel_path)
             .and_then(|p| std::fs::read_to_string(p).map_err(|e| format!("读取研报HTML失败: {}", e)))?;
-        Ok(inject_embed_flag_on_html(&raw))
+        let echarts_path = self.paths.reports_dir().join("assets").join("echarts.min.js");
+        let echarts_js = std::fs::read_to_string(&echarts_path).ok();
+        Ok(prepare_embedded_report_html(&raw, echarts_js.as_deref()))
     }
 }
 
@@ -488,10 +539,16 @@ mod tests {
         let _ = std::fs::remove_dir_all(&sandbox);
         let paths = PortablePaths::from_root(sandbox.clone()).unwrap();
         std::fs::create_dir_all(paths.data_dir().join("runs")).unwrap();
+        std::fs::create_dir_all(paths.reports_dir().join("assets")).unwrap();
         std::fs::create_dir_all(paths.reports_dir().join("2026/11/18")).unwrap();
         std::fs::write(
+            paths.reports_dir().join("assets/echarts.min.js"),
+            "window.echarts={tag:\"</script>\"};",
+        )
+        .unwrap();
+        std::fs::write(
             paths.reports_dir().join("2026/11/18/economist_report_2026-11-18.html"),
-            "<!doctype html><html><body>Economist Report</body></html>",
+            "<!doctype html><html><head><script src=\"/reports/assets/echarts.min.js\"></script></head><body>Economist Report</body></html>",
         )
         .unwrap();
         std::fs::write(
@@ -521,11 +578,10 @@ mod tests {
         let embedded_html = bridge
             .read_report_html("./reports/2026/11/18/economist_report_2026-11-18.html")
             .unwrap();
-        assert!(
-            embedded_html.contains("data-embed=\"1\""),
-            "Embedded report HTML must inject data-embed=\"1\" on <html>: {}",
-            embedded_html
-        );
+        assert!(embedded_html.contains("data-embed=\"1\""));
+        assert!(embedded_html.contains("data-inlined-echarts=\"1\""));
+        assert!(embedded_html.contains("<\\/script>"));
+        assert!(!embedded_html.contains("src=\"/reports/assets/echarts.min.js\""));
     }
 
     #[test]

@@ -81,4 +81,9 @@
 
 - **Compact #6 (`2026-11-18` · Checkpoint: `Round 2 quant fixes implemented; modularizing scan pipeline`)**：
   - 完成第 2 轮深度量化与 `100W/<=10` 账本全部修复及模块化拆分（新增 `./src-tauri/src/domain/trading_calendar.rs` 与 `./src-tauri/src/application/scan_alignment.rs`，确保全仓每个源码文件严格 `<= 600` 行），通过 `49/49` Rust 单测/架构红线/PBT/回归测试（零警告）与 `20/20` Vitest + `fast-check` PBT；
-  - 当前立即提交第 2 轮修复并标记完成，随后依次推进第 3 轮（Apple Liquid Glass 光学层级、`<= 8` 模糊预算、零文字截断与图表 UX）、第 4 轮（安全审计、因子 AST 防注入、并发与行情降级韧性）、第 5 轮（25 项需求全量终审、便携版 `.exe` 重新构建冒烟校验与文档同步），最终执行 `git push origin main`。
+  - 提交第 2 轮基线（`c12856f`）并启动第 3 轮视觉与交互深度审计。
+
+- **Compact #7 (`2026-11-18` · Checkpoint: `Round 2 committed; Round 3 Liquid Glass TDD fixes`)**：
+  - 第 2 轮深度量化与 `100W/<=10` 账本审查已全绿提交（`c12856f`）；
+  - 完成第 3 轮 Apple Liquid Glass 视觉光学与交互专家审查（`rubber-duck` · `gemini-4-carbon` · `high`），编写 `./src/__tests__/round3LiquidGlass.test.tsx` 5 项回归测试并验证 TDD 红灯（`5/5` 精准失败），已完成前两批修复（新增 `./src/components/charts/klineTimeAlign.ts` 解决 `30m` 数值时间戳与日级字符串买点标记混排崩溃、高特异性 `prefers-reduced-transparency` 回退、`15 bps` 小盘滑点与科创/北交零股平仓规则、六维标准因子 ID 对齐、多标的轮动弹窗与 `Escape` 键盘无障碍）；
+  - 当前立即完成第 3 轮第 3 批页面级与研报 `srcDoc` ECharts 离线内联修复，跑通全量 Vitest + Rust + 构建 + 仓库卫生门禁并提交第 3 轮，随后推进第 4 轮（安全审计、因子 AST 安全与并发韧性）及第 5 轮（25 项需求终审、便携版 `.exe` 重新构建冒烟验证与文档同步），最后执行 `git push origin main`。

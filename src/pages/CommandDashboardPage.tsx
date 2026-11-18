@@ -23,6 +23,7 @@ export interface CommandDashboardPageProps {
   theme: ThemeMode;
   polarity: MarketPolarity;
   isBlurActive: (slotId: string) => boolean;
+  onPopoverOpenChange?: (open: boolean) => void;
   onChangeKline: (symbol: string, period: "1d" | "30m") => void;
   onOpenScreener: () => void;
 }
@@ -45,7 +46,7 @@ function useAnimatedMetric(target: number): number {
     let rafId = 0;
 
     const step = (now: number) => {
-      const p = Math.min(1, (now - t0) / duration);
+      const p = Math.max(0, Math.min(1, (now - t0) / duration));
       const eased = 1 - Math.pow(1 - p, 3);
       setVal(start + (target - start) * eased);
       if (p < 1) {
@@ -97,6 +98,7 @@ export const CommandDashboardPage: React.FC<CommandDashboardPageProps> = ({
   theme,
   polarity,
   isBlurActive,
+  onPopoverOpenChange,
   onChangeKline,
   onOpenScreener,
 }) => {
@@ -153,7 +155,13 @@ export const CommandDashboardPage: React.FC<CommandDashboardPageProps> = ({
           <div className="col-span-3 glass-optical-card glass-optical-card-interactive">
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
               <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>当日盈亏 &amp; 最大回撤</span>
-              <TrendingUp size={15} style={{ color: "var(--mkt-up)", flexShrink: 0 }} />
+              <TrendingUp
+                size={15}
+                style={{
+                  color: portfolio.dailyPnlYuan >= 0 ? "var(--mkt-up)" : "var(--mkt-down)",
+                  flexShrink: 0,
+                }}
+              />
             </div>
             <div
               style={{
@@ -173,11 +181,18 @@ export const CommandDashboardPage: React.FC<CommandDashboardPageProps> = ({
                 {portfolio.dailyPnlYuan >= 0 ? "+" : ""}
                 {formatCurrencyYuan(animatedDailyPnl)}
               </strong>
-              <MiniSparkline values={excessSpark} strokeVar="var(--mkt-up)" />
+              <MiniSparkline
+                values={excessSpark}
+                strokeVar={
+                  (excessSpark[excessSpark.length - 1] ?? 0) >= 0
+                    ? "var(--mkt-up)"
+                    : "var(--mkt-down)"
+                }
+              />
             </div>
             <div className="tabular-nums" style={{ fontSize: "11.5px", color: "var(--text-muted)", marginTop: "6px" }}>
               日涨幅 {formatSignedPct(portfolio.dailyReturnPct)} · 最大回撤{" "}
-              <span className="text-stoploss">{portfolio.maxDrawdownPct.toFixed(2)}%</span>
+              <span className="text-stoploss">-{Math.abs(portfolio.maxDrawdownPct).toFixed(2)}%</span>
             </div>
           </div>
 
@@ -286,6 +301,7 @@ export const CommandDashboardPage: React.FC<CommandDashboardPageProps> = ({
             theme={theme}
             polarity={polarity}
             popoverBlurActive={isBlurActive("kline-rationale-popover")}
+            onPopoverOpenChange={onPopoverOpenChange}
             onChangeSymbolPeriod={onChangeKline}
           />
         </section>

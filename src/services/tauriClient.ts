@@ -137,7 +137,7 @@ export async function placeSimulatedBuy(
   const board = cand?.board ?? "MAIN";
   const rule = getBoardTradingRule(board);
   const entryPrice = cand?.latestPriceYuan ?? 25.0;
-  const fillPrice = roundCurrency2(entryPrice * 1.0005);
+  const fillPrice = roundCurrency2(entryPrice * 1.0015);
 
   const defaultLots = Math.max(
     rule.minLotQty,
@@ -150,15 +150,23 @@ export async function placeSimulatedBuy(
 
   const rawStop = input.stopLossPriceYuan ?? cand?.suggestedStopLossYuan ?? roundCurrency2(entryPrice * 0.92);
   const stopLoss = rawStop < entryPrice ? rawStop : roundCurrency2(entryPrice * 0.93);
-  const fees = computeAShareFeeBreakdown("BUY", fillPrice, lotQty);
-  const totalCost = roundCurrency2(fees.notionalYuan + fees.totalFeeYuan);
+  const fees = computeAShareFeeBreakdown("BUY", entryPrice, lotQty);
+  const fillNotional = roundCurrency2(fillPrice * lotQty);
+  const existingValue = existing ? roundCurrency2(existing.markPriceYuan * existing.totalQty) : 0;
+  const singleCapYuan = roundCurrency2(portfolio.initialCapitalYuan * 0.1);
+  if (existingValue + fillNotional > singleCapYuan + 1e-6) {
+    throw new Error(`单票仓位上限保护：持仓市值不得超过初始本金 10% (¥${singleCapYuan.toFixed(2)})`);
+  }
+
+  // fillPrice already embeds 15 bps impact slippage; cash pays fillNotional + commission
+  const totalCost = roundCurrency2(fillNotional + fees.commissionYuan);
 
   if (totalCost > portfolio.cashYuan) {
     throw new Error(`可用现金不足：需 ¥${totalCost.toFixed(2)}，当前可用 ¥${portfolio.cashYuan.toFixed(2)}`);
   }
 
   portfolio.cashYuan = roundCurrency2(portfolio.cashYuan - totalCost);
-  portfolio.totalFeesPaidYuan = roundCurrency2(portfolio.totalFeesPaidYuan + fees.totalFeeYuan);
+  portfolio.totalFeesPaidYuan = roundCurrency2(portfolio.totalFeesPaidYuan + fees.commissionYuan);
 
   const nowIso = new Date().toISOString();
   const rationale =
@@ -238,12 +246,14 @@ export async function closeSimulatedPosition(
   }
 
   const sellQty = pos.sellableQty;
-  const fillPrice = roundCurrency2(pos.markPriceYuan * 0.9995);
-  const fees = computeAShareFeeBreakdown("SELL", fillPrice, sellQty);
-  const netProceeds = roundCurrency2(fees.notionalYuan - fees.totalFeeYuan);
+  const fillPrice = roundCurrency2(pos.markPriceYuan * 0.9985);
+  const fees = computeAShareFeeBreakdown("SELL", pos.markPriceYuan, sellQty);
+  const fillNotional = roundCurrency2(fillPrice * sellQty);
+  const explicitFees = roundCurrency2(fees.commissionYuan + fees.stampDutyYuan);
+  const netProceeds = roundCurrency2(fillNotional - explicitFees);
 
   portfolio.cashYuan = roundCurrency2(portfolio.cashYuan + netProceeds);
-  portfolio.totalFeesPaidYuan = roundCurrency2(portfolio.totalFeesPaidYuan + fees.totalFeeYuan);
+  portfolio.totalFeesPaidYuan = roundCurrency2(portfolio.totalFeesPaidYuan + explicitFees);
 
   if (pos.lockedT0Qty > 0) {
     pos.totalQty = pos.lockedT0Qty;

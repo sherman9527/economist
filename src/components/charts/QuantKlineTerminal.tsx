@@ -7,7 +7,6 @@ import {
   type IChartApi,
   type SeriesMarker,
   type Time,
-  type UTCTimestamp,
 } from "lightweight-charts";
 import { Sparkles, X, ShieldCheck } from "lucide-react";
 import type {
@@ -20,6 +19,7 @@ import type {
 import { clampPopoverPosition, normalizeStockDisplayLabel } from "../../domain/uiInvariants";
 import { PitfallAuditBadges } from "../common/PitfallAuditBadges";
 import { SafeText } from "../common/SafeText";
+import { normalizeKlineSeriesAndMarkers } from "./klineTimeAlign";
 import { canRenderBrowserCharts, readChartTokenPalette } from "./useEChartsInstance";
 
 export interface QuantKlineTerminalProps {
@@ -28,16 +28,9 @@ export interface QuantKlineTerminalProps {
   theme: ThemeMode;
   polarity: MarketPolarity;
   popoverBlurActive: boolean;
+  loading?: boolean;
+  onPopoverOpenChange?: (open: boolean) => void;
   onChangeSymbolPeriod: (symbol: string, period: "1d" | "30m") => void;
-}
-
-function toChartTime(barTime: string): Time {
-  if (barTime.includes(" ")) {
-    const iso = `${barTime.replace(" ", "T")}:00Z`;
-    const sec = Math.floor(Date.parse(iso) / 1000);
-    return sec as UTCTimestamp;
-  }
-  return barTime as Time;
 }
 
 export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
@@ -46,6 +39,8 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
   theme,
   polarity,
   popoverBlurActive,
+  loading = false,
+  onPopoverOpenChange,
   onChangeSymbolPeriod,
 }) => {
   const paneWrapRef = useRef<HTMLDivElement | null>(null);
@@ -56,18 +51,35 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
     y: number;
   } | null>(null);
 
+  const aligned = useMemo(() => normalizeKlineSeriesAndMarkers(payload), [payload]);
+
   const markerByTimeKey = useMemo(() => {
     const map = new Map<string, KlineSignalMarkerDto>();
-    for (const m of payload.buyMarkers) {
-      map.set(String(toChartTime(m.barTime)), m);
-      map.set(m.barTime, m);
+    for (const item of aligned.markers) {
+      map.set(String(item.chartTime), item.marker);
+      map.set(item.marker.barTime, item.marker);
     }
     return map;
-  }, [payload.buyMarkers]);
+  }, [aligned.markers]);
 
   useEffect(() => {
     setSelectedMarker(null);
   }, [payload.symbol, payload.period]);
+
+  useEffect(() => {
+    onPopoverOpenChange?.(selectedMarker !== null);
+  }, [selectedMarker, onPopoverOpenChange]);
+
+  useEffect(() => {
+    if (!selectedMarker) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSelectedMarker(null);
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [selectedMarker]);
 
   const openMarkerPopover = (
     marker: KlineSignalMarkerDto,
@@ -91,7 +103,7 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
 
   useEffect(() => {
     const host = canvasHostRef.current;
-    if (!host || !canRenderBrowserCharts()) return;
+    if (!host || !canRenderBrowserCharts() || aligned.bars.length === 0) return;
 
     const palette = readChartTokenPalette(theme, polarity);
     let chart: IChartApi | null = null;
@@ -132,8 +144,8 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
       });
 
       candleSeries.setData(
-        payload.bars.map((b) => ({
-          time: toChartTime(b.time),
+        aligned.bars.map((b) => ({
+          time: b.chartTime,
           open: b.open,
           high: b.high,
           low: b.low,
@@ -141,23 +153,25 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
         }))
       );
 
-      // Quant Agent Buy-Point Upward Markers
-      const markers: SeriesMarker<Time>[] = payload.buyMarkers
-        .map((m) => ({
-          time: toChartTime(m.barTime),
+      // Isolate marker mounting so any unexpected series marker error never aborts stop-loss or MAs
+      try {
+        const markers: SeriesMarker<Time>[] = aligned.markers.map((item) => ({
+          time: item.chartTime,
           position: "belowBar" as const,
           color: palette.mktUp,
           shape: "arrowUp" as const,
-          text: `买点 ¥${m.entryPriceYuan.toFixed(2)}`,
-        }))
-        .sort((a, b) => (String(a.time) < String(b.time) ? -1 : 1));
-      candleSeries.setMarkers(markers);
+          text: `买点 ¥${item.marker.entryPriceYuan.toFixed(2)}`,
+        }));
+        candleSeries.setMarkers(markers);
+      } catch {
+        // Ignore isolated marker mismatch
+      }
 
-      // Decoupled Amber Dashed Stop-Loss Horizontal Price Line (#FF9F0A)
+      // Decoupled Amber Dashed Stop-Loss Horizontal Price Line
       if (payload.activeStopLossYuan && payload.activeStopLossYuan > 0) {
         candleSeries.createPriceLine({
           price: payload.activeStopLossYuan,
-          color: "#FF9F0A",
+          color: palette.riskStoploss,
           lineWidth: 2,
           lineStyle: LineStyle.Dashed,
           axisLabelVisible: true,
@@ -173,9 +187,9 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
         lastValueVisible: false,
       });
       ma5Series.setData(
-        payload.bars
+        aligned.bars
           .filter((b) => typeof b.ma5 === "number")
-          .map((b) => ({ time: toChartTime(b.time), value: b.ma5 as number }))
+          .map((b) => ({ time: b.chartTime, value: b.ma5 as number }))
       );
 
       const ma20Series = chart.addLineSeries({
@@ -186,9 +200,9 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
         lastValueVisible: false,
       });
       ma20Series.setData(
-        payload.bars
+        aligned.bars
           .filter((b) => typeof b.ma20 === "number")
-          .map((b) => ({ time: toChartTime(b.time), value: b.ma20 as number }))
+          .map((b) => ({ time: b.chartTime, value: b.ma20 as number }))
       );
 
       // Linked Volume Histogram Sub-pane
@@ -200,12 +214,16 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
         scaleMargins: { top: 0.79, bottom: 0 },
       });
       const upVolAlpha =
-        polarity === "cn-red-up" ? "rgba(255, 69, 58, 0.36)" : "rgba(48, 209, 88, 0.36)";
+        polarity === "cn-red-up"
+          ? theme === "light" ? "rgba(220, 38, 38, 0.34)" : "rgba(255, 69, 58, 0.36)"
+          : theme === "light" ? "rgba(22, 163, 74, 0.34)" : "rgba(48, 209, 88, 0.36)";
       const downVolAlpha =
-        polarity === "cn-red-up" ? "rgba(48, 209, 88, 0.36)" : "rgba(255, 69, 58, 0.36)";
+        polarity === "cn-red-up"
+          ? theme === "light" ? "rgba(22, 163, 74, 0.34)" : "rgba(48, 209, 88, 0.36)"
+          : theme === "light" ? "rgba(220, 38, 38, 0.34)" : "rgba(255, 69, 58, 0.36)";
       volSeries.setData(
-        payload.bars.map((b) => ({
-          time: toChartTime(b.time),
+        aligned.bars.map((b) => ({
+          time: b.chartTime,
           value: b.volume,
           color: b.close >= b.open ? upVolAlpha : downVolAlpha,
         }))
@@ -347,6 +365,7 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
       <div
         ref={canvasHostRef}
         style={{
+          position: "relative",
           width: "100%",
           minHeight: "310px",
           borderRadius: "14px",
@@ -354,7 +373,24 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
           border: "1px solid var(--glass-rim-subtle)",
         }}
         aria-label="TradingView K线买点与止损水平线主图"
-      />
+      >
+        {(loading || aligned.bars.length === 0) && (
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              fontSize: "12.5px",
+              color: "var(--text-muted)",
+              pointerEvents: "none",
+            }}
+          >
+            {loading ? "正在加载实时 K 线与止损锚点..." : "当前周期暂无 K 线历史序列"}
+          </div>
+        )}
+      </div>
 
       {/* Edge-Clamped Tier-3 Glass Rationale Popover */}
       {selectedMarker && (
@@ -382,11 +418,12 @@ export const QuantKlineTerminal: React.FC<QuantKlineTerminalProps> = ({
               alignItems: "center",
               justifyContent: "space-between",
               gap: "8px",
+              minWidth: 0,
             }}
           >
-            <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 700, fontSize: "13px" }}>
-              <ShieldCheck size={15} style={{ color: "var(--accent)" }} />
-              <span>量化买点审计 · {selectedMarker.marker.barTime}</span>
+            <span style={{ display: "flex", alignItems: "center", gap: "6px", fontWeight: 700, fontSize: "13px", flex: "1 1 0%", minWidth: 0 }}>
+              <ShieldCheck size={15} style={{ color: "var(--accent)", flexShrink: 0 }} />
+              <SafeText text={`量化买点审计 · ${selectedMarker.marker.barTime}`} />
             </span>
             <button
               type="button"

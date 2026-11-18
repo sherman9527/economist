@@ -45,12 +45,14 @@ export function getBoardTradingRule(board: BoardKind): BoardTradingRule {
 }
 
 export function validateAShareOrderInput(params: {
+  side?: "BUY" | "SELL";
   board: BoardKind;
   prevCloseYuan: number;
   orderPriceYuan: number;
   lotQty: number;
+  availableQty?: number;
 }): OrderValidationResult {
-  const { board, prevCloseYuan, orderPriceYuan, lotQty } = params;
+  const { side = "BUY", board, prevCloseYuan, orderPriceYuan, lotQty, availableQty } = params;
   const rule = getBoardTradingRule(board);
   const reasons: string[] = [];
 
@@ -74,10 +76,21 @@ export function validateAShareOrderInput(params: {
     );
   }
 
-  if (!Number.isInteger(lotQty) || lotQty < rule.minLotQty) {
-    reasons.push(`${board} 最低申报股数为 ${rule.minLotQty} 股`);
-  } else if ((lotQty - rule.minLotQty) % rule.lotStep !== 0) {
-    reasons.push(`${board} 申报股数须按 ${rule.lotStep} 股递增`);
+  const isOddLotFullSell =
+    side === "SELL" &&
+    typeof availableQty === "number" &&
+    Number.isInteger(lotQty) &&
+    lotQty > 0 &&
+    lotQty === availableQty;
+
+  if (!isOddLotFullSell) {
+    if (!Number.isInteger(lotQty) || lotQty < rule.minLotQty) {
+      reasons.push(`${board} 最低申报股数为 ${rule.minLotQty} 股`);
+    } else if ((lotQty - rule.minLotQty) % rule.lotStep !== 0) {
+      reasons.push(`${board} 申报股数须按 ${rule.lotStep} 股递增`);
+    }
+  } else if (availableQty !== undefined && lotQty > availableQty) {
+    reasons.push(`可卖股数不足（当前可卖 ${availableQty} 股）`);
   }
 
   return {
@@ -105,7 +118,8 @@ export function computeAShareFeeBreakdown(
   }
   const commissionYuan = roundCurrency2(Math.max(5, notionalYuan * 0.00025));
   const stampDutyYuan = side === "SELL" ? roundCurrency2(notionalYuan * 0.0005) : 0;
-  const slippageYuan = roundCurrency2(notionalYuan * 0.0005);
+  // Matches strategy manifest & Rust FeeSchedule::default() 15 bps small-cap market impact slippage
+  const slippageYuan = roundCurrency2(notionalYuan * 0.0015);
   const totalFeeYuan = roundCurrency2(commissionYuan + stampDutyYuan + slippageYuan);
   return {
     notionalYuan,

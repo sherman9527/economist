@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type {
   AgentSessionDto,
   MarketPolarity,
@@ -59,7 +59,10 @@ export const App: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>("dark");
   const [polarity, setPolarity] = useState<MarketPolarity>("cn-red-up");
   const [rotationAlert, setRotationAlert] = useState<RotationAlertEventDto | null>(null);
+  const [klinePopoverOpen, setKlinePopoverOpen] = useState<boolean>(false);
+  const [inspectedSymbol, setInspectedSymbol] = useState<string | undefined>(undefined);
   const [errorBanner, setErrorBanner] = useState<string | null>(null);
+  const dismissedAlertSlotRef = useRef<string | null>(null);
 
   useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
@@ -68,6 +71,10 @@ export const App: React.FC = () => {
   useEffect(() => {
     document.documentElement.setAttribute("data-polarity", polarity);
   }, [polarity]);
+
+  useEffect(() => {
+    setKlinePopoverOpen(false);
+  }, [activePage]);
 
   useEffect(() => {
     let mounted = true;
@@ -85,7 +92,11 @@ export const App: React.FC = () => {
 
     let unlistenFn: (() => void) | null = null;
     void subscribeRotationAlert((payload) => {
-      if (mounted && payload.topPicks.length > 0) {
+      if (
+        mounted &&
+        payload.topPicks.length > 0 &&
+        payload.slotTimestampCst !== dismissedAlertSlotRef.current
+      ) {
         setRotationAlert(payload);
       }
     }).then((fn) => {
@@ -103,10 +114,12 @@ export const App: React.FC = () => {
     if (rotationAlert) {
       requested.push("toast-rotation");
     }
-    requested.push("kline-rationale-popover");
+    if (klinePopoverOpen) {
+      requested.push("kline-rationale-popover");
+    }
     requested.push(...PAGE_BLUR_SLOTS[activePage]);
     return clampBlurSlots(requested, 8);
-  }, [activePage, rotationAlert]);
+  }, [activePage, rotationAlert, klinePopoverOpen]);
 
   const isBlurActive = useCallback(
     (slotId: string) => activeBlurSlots.has(slotId),
@@ -115,6 +128,7 @@ export const App: React.FC = () => {
 
   const handleRunScan = useCallback(async () => {
     setErrorBanner(null);
+    dismissedAlertSlotRef.current = null;
     const res = await runMarketScan(true);
     setTerminal((prev) => ({
       ...prev,
@@ -127,14 +141,19 @@ export const App: React.FC = () => {
   }, []);
 
   const handleChangeKline = useCallback(async (symbol: string, period: "1d" | "30m") => {
-    const kline = await getStockKline(symbol, period);
-    setTerminal((prev) => ({ ...prev, featuredKline: kline }));
+    try {
+      const kline = await getStockKline(symbol, period);
+      setTerminal((prev) => ({ ...prev, featuredKline: kline }));
+    } catch (err: unknown) {
+      setErrorBanner(err instanceof Error ? err.message : "K线切换加载失败");
+    }
   }, []);
 
   const handleJumpToKline = useCallback(
     (symbol: string) => {
+      setInspectedSymbol(symbol);
       void handleChangeKline(symbol, "1d");
-      setActivePage("dashboard");
+      setActivePage("screener");
     },
     [handleChangeKline]
   );
@@ -260,6 +279,7 @@ export const App: React.FC = () => {
                 theme={theme}
                 polarity={polarity}
                 isBlurActive={isBlurActive}
+                onPopoverOpenChange={setKlinePopoverOpen}
                 onChangeKline={(sym, per) => void handleChangeKline(sym, per)}
                 onOpenScreener={() => setActivePage("screener")}
               />
@@ -271,10 +291,15 @@ export const App: React.FC = () => {
                 candidates={terminal.candidates}
                 portfolio={terminal.portfolio}
                 klinePayload={terminal.featuredKline}
+                inspectedSymbol={inspectedSymbol}
                 theme={theme}
                 polarity={polarity}
                 isBlurActive={isBlurActive}
-                onChangeKline={(sym, per) => void handleChangeKline(sym, per)}
+                onPopoverOpenChange={setKlinePopoverOpen}
+                onChangeKline={(sym, per) => {
+                  setInspectedSymbol(sym);
+                  void handleChangeKline(sym, per);
+                }}
                 onPlaceBuy={(cand, lots) => handlePlaceBuy(cand, lots)}
               />
             )}
@@ -324,7 +349,12 @@ export const App: React.FC = () => {
       <RotationAlertToast
         alert={rotationAlert}
         blurActive={isBlurActive("toast-rotation")}
-        onDismiss={() => setRotationAlert(null)}
+        onDismiss={() => {
+          if (rotationAlert) {
+            dismissedAlertSlotRef.current = rotationAlert.slotTimestampCst;
+          }
+          setRotationAlert(null);
+        }}
         onInspectKline={(cand) => {
           setRotationAlert(null);
           handleJumpToKline(cand.symbol);

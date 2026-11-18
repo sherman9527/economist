@@ -143,9 +143,14 @@
 }
 
 @media (prefers-reduced-transparency: reduce) {
-  :root {
+  :root,
+  :root[data-theme="dark"],
+  :root[data-theme="light"] {
     --glass-tint-1: var(--bg-elevated-solid);
     --glass-tint-2: var(--bg-elevated-solid);
     --glass-tint-3: var(--bg-elevated-solid);
+    --glass-blur-1: none;
+    --glass-blur-2: none;
+    --glass-blur-3: none;
   }
 }

@@ -233,6 +233,11 @@ pub fn build_screener_candidate_dto(
         board,
         industry_sw1: item.industry_sw1,
         latest_price_yuan: round_2(item.quote.latest_yuan),
+        prev_close_yuan: if item.quote.prev_close_yuan > 0.0 {
+            Some(round_2(item.quote.prev_close_yuan))
+        } else {
+            None
+        },
         pct_chg,
         total_mv_yi: round_2(item.quote.total_mv_yi),
         circ_mv_yi: round_2(item.quote.circ_mv_yi),

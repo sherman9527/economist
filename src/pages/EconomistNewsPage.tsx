@@ -35,6 +35,8 @@ export const EconomistNewsPage: React.FC<EconomistNewsPageProps> = ({
     economist.reports[0]?.reportId ?? ""
   );
   const [embedHtml, setEmbedHtml] = useState<string>("");
+  const [loadingHtml, setLoadingHtml] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   const activeReport: EconomistReportItemDto | undefined =
     economist.reports.find((r) => r.reportId === selectedReportId) ??
@@ -43,11 +45,21 @@ export const EconomistNewsPage: React.FC<EconomistNewsPageProps> = ({
   useEffect(() => {
     if (subPivot !== "reader" || !activeReport) return;
     let cancelled = false;
-    void onLoadReportHtml(activeReport.relPath).then((raw) => {
-      if (!cancelled) {
-        setEmbedHtml(raw);
-      }
-    });
+    setLoadingHtml(true);
+    setLoadError(null);
+    void onLoadReportHtml(activeReport.relPath)
+      .then((raw) => {
+        if (!cancelled) {
+          setEmbedHtml(raw);
+          setLoadingHtml(false);
+        }
+      })
+      .catch((err: unknown) => {
+        if (!cancelled) {
+          setLoadError(err instanceof Error ? err.message : "读取离线研报 HTML 失败");
+          setLoadingHtml(false);
+        }
+      });
     return () => {
       cancelled = true;
     };
@@ -134,10 +146,26 @@ export const EconomistNewsPage: React.FC<EconomistNewsPageProps> = ({
             </div>
 
             <div className="tabular-nums" style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              <span className="glass-pill pill-mkt-up">
+              <span
+                className={`glass-pill ${
+                  activeReport.usScore >= 55
+                    ? "pill-mkt-up"
+                    : activeReport.usScore < 45
+                      ? "pill-mkt-down"
+                      : "pill-risk-stoploss"
+                }`}
+              >
                 美股多空情绪 {activeReport.usScore} / 100
               </span>
-              <span className="glass-pill pill-risk-clear">
+              <span
+                className={`glass-pill ${
+                  activeReport.cnScore >= 55
+                    ? "pill-risk-clear"
+                    : activeReport.cnScore < 45
+                      ? "pill-risk-veto"
+                      : "pill-risk-stoploss"
+                }`}
+              >
                 A股小盘景气映射 {activeReport.cnScore} / 100
               </span>
               <button
@@ -351,16 +379,27 @@ export const EconomistNewsPage: React.FC<EconomistNewsPageProps> = ({
             </div>
           </div>
 
+          {loadError && (
+            <div role="alert" className="glass-pill pill-risk-veto">
+              <span>研报加载告警：{loadError}</span>
+            </div>
+          )}
+          {loadingHtml && !embedHtml && (
+            <div className="glass-optical-card" style={{ fontSize: "12.5px", color: "var(--text-muted)" }}>
+              正在加载便携离线研报与内联 ECharts 图表...
+            </div>
+          )}
+
           <iframe
             title={activeReport.titleZh}
-            sandbox=""
+            sandbox="allow-scripts"
             srcDoc={embedHtml}
             style={{
               width: "100%",
               minHeight: "460px",
               border: "1px solid var(--glass-rim-subtle)",
               borderRadius: "16px",
-              background: "#0a1020",
+              background: "var(--bg-elevated-solid)",
             }}
           />
         </section>

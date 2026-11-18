@@ -26,6 +26,7 @@ export interface ScreenerCandidateDto {
   board: BoardKind;
   industrySw1: string;
   latestPriceYuan: number;
+  prevCloseYuan?: number;
   pctChg: number;
   totalMvYi: number;
   circMvYi: number;
