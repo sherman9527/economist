@@ -2,13 +2,14 @@
 """
 Real-Time & Historical Market K-Line (OHLCV) Fetcher for US, A-Share, and HK Equities.
 Fetches 40-day daily candlestick data (Open, Close, Low, High, Volume), computes MA5/MA20,
-1D/5D/20D returns, and caches under D:\\code\\economist\\data\\market_cache (Zero C: drive usage).
+1D/5D/20D returns, and caches under ./data/market_cache (Zero C: drive usage).
 """
 
 import json
 import re
 import urllib.parse
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, Optional
@@ -33,7 +34,7 @@ BENCHMARK_SYMBOLS = [
     {"symbol": "PANW", "qt_code": "usPANW.OQ", "name": "派拓网络 (PANW)", "market": "US"},
     {"symbol": "FCX", "qt_code": "usFCX.N", "name": "自由港铜业 (FCX)", "market": "US"},
     {"symbol": "FSLR", "qt_code": "usFSLR.OQ", "name": "第一太阳能 (FSLR)", "market": "US"},
-    {"symbol": "WMT", "qt_code": "usWMT.N", "name": "沃尔玛 (WMT)", "market": "US"},
+    {"symbol": "WMT", "qt_code": "usWMT.OQ", "name": "沃尔玛 (WMT)", "market": "US"},
     {"symbol": "CVS", "qt_code": "usCVS.N", "name": "西维斯健康 (CVS)", "market": "US"},
     {"symbol": "XOM", "qt_code": "usXOM.N", "name": "埃克森美孚 (XOM)", "market": "US"},
     {"symbol": "300308.SZ", "qt_code": "sz300308", "name": "中际旭创 (300308.SZ)", "market": "CN"},
@@ -58,7 +59,7 @@ KNOWN_QT_MAP = {
     "META": ("usMETA.OQ", "脸书母公司"),
     "AMZN": ("usAMZN.OQ", "亚马逊"),
     "TSLA": ("usTSLA.OQ", "特斯拉"),
-    "WMT": ("usWMT.N", "沃尔玛"),
+    "WMT": ("usWMT.OQ", "沃尔玛"),
     "TGT": ("usTGT.N", "塔吉特百货"),
     "COST": ("usCOST.OQ", "开市客"),
     "PANW": ("usPANW.OQ", "派拓网络"),
@@ -115,63 +116,222 @@ KNOWN_QT_MAP = {
     "CF": ("usCF.N", "CF工业氮肥"),
     "BG": ("usBG.N", "邦吉粮商"),
     "DAL": ("usDAL.N", "达美航空"),
-    "KHC": ("usKHC.OQ", "卡夫亨氏食品"),
-    "PLTR": ("usPLTR.N", "帕兰提尔大数据"),
+    "KHC": ("usKHC.N", "卡夫亨氏食品"),
+    "PLTR": ("usPLTR.OQ", "帕兰提尔大数据"),
     "SMCI": ("usSMCI.OQ", "超微电脑"),
     "ADBE": ("usADBE.OQ", "奥多比软件"),
     "TMO": ("usTMO.N", "赛默飞世尔"),
     "DHR": ("usDHR.N", "丹纳赫生命科学"),
     "LTH": ("usLTH.N", "高端健身连锁"),
     "AI": ("usAI.N", "C3人工智能"),
+    "AMD": ("usAMD.OQ", "超威半导体"),
+    "MRVL": ("usMRVL.OQ", "迈威尔科技"),
+    "ARM": ("usARM.OQ", "安谋控股"),
+    "INTC": ("usINTC.OQ", "英特尔"),
+    "MU": ("usMU.OQ", "美光科技"),
+    "AMAT": ("usAMAT.OQ", "应用材料"),
+    "LRCX": ("usLRCX.OQ", "泛林集团"),
+    "SNPS": ("usSNPS.OQ", "新思科技"),
+    "CDNS": ("usCDNS.OQ", "楷登电子"),
+    "APP": ("usAPP.OQ", "移动广告平台"),
+    "ARES": ("usARES.N", "阿瑞斯资管"),
+    "OWL": ("usOWL.N", "蓝鸮私募信贷"),
+    "BX": ("usBX.N", "黑石集团"),
+    "KKR": ("usKKR.N", "KKR资管"),
+    "CME": ("usCME.OQ", "芝加哥商品交易所"),
+    "CBOE": ("usCBOE.AM", "芝加哥期权交易所"),
+    "ICE": ("usICE.N", "洲际交易所"),
+    "SCHW": ("usSCHW.N", "嘉信理财"),
+    "HOOD": ("usHOOD.OQ", "罗宾汉证券"),
+    "WELL": ("usWELL.N", "韦尔塔医疗房产"),
+    "VTR": ("usVTR.N", "文塔斯医疗房产"),
+    "THO": ("usTHO.N", "索尔房车"),
+    "HOG": ("usHOG.N", "哈雷戴维森"),
+    "CCL": ("usCCL.N", "嘉年华邮轮"),
+    "RCL": ("usRCL.N", "皇家加勒比邮轮"),
+    "PDD": ("usPDD.OQ", "拼多多"),
+    "BABA": ("usBABA.N", "阿里巴巴"),
+    "GLD": ("usGLD.AM", "黄金指数基金"),
+    "XLF": ("usXLF.AM", "美国金融指数基金"),
+    "IGV": ("usIGV.AM", "北美软件指数基金"),
+    "SPHQ": ("usSPHQ.AM", "标普高质量指数基金"),
+    "RSP": ("usRSP.AM", "标普等权指数基金"),
+    "KWEB": ("usKWEB.AM", "中概互联网指数基金"),
+    "KRE": ("usKRE.AM", "美国区域银行指数基金"),
+    "LMT": ("usLMT.N", "洛克希德马丁"),
+    "NOC": ("usNOC.N", "诺斯罗普格鲁曼"),
+    "GD": ("usGD.N", "通用动力"),
+    "RTX": ("usRTX.N", "雷神技术"),
+    "KTOS": ("usKTOS.OQ", "克拉托斯防务"),
+    "AVAV": ("usAVAV.OQ", "宇航环境无人机"),
+    "SBUX": ("usSBUX.OQ", "星巴克"),
+    "MCD": ("usMCD.N", "麦当劳"),
+    "CMG": ("usCMG.N", "墨式烧烤"),
+    "DRI": ("usDRI.N", "达登餐饮"),
+    "YUM": ("usYUM.N", "百胜餐饮"),
+    "NKE": ("usNKE.N", "耐克"),
+    "LULU": ("usLULU.OQ", "露露乐蒙"),
+    "TOL": ("usTOL.N", "托尔兄弟地产"),
+    "LEN": ("usLEN.N", "莱纳建筑地产"),
+    "UAL": ("usUAL.OQ", "美联航"),
+    "PWR": ("usPWR.N", "广达电力工程"),
+    "GEV": ("usGEV.N", "通用电气能源"),
+    "DE": ("usDE.N", "迪尔农机"),
+    "CAT": ("usCAT.N", "卡特彼勒"),
+    "BIIB": ("usBIIB.OQ", "百健生物"),
+    "REGN": ("usREGN.OQ", "再生元制药"),
+    "ABBV": ("usABBV.N", "艾伯维制药"),
+    "PFE": ("usPFE.N", "辉瑞制药"),
+    "BMY": ("usBMY.N", "百时美施贵宝"),
+    "NVO": ("usNVO.N", "诺和诺德"),
+    "DNLI": ("usDNLI.OQ", "德纳利医药"),
+    "TTD": ("usTTD.OQ", "萃弈广告平台"),
+    "SNOW": ("usSNOW.N", "雪花云数据"),
+    "DDOG": ("usDDOG.OQ", "数据狗云监控"),
+    "NET": ("usNET.N", "云フレア网络"),
+    "OKTA": ("usOKTA.OQ", "奥克塔身份安全"),
+    "F": ("usF.N", "福特汽车"),
+    "GM": ("usGM.N", "通用汽车"),
+    "O": ("usO.N", "实在收益地产"),
+    "U": ("usU.N", "优尼蒂引擎"),
+    "W": ("usW.N", "韦费尔家居"),
+    "S": ("usS.N", "哨兵一号安全"),
 }
+
+CN_NAME_QT_MAP = {
+    "宁德时代": ("300750.SZ", "sz300750", "宁德时代"),
+    "比亚迪": ("002594.SZ", "sz002594", "比亚迪"),
+    "寒武纪": ("688256.SH", "sh688256", "寒武纪"),
+    "海光信息": ("688041.SH", "sh688041", "海光信息"),
+    "中芯国际": ("688981.SH", "sh688981", "中芯国际"),
+    "工业富联": ("601138.SH", "sh601138", "工业富联"),
+    "中际旭创": ("300308.SZ", "sz300308", "中际旭创"),
+    "新易盛": ("300502.SZ", "sz300502", "新易盛"),
+    "沪电股份": ("002463.SZ", "sz002463", "沪电股份"),
+    "浪潮信息": ("000977.SZ", "sz000977", "浪潮信息"),
+    "北方华创": ("002371.SZ", "sz002371", "北方华创"),
+    "金山办公": ("688111.SH", "sh688111", "金山办公"),
+    "科大讯飞": ("002230.SZ", "sz002230", "科大讯飞"),
+    "紫金矿业": ("601899.SH", "sh601899", "紫金矿业"),
+    "中国神华": ("601088.SH", "sh601088", "中国神华"),
+    "中国海油": ("600938.SH", "sh600938", "中国海油"),
+    "招商银行": ("600036.SH", "sh600036", "招商银行"),
+    "工商银行": ("601398.SH", "sh601398", "工商银行"),
+    "上海银行": ("601229.SH", "sh601229", "上海银行"),
+    "药明康德": ("603259.SH", "sh603259", "药明康德"),
+    "迈瑞医疗": ("300760.SZ", "sz300760", "迈瑞医疗"),
+    "鱼跃医疗": ("002223.SZ", "sz002223", "鱼跃医疗"),
+    "美好医疗": ("301363.SZ", "sz301363", "美好医疗"),
+    "爱尔眼科": ("300015.SZ", "sz300015", "爱尔眼科"),
+    "恒瑞医药": ("600276.SH", "sh600276", "恒瑞医药"),
+    "百济神州": ("06160.HK", "hk06160", "百济神州"),
+    "泡泡玛特": ("09992.HK", "hk09992", "泡泡玛特"),
+    "名创优品": ("09896.HK", "hk09896", "名创优品"),
+    "腾讯控股": ("00700.HK", "hk00700", "腾讯控股"),
+    "美团": ("03690.HK", "hk03690", "美团"),
+    "阳光电源": ("300274.SZ", "sz300274", "阳光电源"),
+    "德业股份": ("605117.SH", "sh605117", "德业股份"),
+    "中航沈飞": ("600760.SH", "sh600760", "中航沈飞"),
+    "中国船舶": ("600150.SH", "sh600150", "中国船舶"),
+    "中远海能": ("600026.SH", "sh600026", "中远海能"),
+    "南方航空": ("600029.SH", "sh600029", "南方航空"),
+    "中国国航": ("601111.SH", "sh601111", "中国国航"),
+}
+
+
+def resolve_all_qt_codes(raw_symbol_or_head: str, market_type: str = "US") -> list[tuple[str, str, str]]:
+    """
+    Resolve ALL tradable stock tickers present in a single or multi-ticker head string
+    (e.g. 'APP / PLTR (AppLovin / Palantir)' or '寒武纪-U (688256.SH) / 海光信息 (688041.SH)')
+    into a deduplicated list of (canonical_symbol, qt_code, chinese_short_name).
+    """
+    text = (raw_symbol_or_head or "").strip()
+    if not text:
+        return []
+
+    found: list[tuple[str, str, str]] = []
+    seen_syms: set[str] = set()
+
+    def _add(sym: str, qt: str, zh: str):
+        if sym not in seen_syms:
+            seen_syms.add(sym)
+            found.append((sym, qt, zh))
+
+    # Split multi-ticker chunks by '/' when outside or across tickers so local Chinese names pair properly
+    segments = [seg.strip() for seg in re.split(r"\s*/\s*|\s*\+\s*|、", text) if seg.strip()]
+    if not segments:
+        segments = [text]
+
+    # Pass 1: Explicit A-share and HK numeric codes across full text & segments
+    for m_a in re.finditer(r"([\u4e00-\u9fff]{2,8})?[^\w\u4e00-\u9fff]*\b([0-9]{6})\.(SH|SZ|BJ)\b", text, flags=re.I):
+        zh_pre, digits, exch = (m_a.group(1) or ""), m_a.group(2), m_a.group(3).upper()
+        prefix = "sh" if exch == "SH" else ("sz" if exch == "SZ" else "bj")
+        sym = f"{digits}.{exch}"
+        zh = zh_pre or next((nm for nm, v in CN_NAME_QT_MAP.items() if v[0] == sym), "") or sym
+        _add(sym, f"{prefix}{digits}", zh)
+
+    for m_hk in re.finditer(r"([\u4e00-\u9fff]{2,8})?[^\w\u4e00-\u9fff]*\b([0-9]{4,5})\.HK\b", text, flags=re.I):
+        zh_pre, digits = (m_hk.group(1) or ""), m_hk.group(2).zfill(5)
+        sym = f"{digits}.HK"
+        # Avoid double-counting dual-listed A+H in the exact same parenthetical like (601899.SH / 2899.HK)
+        if zh_pre == "" and found and "/" in text and "(" in text:
+            pass
+        zh = zh_pre or next((nm for nm, v in CN_NAME_QT_MAP.items() if v[0] == sym), "") or sym
+        _add(sym, f"hk{digits}", zh)
+
+    # Pass 2: US tickers (including explicit PDD.US or standalone uppercase tickers)
+    us_stopwords = {
+        "SH", "SZ", "HK", "BJ", "ADR", "ETF", "US", "CN", "CSI", "IT", "IRA", "FTC",
+        "PBM", "OEM", "VIP", "AUM", "EPS", "PE", "ROE", "ROIC", "ARR", "BPO", "DIY",
+        "CEO", "CFO", "IPO", "MNC", "CNS", "BBB", "GLP", "FDA", "EPA", "LNG", "OPEC",
+        "ASIC", "GPU", "CPU", "NPU", "TPU", "LLM", "CDMO", "CRO", "CXO", "REIT",
+        "PUGC", "CTV", "MLR", "ESI", "ASP", "NIM", "NPL", "LPR", "FDI", "PMI", "CPI",
+        "PPI", "GDP", "WTO", "IMF", "WHO", "OTC",
+    }
+    for m_us in re.finditer(r"\b([A-Z]{2,5})(?:\.US)?\b", text):
+        cand = m_us.group(1)
+        if cand in us_stopwords:
+            continue
+        if cand == "AI":
+            # Only treat 'AI' as C3.ai when explicitly formatted as ticker, not 'AI算力'
+            after = text[m_us.end():m_us.end() + 2]
+            if re.match(r"[\u4e00-\u9fffA-Za-z]", after):
+                continue
+        if cand in KNOWN_QT_MAP:
+            qt_code, default_zh = KNOWN_QT_MAP[cand]
+            _add(cand, qt_code, default_zh)
+        elif market_type == "US" or ".US" in m_us.group(0):
+            resolved = query_smartbox(cand, prefer_market="us")
+            if resolved:
+                _add(cand, resolved[0], resolved[1] or cand)
+
+    # Single-letter US tickers only when clearly isolated (e.g. 'F (福特)' or 'O / VICI')
+    if market_type == "US" and not found:
+        for m_1 in re.finditer(r"(?:^|[\s/(\[])([FGMOUWS])(?:\.US)?(?:$|[\s/)\]])", text):
+            cand1 = m_1.group(1)
+            if cand1 in KNOWN_QT_MAP:
+                qt_code, default_zh = KNOWN_QT_MAP[cand1]
+                _add(cand1, qt_code, default_zh)
+
+    # Pass 3: Well-known Chinese stock names when written without numeric code (e.g. in Pair Trade legs)
+    if not found or market_type == "CN":
+        for cn_nm, (sym, qt, zh) in CN_NAME_QT_MAP.items():
+            if cn_nm in text and sym not in seen_syms:
+                # Skip HK duplicate if A-share of same company already added
+                if any(existing_zh == zh for _, _, existing_zh in found):
+                    continue
+                _add(sym, qt, zh)
+
+    return found
 
 
 def resolve_qt_code(raw_symbol_or_head: str, market_type: str = "US") -> Optional[tuple[str, str, str]]:
     """
     Resolve a raw ticker head string (e.g. '中际旭创 (300308.SZ)' or 'NVDA (英伟达)')
-    into (canonical_symbol, qt_code, chinese_short_name).
+    into the primary (canonical_symbol, qt_code, chinese_short_name).
     """
-    text = (raw_symbol_or_head or "").strip()
-    if not text:
-        return None
-
-    # Extract Chinese name if present
-    zh_match = re.search(r"[\u4e00-\u9fff]{2,8}", text)
-    zh_name = zh_match.group(0) if zh_match else ""
-
-    # 1. Check A-share 6-digit code
-    m_ashare = re.search(r"\b([0-9]{6})\.(SH|SZ|BJ)\b", text, flags=re.I)
-    if m_ashare:
-        digits, exch = m_ashare.group(1), m_ashare.group(2).upper()
-        prefix = "sh" if exch == "SH" else ("sz" if exch == "SZ" else "bj")
-        sym = f"{digits}.{exch}"
-        return sym, f"{prefix}{digits}", zh_name or sym
-
-    # 2. Check HK 4-5 digit code
-    m_hk = re.search(r"\b([0-9]{4,5})\.HK\b", text, flags=re.I)
-    if m_hk:
-        digits = m_hk.group(1).zfill(5)
-        sym = f"{digits}.HK"
-        return sym, f"hk{digits}", zh_name or sym
-
-    # 3. Check US uppercase ticker
-    m_us = re.findall(r"\b([A-Z]{2,5})\b", text)
-    for cand in m_us:
-        if cand in ("SH", "SZ", "HK", "BJ", "ADR", "ETF", "US", "CN", "AI", "IT", "IRA", "FTC"):
-            continue
-        if cand in KNOWN_QT_MAP:
-            qt_code, default_zh = KNOWN_QT_MAP[cand]
-            return cand, qt_code, default_zh
-        # Query Tencent smartbox for unknown US ticker
-        resolved = query_smartbox(cand, prefer_market="us" if market_type == "US" else "")
-        if resolved:
-            return cand, resolved[0], resolved[1] or zh_name or cand
-
-    # Check if AI (C3.ai) specifically
-    if re.search(r"\bAI\b", text) and market_type == "US":
-        return "AI", "usAI.N", zh_name or "C3.ai"
-
-    return None
+    all_res = resolve_all_qt_codes(raw_symbol_or_head, market_type=market_type)
+    return all_res[0] if all_res else None
 
 
 SMARTBOX_CACHE_FILE = MARKET_CACHE_DIR / "smartbox_cache.json"
@@ -247,35 +407,52 @@ def _calc_ma(closes: list[float], window: int) -> list[Optional[float]]:
     return out
 
 
-def fetch_kline_series(qt_code: str, symbol: str, name: str, market: str, days: int = 40) -> Optional[dict]:
+def fetch_kline_series(
+    qt_code: str,
+    symbol: str,
+    name: str,
+    market: str,
+    days: int = 60,
+    force_refresh: bool = False,
+) -> Optional[dict]:
     """
-    Fetch daily K-line OHLCV from Tencent API with disk caching.
+    Fetch daily K-line OHLCV from Tencent API with same-day TTL disk caching.
     Returns dict with dates, ohlc ([[open, close, low, high], ...]), volumes, closes, ma5, ma20,
     latest_close, chg_1d_pct, chg_5d_pct, chg_20d_pct.
     """
     safe_key = re.sub(r"[^a-zA-Z0-9_.-]", "_", qt_code)
     cache_file = MARKET_CACHE_DIR / f"kline_{safe_key}.json"
+    today_str = datetime.now().strftime("%Y-%m-%d")
 
-    if cache_file.exists():
+    if not force_refresh and cache_file.exists():
         try:
             cached = json.loads(cache_file.read_text(encoding="utf-8"))
-            if cached.get("empty"):
-                return None
-            if cached.get("dates") and len(cached["dates"]) >= 10:
-                cached["name"] = name
-                return cached
+            if cached.get("fetched_day") == today_str:
+                if cached.get("empty"):
+                    return None
+                c_dates = cached.get("dates") or []
+                if len(c_dates) >= 10 and cached.get("requested_days", 40) >= days:
+                    # Reject halted/delisted/exchange-migrated series with date discontinuities or penny OTC stubs
+                    if c_dates[-1] < "2026-10-28" or c_dates[-5] < "2026-10-20":
+                        return None
+                    if market == "US" and (cached.get("latest_close") or 0) < 0.25:
+                        return None
+                    cached["name"] = name
+                    return cached
         except Exception:
             pass
 
     url = f"https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param={qt_code},day,,,{days},qfq"
     try:
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        raw = urllib.request.urlopen(req, timeout=6).read().decode("utf-8", errors="ignore")
+        raw = urllib.request.urlopen(req, timeout=7).read().decode("utf-8", errors="ignore")
         payload = json.loads(raw)
         k_obj = (payload.get("data") or {}).get(qt_code) or {}
         rows = k_obj.get("qfqday") or k_obj.get("day") or []
         if not rows or len(rows) < 5:
-            cache_file.write_text(json.dumps({"empty": True}), encoding="utf-8")
+            cache_file.write_text(
+                json.dumps({"empty": True, "fetched_day": today_str}), encoding="utf-8"
+            )
             return None
 
         dates = []
@@ -297,7 +474,17 @@ def fetch_kline_series(qt_code: str, symbol: str, name: str, market: str, days: 
             closes.append(c_val)
             volumes.append(v_val)
 
-        if len(closes) < 5:
+        # Reject delisted / long-halted / pre-transfer tickers with date gaps or OTC penny stubs
+        if (
+            len(closes) < 10
+            or dates[-1] < "2026-10-28"
+            or dates[-5] < "2026-10-20"
+            or (market == "US" and closes[-1] < 0.25)
+        ):
+            cache_file.write_text(
+                json.dumps({"empty": True, "fetched_day": today_str, "reason": "stale_or_delisted"}),
+                encoding="utf-8",
+            )
             return None
 
         ma5 = _calc_ma(closes, 5)
@@ -321,6 +508,8 @@ def fetch_kline_series(qt_code: str, symbol: str, name: str, market: str, days: 
             "qt_code": qt_code,
             "name": name,
             "market": market,
+            "fetched_day": today_str,
+            "requested_days": days,
             "latest_date": dates[-1],
             "latest_close": latest,
             "chg_1d_pct": chg_1d,
@@ -338,7 +527,9 @@ def fetch_kline_series(qt_code: str, symbol: str, name: str, market: str, days: 
         return result
     except Exception:
         try:
-            cache_file.write_text(json.dumps({"empty": True}), encoding="utf-8")
+            cache_file.write_text(
+                json.dumps({"empty": True, "fetched_day": today_str}), encoding="utf-8"
+            )
         except Exception:
             pass
         return None
@@ -346,36 +537,51 @@ def fetch_kline_series(qt_code: str, symbol: str, name: str, market: str, days: 
 
 def fetch_market_klines_for_report(stock_rows: list[dict], log_fn: Callable[[str], None] = print) -> dict[str, dict]:
     """
-    Fetch real 40-day K-line series for benchmark indices + all resolvable stocks in the report.
+    Fetch real 60-day K-line series concurrently for benchmark indices + all resolvable stocks in the report.
     Returns dict keyed by symbol (e.g. 'NVDA', '300308.SZ', 'SPY', etc.).
     """
     kline_map: dict[str, dict] = {}
+    tasks_to_fetch: dict[str, tuple[str, str, str, str]] = {}  # sym -> (qt_code, sym, label, market)
+    seen_qt: set[str] = set()
 
-    # 1. Benchmarks first
+    # 1. Queue benchmarks first
     for bm in BENCHMARK_SYMBOLS:
-        series = fetch_kline_series(bm["qt_code"], bm["symbol"], bm["name"], bm["market"])
-        if series:
-            kline_map[bm["symbol"]] = series
+        sym = bm["symbol"]
+        qt = bm["qt_code"]
+        seen_qt.add(qt)
+        tasks_to_fetch[sym] = (qt, sym, bm["name"], bm["market"])
 
-    # 2. Report stocks (up to 36 top stocks so charts are instant and comprehensive)
-    seen_qt = {v["qt_code"] for v in kline_map.values()}
+    # 2. Queue all report stocks (primary + secondary tickers up to 220 unique symbols)
+    row_resolutions: list[tuple[dict, str, str]] = []
     for st in stock_rows:
         resolved = resolve_qt_code(st["head_display"], st["market_type"])
         if not resolved:
             continue
         sym, qt_code, zh_name = resolved
+        row_resolutions.append((st, sym, zh_name))
+        if sym not in tasks_to_fetch and qt_code not in seen_qt and len(tasks_to_fetch) < 220:
+            seen_qt.add(qt_code)
+            tasks_to_fetch[sym] = (qt_code, sym, f"{zh_name} ({sym})", st["market_type"])
+
+    with ThreadPoolExecutor(max_workers=12) as pool:
+        fut_map = {
+            pool.submit(fetch_kline_series, qt, sym, label, mkt): sym
+            for sym, (qt, sym, label, mkt) in tasks_to_fetch.items()
+        }
+        for fut in as_completed(fut_map):
+            sym = fut_map[fut]
+            try:
+                series = fut.result()
+                if series:
+                    kline_map[sym] = series
+            except Exception:
+                pass
+
+    for st, sym, zh_name in row_resolutions:
         st["resolved_symbol"] = sym
         st["zh_short_name"] = zh_name
         if sym in kline_map:
             st["kline"] = kline_map[sym]
-            continue
-        if qt_code in seen_qt or len(kline_map) >= 60:
-            continue
-        seen_qt.add(qt_code)
-        series = fetch_kline_series(qt_code, sym, f"{zh_name} ({sym})", st["market_type"])
-        if series:
-            kline_map[sym] = series
-            st["kline"] = series
 
-    log_fn(f"[MarketData] ✓ Loaded real 40-day K-line (OHLCV) series for {len(kline_map)} indices & stocks")
+    log_fn(f"[MarketData] ✓ Loaded real 60-day K-line (OHLCV) series for {len(kline_map)} indices & stocks")
     return kline_map

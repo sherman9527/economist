@@ -1,10 +1,10 @@
 <#
 .SYNOPSIS
     Daily runner script for The Economist A-Share / US-Stock Deep Impact Analysis.
-    Strictly keeps all data, logs, checkpoints, and temp files under D:\code\economist.
+    Strictly keeps all data, logs, checkpoints, and temp files under the relative project root.
 
 .PARAMETER Action
-    Analyze     - Run at 08:00 AM daily: Fetch Economist articles + Checkpointed Gemini 4 Argon (983k high) analysis + HTML Archive
+    Analyze     - Run at 08:00 AM daily: Fetch Economist articles + Checkpointed Gemini 4 Carbon (high) analysis + HTML Archive
     Open        - Run at 09:00 AM daily: Ensure today's report is ready, start local ACK server, and open today's report + all historical un-ACKed reports in browser
     Both        - Run Analyze then Open immediately
     Backfill3D  - Analyze and generate 3-day archived reports and open in browser
@@ -24,7 +24,7 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-$BaseDir = "D:\code\economist"
+$BaseDir = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $ScriptsDir = Join-Path $BaseDir "scripts"
 $LogsDir = Join-Path $BaseDir "logs"
 $TempDir = Join-Path $BaseDir ".temp"

@@ -295,7 +295,7 @@ def parse_jina_markdown(md_text: str, fallback_title: str = "") -> dict:
 def enrich_single_article(article: dict, log_fn: Callable[[str], None] = print) -> dict:
     """
     Enrich an article with r.jina.ai extracted lead content and metadata.
-    Uses persistent per-article cache under D:\\code\\economist\\data\\article_cache.
+    Uses persistent per-article cache under ./data/article_cache.
     """
     art_id = article["id"]
     cache_file = ARTICLE_CACHE_DIR / f"{art_id}.json"

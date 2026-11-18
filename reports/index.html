@@ -1,129 +1,1009 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="zh-CN" data-theme="light">
 <head>
     <meta charset="UTF-8">
-    <title>《经济学人》高盛/大摩量化图表研报 — 历史归档与审阅总控台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>《经济学人》A股/美股 投研单窗口多页工作台 (共11期 · 待阅11期)</title>
     <style>
-        body { background:#f1f5f9; color:#0f172a; font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif; padding:32px; line-height:1.65; }
-        .container { max-width:1420px; margin:0 auto; background:#ffffff; border:1px solid #cbd5e1; border-top:5px solid #0a192f; border-radius:10px; padding:28px; box-shadow:0 4px 16px rgba(15,23,42,0.06); }
-        h1 { font-size:22px; margin-bottom:8px; display:flex; align-items:center; gap:12px; color:#0a192f; }
-        .econ-tag { background:#e3120b; color:#fff; font-size:12px; padding:4px 10px; border-radius:3px; }
-        .gs-tag { background:#003594; color:#fff; font-size:12px; padding:4px 10px; border-radius:3px; }
-        .sub { color:#475569; font-size:13.5px; margin-bottom:22px; }
-        table { width:100%; border-collapse:collapse; font-size:14px; border:1px solid #cbd5e1; }
-        th { text-align:left; padding:12px 14px; background:#0f2942; color:#ffffff; font-weight:700; }
-        tr:nth-child(even) { background:#f8fafc; }
-        tr:hover { background:#eff6ff; }
-        td { padding:14px; border-bottom:1px solid #e2e8f0; }
-        .rep-link { color:#003594; font-weight:800; text-decoration:none; font-size:15px; }
-        .rep-link:hover { text-decoration:underline; }
-        .st-badge { padding:4px 10px; border-radius:4px; font-size:12px; font-weight:800; display:inline-block; }
-        .st-badge.acked { background:#dcfce7; color:#14532d; border:1px solid #16a34a; }
-        .st-badge.unacked { background:#ffe4e6; color:#881337; border:1px solid #e11d48; }
-        .act-btn { cursor:pointer; padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; background:#f8fafc; color:#0f172a; text-decoration:none; font-size:12.5px; font-weight:700; margin-right:6px; }
-        .open-btn { background:#003594; border-color:#003594; color:#ffffff; }
+        :root, html[data-theme="light"] {
+            --ws-bg: #f1f5f9;
+            --ws-surface: #ffffff;
+            --ws-subtle: #f8fafc;
+            --ws-border: #cbd5e1;
+            --ws-border-light: #e2e8f0;
+            --ws-text: #0f172a;
+            --ws-secondary: #334155;
+            --ws-muted: #64748b;
+            --ws-navy: #0a192f;
+            --ws-tabbar: #0f2342;
+            --ws-blue: #003594;
+            --ws-accent: #2563eb;
+            --ws-red: #e3120b;
+            --ws-bull-bg: #dcfce7;
+            --ws-bull-text: #14532d;
+            --ws-bear-bg: #ffe4e6;
+            --ws-bear-text: #881337;
+            --ws-thead: #0f2942;
+        }
+        html[data-theme="dark"] {
+            --ws-bg: #0b1120;
+            --ws-surface: #111827;
+            --ws-subtle: #1e293b;
+            --ws-border: #334155;
+            --ws-border-light: #1f2937;
+            --ws-text: #f8fafc;
+            --ws-secondary: #cbd5e1;
+            --ws-muted: #94a3b8;
+            --ws-navy: #050b14;
+            --ws-tabbar: #0b1528;
+            --ws-blue: #60a5fa;
+            --ws-accent: #3b82f6;
+            --ws-red: #ef4444;
+            --ws-bull-bg: rgba(22, 163, 74, 0.22);
+            --ws-bull-text: #86efac;
+            --ws-bear-bg: rgba(225, 29, 72, 0.22);
+            --ws-bear-text: #fda4af;
+            --ws-thead: #1e293b;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html, body {
+            height: 100%; width: 100%; overflow: hidden;
+            background: var(--ws-bg); color: var(--ws-text);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            font-variant-numeric: tabular-nums;
+        }
+        .ws-shell {
+            display: flex; flex-direction: column; height: 100vh; width: 100vw; overflow: hidden;
+        }
+        /* Row 1: Global Top Command Bar */
+        .ws-topbar {
+            height: 48px; flex-shrink: 0;
+            background: var(--ws-navy); color: #ffffff;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.22);
+            padding: 0 18px;
+            display: flex; align-items: center; justify-content: space-between; gap: 12px;
+        }
+        .ws-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+        .econ-logo {
+            background: #e3120b; color: #fff; font-weight: 800; font-size: 12px;
+            padding: 4px 9px; border-radius: 3px; flex-shrink: 0;
+        }
+        .gs-logo {
+            background: #1e3a8a; border: 1px solid #3b82f6; color: #dbeafe;
+            font-size: 11.5px; font-weight: 700; padding: 3px 8px; border-radius: 3px; flex-shrink: 0;
+        }
+        .ws-title {
+            font-size: 14.5px; font-weight: 800; color: #f8fafc;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .ws-controls { display: flex; align-items: center; gap: 7px; flex-shrink: 0; }
+        .queue-pill {
+            font-size: 12px; font-weight: 800; padding: 4px 10px; border-radius: 999px;
+            border: 1px solid transparent; white-space: nowrap;
+        }
+        .queue-pill.has-unread { background: rgba(244, 63, 94, 0.22); color: #fecdd3; border-color: #f43f5e; }
+        .queue-pill.all-clear { background: rgba(16, 185, 129, 0.22); color: #a7f3d0; border-color: #10b981; }
+
+        .cmd-btn {
+            cursor: pointer; background: #1e293b; color: #e2e8f0; border: 1px solid #475569;
+            padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;
+            transition: all 0.15s;
+        }
+        .cmd-btn:hover { background: #334155; border-color: #64748b; color: #fff; }
+        .cmd-btn.ack-primary { background: #10b981; color: #052e16; border-color: #10b981; font-weight: 800; }
+        .cmd-btn.ack-primary:hover { background: #34d399; }
+        .cmd-btn.ack-done { background: #1e293b; color: #6ee7b7; border-color: #10b981; }
+        .cmd-btn.ack-batch { background: #0f766e; color: #ccfbf1; border-color: #14b8a6; }
+        .cmd-btn.ack-batch:hover { background: #0d9488; color: #fff; }
+
+        /* Row 2: In-Page Pivot Tab Strip (Fluent/RADAR Page Tabs) */
+        .ws-pivot-bar {
+            height: 42px; flex-shrink: 0;
+            background: var(--ws-tabbar);
+            border-bottom: 2px solid #e3120b;
+            padding: 0 14px;
+            display: flex; align-items: flex-end; justify-content: space-between; gap: 10px;
+        }
+        .pivot-reports-scroll {
+            display: flex; align-items: flex-end; gap: 4px;
+            overflow-x: auto; overflow-y: hidden; flex: 1; min-width: 0;
+            scrollbar-width: thin; scrollbar-color: #475569 transparent;
+        }
+        .pivot-reports-scroll::-webkit-scrollbar { height: 4px; }
+        .pivot-reports-scroll::-webkit-scrollbar-thumb { background: #475569; border-radius: 2px; }
+
+        .pivot-sys-group {
+            display: flex; align-items: flex-end; gap: 5px; flex-shrink: 0;
+            padding-left: 8px; border-left: 1px solid rgba(148, 163, 184, 0.25);
+        }
+        .pivot-tab {
+            cursor: pointer; user-select: none;
+            height: 36px; padding: 0 12px;
+            background: rgba(30, 41, 59, 0.72);
+            color: #cbd5e1;
+            border: 1px solid rgba(100, 116, 139, 0.35);
+            border-bottom: none;
+            border-radius: 7px 7px 0 0;
+            font-size: 12.5px; font-weight: 700;
+            display: inline-flex; align-items: center; gap: 6px;
+            white-space: nowrap; flex-shrink: 0;
+            transition: background 0.14s, color 0.14s;
+        }
+        .pivot-tab:hover { background: rgba(51, 65, 85, 0.92); color: #ffffff; }
+        .pivot-tab.active {
+            background: var(--ws-bg);
+            color: var(--ws-text);
+            border-color: #e3120b;
+            border-top: 3px solid #e3120b;
+            font-weight: 800;
+            height: 38px;
+        }
+        .pivot-tab.sys-tab.active {
+            background: var(--ws-bg);
+            color: var(--ws-blue);
+            border-top: 3px solid #3b82f6;
+        }
+        .tab-dot {
+            width: 8px; height: 8px; border-radius: 50%; display: inline-block; flex-shrink: 0;
+        }
+        .tab-dot.unacked { background: #fb7185; box-shadow: 0 0 6px rgba(251, 113, 133, 0.85); }
+        .tab-dot.acked { background: #10b981; }
+        .tab-tag-latest {
+            font-size: 10px; font-weight: 800; padding: 1px 5px; border-radius: 3px;
+            background: rgba(227, 18, 11, 0.2); color: #fca5a5;
+        }
+        .pivot-tab.active .tab-tag-latest { background: #fee2e2; color: #b91c1c; }
+        .tab-close {
+            margin-left: 2px; width: 16px; height: 16px; line-height: 15px;
+            text-align: center; border-radius: 50%; font-size: 12px; opacity: 0.65;
+        }
+        .tab-close:hover { opacity: 1; background: rgba(239, 68, 68, 0.25); color: #fca5a5; }
+
+        /* Full-Bleed In-Page Stage */
+        .ws-stage {
+            flex: 1; width: 100%; position: relative; overflow: hidden; background: var(--ws-bg);
+        }
+        .ws-page {
+            display: none; width: 100%; height: 100%; overflow: hidden;
+        }
+        .ws-page.active {
+            display: block;
+        }
+        .ws-page.scrollable-sys-page {
+            overflow-y: auto; padding: 22px 26px 40px 26px;
+        }
+        .ws-iframe {
+            width: 100%; height: 100%; border: none; display: block; background: var(--ws-bg);
+        }
+
+        /* System Pages (Audit & Archive Library) Institutional Styling */
+        .sys-container { max-width: 1620px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+        .sys-card {
+            background: var(--ws-surface); border: 1px solid var(--ws-border);
+            border-radius: 10px; padding: 20px 22px;
+            box-shadow: 0 1px 4px rgba(15, 23, 42, 0.05);
+        }
+        .sys-hdr {
+            display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+            border-bottom: 2px solid var(--ws-thead); padding-bottom: 10px; margin-bottom: 16px;
+        }
+        .sys-title { font-size: 17px; font-weight: 800; color: var(--ws-text); display: flex; align-items: center; gap: 8px; }
+        .sys-sub { font-size: 12.5px; color: var(--ws-muted); }
+
+        .kpi-6grid {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(225px, 1fr)); gap: 12px;
+        }
+        .kpi-box {
+            background: var(--ws-subtle); border: 1px solid var(--ws-border);
+            border-top: 3px solid var(--ws-blue); border-radius: 8px; padding: 13px 15px;
+        }
+        .kpi-box.kpi-green { border-top-color: #16a34a; }
+        .kpi-box.kpi-gold { border-top-color: #d97706; }
+        .kpi-box.kpi-red { border-top-color: #e11d48; }
+        .kpi-lbl { font-size: 12px; font-weight: 700; color: var(--ws-muted); margin-bottom: 4px; }
+        .kpi-num { font-size: 23px; font-weight: 800; font-family: monospace; color: var(--ws-text); }
+        .kpi-note { font-size: 11.5px; color: var(--ws-secondary); margin-top: 4px; line-height: 1.4; }
+
+        .ws-table-wrap { width: 100%; overflow-x: auto; border: 1px solid var(--ws-border); border-radius: 8px; }
+        table.ws-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        table.ws-table th {
+            background: var(--ws-thead); color: #ffffff; text-align: left;
+            padding: 10px 12px; font-size: 12px; font-weight: 700; white-space: nowrap;
+        }
+        table.ws-table td {
+            padding: 10px 12px; border-bottom: 1px solid var(--ws-border-light); color: var(--ws-text);
+            vertical-align: middle;
+        }
+        table.ws-table tr:nth-child(even) td { background: var(--ws-subtle); }
+        table.ws-table tr:hover td { background: rgba(37, 99, 235, 0.07); }
+
+        .pill-badge {
+            display: inline-block; padding: 3px 8px; border-radius: 4px; font-size: 11.5px; font-weight: 800;
+        }
+        .pill-bull { background: var(--ws-bull-bg); color: var(--ws-bull-text); }
+        .pill-bear { background: var(--ws-bear-bg); color: var(--ws-bear-text); }
+        .pill-neutral { background: var(--ws-subtle); color: var(--ws-secondary); border: 1px solid var(--ws-border); }
+
+        .tbl-btn {
+            cursor: pointer; padding: 5px 10px; border-radius: 5px; font-size: 12px; font-weight: 700;
+            border: 1px solid var(--ws-border); background: var(--ws-surface); color: var(--ws-text);
+            margin-right: 5px;
+        }
+        .tbl-btn.primary { background: #003594; color: #ffffff; border-color: #003594; }
+        .tbl-btn.primary:hover { background: #1d4ed8; }
+        .tbl-btn:hover { border-color: var(--ws-accent); }
+
+        .filter-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .flt-pills { display: flex; gap: 6px; flex-wrap: wrap; }
+        .flt-pill {
+            cursor: pointer; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 700;
+            border: 1px solid var(--ws-border); background: var(--ws-subtle); color: var(--ws-secondary);
+        }
+        .flt-pill.active { background: var(--ws-blue); color: #fff; border-color: var(--ws-blue); }
+        .search-box {
+            padding: 6px 12px; border-radius: 6px; border: 1px solid var(--ws-border);
+            background: var(--ws-surface); color: var(--ws-text); font-size: 12.5px; min-width: 250px;
+        }
+        .dual-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+        @media (max-width: 1100px) { .dual-grid { grid-template-columns: 1fr; } }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1><span class="econ-tag">经济学人</span><span class="gs-tag">高盛 / 大摩 量化图表研报</span> 每日 A股 / 美股 深度投研归档总控台</h1>
-        <div class="sub">
-            所有数据与报告按 <code>年/月/日</code> 归档于 <code>D:\code\economist\reports\</code>（零 C 盘占用）。
-            当前共归档 <strong>4</strong> 份报告，其中待审阅 (未读) <strong>4</strong> 份。每天 08:00 自动执行分析，09:00 自动在浏览器打开当日及所有未确认报告。
-        </div>
-        <table>
-            <thead>
-                <tr>
-                    <th>归档日期</th>
-                    <th>研报总览标题 & 归档路径</th>
-                    <th>覆盖规模</th>
-                    <th>生成时间</th>
-                    <th>审阅状态</th>
-                    <th>操作</th>
-                </tr>
-            </thead>
-            <tbody>
-                
-            <tr>
-                <td style="font-weight:800;font-family:monospace;font-size:15px;color:#003594;">2026-11-11</td>
-                <td>
-                    <a href="2026/11/11/economist_report_2026-11-11.html" data-http-href="/reports/2026/11/11/economist_report_2026-11-11.html" class="rep-link">美股AI算力黑天鹅与中期选举僵局共振，中国硬科技迎系统性重估</a>
-                    <div style="font-size:12px;color:#64748b;margin-top:3px;">归档路径: reports/2026/11/11/economist_report_2026-11-11.html | 统计窗口: 2026-11-09 至 2026-11-10 (过去 2 天最新刊发)</div>
-                </td>
-                <td><strong>10</strong> 篇交互K线研报卡 / 共 16 篇</td>
-                <td>2026-11-11 08:09:24</td>
-                <td><span class="st-badge unacked">🔴 未审阅 (待确认)</span></td>
-                <td>
-                    <a href="2026/11/11/economist_report_2026-11-11.html" data-http-href="/reports/2026/11/11/economist_report_2026-11-11.html" class="act-btn open-btn">打开图表研报 ↗</a>
-                    <button onclick="toggleArchiveAck('2026-11-11', true)" class="act-btn">✅ 确认已阅</button>
-                </td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:800;font-family:monospace;font-size:15px;color:#003594;">2026-11-09</td>
-                <td>
-                    <a href="2026/11/09/economist_report_2026-11-09.html" data-http-href="/reports/2026/11/09/economist_report_2026-11-09.html" class="rep-link">美国“蓝色海啸”重创AI单极信仰，全球滞胀对冲与中国硬科技范式突围</a>
-                    <div style="font-size:12px;color:#64748b;margin-top:3px;">归档路径: reports/2026/11/09/economist_report_2026-11-09.html | 统计窗口: 最近 3 日《经济学人》全量最新文章深度总览 (截至 2026-11-09)</div>
-                </td>
-                <td><strong>18</strong> 篇交互K线研报卡 / 共 65 篇</td>
-                <td>2026-11-09 11:34:06</td>
-                <td><span class="st-badge unacked">🔴 未审阅 (待确认)</span></td>
-                <td>
-                    <a href="2026/11/09/economist_report_2026-11-09.html" data-http-href="/reports/2026/11/09/economist_report_2026-11-09.html" class="act-btn open-btn">打开图表研报 ↗</a>
-                    <button onclick="toggleArchiveAck('2026-11-09', true)" class="act-btn">✅ 确认已阅</button>
-                </td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:800;font-family:monospace;font-size:15px;color:#003594;">2026-11-08</td>
-                <td>
-                    <a href="2026/11/08/economist_report_2026-11-08.html" data-http-href="/reports/2026/11/08/economist_report_2026-11-08.html" class="rep-link">资源硬约束共振AI网安刚需，巨企分拆与算法霸权再定中美资产锚</a>
-                    <div style="font-size:12px;color:#64748b;margin-top:3px;">归档路径: reports/2026/11/08/economist_report_2026-11-08.html | 统计窗口: 2026-11-08 归档专题：全球科技AI、大宗商品与商业并购追踪</div>
-                </td>
-                <td><strong>10</strong> 篇交互K线研报卡 / 共 14 篇</td>
-                <td>2026-11-09 11:46:47</td>
-                <td><span class="st-badge unacked">🔴 未审阅 (待确认)</span></td>
-                <td>
-                    <a href="2026/11/08/economist_report_2026-11-08.html" data-http-href="/reports/2026/11/08/economist_report_2026-11-08.html" class="act-btn open-btn">打开图表研报 ↗</a>
-                    <button onclick="toggleArchiveAck('2026-11-08', true)" class="act-btn">✅ 确认已阅</button>
-                </td>
-            </tr>
-            
-            <tr>
-                <td style="font-weight:800;font-family:monospace;font-size:15px;color:#003594;">2026-11-07</td>
-                <td>
-                    <a href="2026/11/07/economist_report_2026-11-07.html" data-http-href="/reports/2026/11/07/economist_report_2026-11-07.html" class="rep-link">民主党五十年狂胜重塑跨市场定价锚：关税退潮、跛脚鸭外交与AI医疗新周期</a>
-                    <div style="font-size:12px;color:#64748b;margin-top:3px;">归档路径: reports/2026/11/07/economist_report_2026-11-07.html | 统计窗口: 2026-11-07 归档专题：美国中期选举冲击波与全球政经重估</div>
-                </td>
-                <td><strong>10</strong> 篇交互K线研报卡 / 共 14 篇</td>
-                <td>2026-11-09 11:42:11</td>
-                <td><span class="st-badge unacked">🔴 未审阅 (待确认)</span></td>
-                <td>
-                    <a href="2026/11/07/economist_report_2026-11-07.html" data-http-href="/reports/2026/11/07/economist_report_2026-11-07.html" class="act-btn open-btn">打开图表研报 ↗</a>
-                    <button onclick="toggleArchiveAck('2026-11-07', true)" class="act-btn">✅ 确认已阅</button>
-                </td>
-            </tr>
-            
-            </tbody>
-        </table>
+    <div class="ws-shell">
+        <!-- Row 1: Single-Window Command Header -->
+        <header class="ws-topbar">
+            <div class="ws-brand">
+                <span class="econ-logo">经济学人</span>
+                <span class="gs-logo">高盛 / 大摩 单窗口多页终端</span>
+                <span class="ws-title" id="wsActiveTitle">正在加载页内投研工作台...</span>
+            </div>
+            <div class="ws-controls">
+                <span id="unackedQueuePill" class="queue-pill has-unread">🔴 待审阅: 11 份</span>
+                <button class="cmd-btn" onclick="stepReportTab(-1)" title="上一页签 (Alt + ←)">◀ 上一页</button>
+                <button class="cmd-btn" onclick="stepReportTab(1)" title="下一页签 (Alt + →)">下一页 ▶</button>
+                <button class="cmd-btn" id="nextUnreadBtn" onclick="jumpNextUnreadTab()" title="直接跳至下一份未读报告页签">⏭ 下一份未读</button>
+                <button class="cmd-btn ack-primary" id="activePageAckBtn" onclick="toggleActiveReportAck()" title="快捷键 Alt + A">✅ 确认本页已阅</button>
+                <button class="cmd-btn ack-batch" id="batchAckAllBtn" onclick="batchAckAllUnread()">✅ 全部一键已阅</button>
+                <button class="cmd-btn" id="wsThemeBtn" onclick="toggleWorkspaceTheme()">🌙 暗色终端</button>
+            </div>
+        </header>
+
+        <!-- Row 2: In-Page Pivot Tabs (Report Pages + System Audit & Archive Pages) -->
+        <nav class="ws-pivot-bar" aria-label="页内报告页签栏">
+            <div id="reportTabsStrip" class="pivot-reports-scroll"></div>
+            <div id="systemTabsStrip" class="pivot-sys-group">
+                <div class="pivot-tab sys-tab" data-page-id="__audit__" onclick="activatePage('__audit__')">
+                    🎯 跨期回溯总审计
+                </div>
+                <div class="pivot-tab sys-tab" data-page-id="__archive__" onclick="activatePage('__archive__')">
+                    🗂️ 历史归档日历库 (<span id="totalArchiveCount">11</span>)
+                </div>
+            </div>
+        </nav>
+
+        <!-- Full-Height In-Page Content Stage -->
+        <main class="ws-stage" id="wsStage">
+            <!-- Dynamic Report Iframe Pages are mounted here lazily and kept alive -->
+
+            <!-- System Page 1: Cross-Report Out-of-Sample Retrospective Accuracy Audit -->
+            <section class="ws-page scrollable-sys-page" id="ws-page-__audit__">
+                <div class="sys-container" id="auditPageContainer"></div>
+            </section>
+
+            <!-- System Page 2: All Archived Reports Directory (Opens In-Page Tabs, Zero New Windows) -->
+            <section class="ws-page scrollable-sys-page" id="ws-page-__archive__">
+                <div class="sys-container">
+                    <div class="sys-card">
+                        <div class="sys-hdr">
+                            <div>
+                                <div class="sys-title">🗂️ 《经济学人》A股 / 美股 深度图表研报 · 全量按年月日归档总库</div>
+                                <div class="sys-sub">
+                                    存储目录：<code>./reports/YYYY/MM/DD/</code>（严格零 C 盘占用）· 点击任意报告均在<strong>当前窗口页内页签 (In-Page Tab)</strong> 秒切打开，绝不弹出多余浏览器窗口。
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <div class="flt-pills">
+                                <button class="flt-pill active" onclick="setArchiveFilter('all', this)">全部归档报告</button>
+                                <button class="flt-pill" onclick="setArchiveFilter('unacked', this)">🔴 仅看待审阅 (未读)</button>
+                                <button class="flt-pill" onclick="setArchiveFilter('acked', this)">✅ 已确认审阅</button>
+                            </div>
+                            <input type="text" class="search-box" id="archiveSearchInput" placeholder="🔍 按日期 (2026-11-16) 或标题关键词筛选..." oninput="renderArchiveTable()">
+                        </div>
+                        <div class="ws-table-wrap">
+                            <table class="ws-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width:125px;">归档日期</th>
+                                        <th>研报核心标题 & 本地归档路径</th>
+                                        <th style="width:185px;">图表与研报卡规模</th>
+                                        <th style="width:165px;">生成时间</th>
+                                        <th style="width:190px;">审阅确认状态 (ACK)</th>
+                                        <th style="width:230px;">页内操作 (不弹新窗口)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="archiveTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
     </div>
+
     <script>
         const ACK_API_BASE = "http://127.0.0.1:4288";
-        if (window.location.protocol.startsWith("http")) {
-            document.querySelectorAll("[data-http-href]").forEach(el => el.setAttribute("href", el.getAttribute("data-http-href")));
+        let reportsMap = {"2026-11-09": {"report_id": "2026-11-09", "date": "2026-11-09", "title": "美国“蓝色海啸”重创AI单极信仰，全球滞胀对冲与中国硬科技范式突围", "rel_path": "2026/11/09/economist_report_2026-11-09.html", "article_count": 65, "core_count": 18, "window_desc": "最近 3 日《经济学人》全量最新文章深度总览 (截至 2026-11-09)", "generated_at": "2026-11-09 11:34:06", "updated_at": "2026-11-16 13:18:42", "acked": false, "acked_at": null, "open_count": 13, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-07": {"report_id": "2026-11-07", "date": "2026-11-07", "title": "民主党五十年狂胜重塑跨市场定价锚：关税退潮、跛脚鸭外交与AI医疗新周期", "rel_path": "2026/11/07/economist_report_2026-11-07.html", "article_count": 14, "core_count": 10, "window_desc": "2026-11-07 归档专题：美国中期选举冲击波与全球政经重估", "generated_at": "2026-11-09 11:42:11", "updated_at": "2026-11-16 13:18:41", "acked": false, "acked_at": null, "open_count": 13, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-08": {"report_id": "2026-11-08", "date": "2026-11-08", "title": "资源硬约束共振AI网安刚需，巨企分拆与算法霸权再定中美资产锚", "rel_path": "2026/11/08/economist_report_2026-11-08.html", "article_count": 14, "core_count": 10, "window_desc": "2026-11-08 归档专题：全球科技AI、大宗商品与商业并购追踪", "generated_at": "2026-11-09 11:46:47", "updated_at": "2026-11-16 13:18:42", "acked": false, "acked_at": null, "open_count": 13, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-11": {"report_id": "2026-11-11", "date": "2026-11-11", "title": "美股AI算力黑天鹅与中期选举僵局共振，中国硬科技迎系统性重估", "rel_path": "2026/11/11/economist_report_2026-11-11.html", "article_count": 16, "core_count": 10, "window_desc": "2026-11-09 至 2026-11-10 (过去 2 天最新刊发)", "generated_at": "2026-11-11 08:09:24", "updated_at": "2026-11-16 13:18:43", "acked": false, "acked_at": null, "open_count": 10, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-12": {"report_id": "2026-11-12", "date": "2026-11-12", "title": "英伟达治理黑天鹅引爆AI算力重构，不确定性武器化锚定安全溢价", "rel_path": "2026/11/12/economist_report_2026-11-12.html", "article_count": 16, "core_count": 12, "window_desc": "2026-11-10 至 2026-11-11 (过去 2 天最新刊发)", "generated_at": "2026-11-12 08:09:06", "updated_at": "2026-11-16 13:18:44", "acked": false, "acked_at": null, "open_count": 9, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-13": {"report_id": "2026-11-13", "date": "2026-11-13", "title": "黄仁勋闪辞触发美股AI去杠杆，中国碳达峰与绿能出海重塑跨市场定价锚", "rel_path": "2026/11/13/economist_report_2026-11-13.html", "article_count": 52, "core_count": 22, "window_desc": "2026-11-10 至 2026-11-12 (过去 2 天最新刊发)", "generated_at": "2026-11-13 08:15:08", "updated_at": "2026-11-16 13:18:45", "acked": false, "acked_at": null, "open_count": 8, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-14": {"report_id": "2026-11-14", "date": "2026-11-14", "title": "黄仁勋闪辞引爆美股AI去杠杆，中国自主算力与绿能出海迎重估", "rel_path": "2026/11/14/economist_report_2026-11-14.html", "article_count": 42, "core_count": 22, "window_desc": "2026-11-11 至 2026-11-13 (过去 2 天最新刊发)", "generated_at": "2026-11-14 08:08:52", "updated_at": "2026-11-16 13:18:46", "acked": false, "acked_at": null, "open_count": 7, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-15": {"report_id": "2026-11-15", "date": "2026-11-15", "title": "黄仁勋闪电辞职重塑AI算力锚，美分裂国会与华绿能出海主导跨市场分化", "rel_path": "2026/11/15/economist_report_2026-11-15.html", "article_count": 35, "core_count": 18, "window_desc": "2026-11-12 至 2026-11-14 (过去 2 天最新刊发)", "generated_at": "2026-11-15 08:07:08", "updated_at": "2026-11-16 13:18:47", "acked": false, "acked_at": null, "open_count": 6, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-16": {"report_id": "2026-11-16", "date": "2026-11-16", "title": "英伟达治理巨震引爆AI重估，中国算力替代与绿能出海迎逆势重定价", "rel_path": "2026/11/16/economist_report_2026-11-16.html", "article_count": 50, "core_count": 22, "window_desc": "2026-11-11 至 2026-11-15 (过去 2 天最新刊发)", "generated_at": "2026-11-16 08:08:57", "updated_at": "2026-11-16 13:18:48", "acked": false, "acked_at": null, "open_count": 4, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-17": {"report_id": "2026-11-17", "date": "2026-11-17", "title": "星舰奇点与AI智能体商业化共振，美政坛再平衡与地缘僵局重塑定价锚", "rel_path": "2026/11/17/economist_report_2026-11-17.html", "article_count": 10, "core_count": 10, "window_desc": "2026-11-15 至 2026-11-16 (过去 2 天最新刊发)", "generated_at": "2026-11-17 08:11:40", "updated_at": "2026-11-17 08:11:40", "acked": false, "acked_at": null, "open_count": 2, "last_opened_at": "2026-11-18 09:00:05"}, "2026-11-18": {"report_id": "2026-11-18", "date": "2026-11-18", "title": "深圳峰会缓释地缘尾部风险，Anthropic上市与美国滞胀重构中美定价锚", "rel_path": "2026/11/18/economist_report_2026-11-18.html", "article_count": 14, "core_count": 11, "window_desc": "2026-11-15 至 2026-11-17 (过去 2 天最新刊发)", "generated_at": "2026-11-18 08:07:54", "updated_at": "2026-11-18 08:07:54", "acked": false, "acked_at": null, "open_count": 1, "last_opened_at": "2026-11-18 09:00:05"}};
+        let auditData = {"audited_at": "2026-11-16 11:03:51", "benchmarks_snapshot": {"SPY": {"latest_date": "2026-11-13", "latest_close": 754.37, "chg_1d_pct": -0.36, "chg_5d_pct": 2.59}, "QQQ": {"latest_date": "2026-11-13", "latest_close": 679.89, "chg_1d_pct": -1.2, "chg_5d_pct": 3.63}, "TLT": {"latest_date": "2026-11-13", "latest_close": 79.38, "chg_1d_pct": -0.43, "chg_5d_pct": -3.1}, "000001.SH": {"latest_date": "2026-11-16", "latest_close": 3610.39, "chg_1d_pct": -0.66, "chg_5d_pct": -1.38}, "399006.SZ": {"latest_date": "2026-11-16", "latest_close": 2356.03, "chg_1d_pct": -2.89, "chg_5d_pct": -4.17}}, "overall_per_report_dedup": {"count": 964, "bull_count": 796, "bear_count": 168, "abs_hit_rate": 45.5, "alpha_hit_rate": 51.9, "institutional_hit_rate": 54.4, "double_hit_rate": 43.0, "t1_abs_hit_rate": 48.2, "t1_alpha_hit_rate": 50.9, "avg_signed_ret_pct": -0.88, "avg_signed_alpha_pct": -0.46, "avg_bull_ret_pct": -1.3, "avg_bear_ret_pct": -1.12, "long_short_spread_pct": -0.18, "avg_bull_alpha_pct": -0.89, "avg_bear_alpha_pct": -1.62}, "overall_us": {"count": 358, "bull_count": 243, "bear_count": 115, "abs_hit_rate": 55.0, "alpha_hit_rate": 55.6, "institutional_hit_rate": 61.7, "double_hit_rate": 48.9, "t1_abs_hit_rate": 57.5, "t1_alpha_hit_rate": 55.9, "avg_signed_ret_pct": 0.16, "avg_signed_alpha_pct": -0.16, "avg_bull_ret_pct": 0.29, "avg_bear_ret_pct": 0.12, "long_short_spread_pct": 0.17, "avg_bull_alpha_pct": -0.74, "avg_bear_alpha_pct": -1.06}, "overall_cn": {"count": 606, "bull_count": 553, "bear_count": 53, "abs_hit_rate": 39.9, "alpha_hit_rate": 49.7, "institutional_hit_rate": 50.0, "double_hit_rate": 39.6, "t1_abs_hit_rate": 42.7, "t1_alpha_hit_rate": 48.0, "avg_signed_ret_pct": -1.49, "avg_signed_alpha_pct": -0.63, "avg_bull_ret_pct": -2.0, "avg_bear_ret_pct": -3.8, "long_short_spread_pct": 1.8, "avg_bull_alpha_pct": -0.96, "avg_bear_alpha_pct": -2.82}, "overall_bull": {"count": 796, "bull_count": 796, "bear_count": 0, "abs_hit_rate": 42.5, "alpha_hit_rate": 49.1, "institutional_hit_rate": 51.5, "double_hit_rate": 40.1, "t1_abs_hit_rate": 47.9, "t1_alpha_hit_rate": 48.0, "avg_signed_ret_pct": -1.3, "avg_signed_alpha_pct": -0.89, "avg_bull_ret_pct": -1.3, "avg_bear_ret_pct": 0.0, "long_short_spread_pct": null, "avg_bull_alpha_pct": -0.89, "avg_bear_alpha_pct": 0.0}, "overall_bear": {"count": 168, "bull_count": 0, "bear_count": 168, "abs_hit_rate": 60.1, "alpha_hit_rate": 64.9, "institutional_hit_rate": 67.9, "double_hit_rate": 57.1, "t1_abs_hit_rate": 50.0, "t1_alpha_hit_rate": 64.9, "avg_signed_ret_pct": 1.12, "avg_signed_alpha_pct": 1.62, "avg_bull_ret_pct": 0.0, "avg_bear_ret_pct": -1.12, "long_short_spread_pct": null, "avg_bull_alpha_pct": 0.0, "avg_bear_alpha_pct": -1.62}, "unique_first_call_cohort": {"all": {"count": 424, "bull_count": 329, "bear_count": 95, "abs_hit_rate": 45.8, "alpha_hit_rate": 51.4, "institutional_hit_rate": 55.2, "double_hit_rate": 42.0, "t1_abs_hit_rate": 50.0, "t1_alpha_hit_rate": 50.2, "avg_signed_ret_pct": -0.71, "avg_signed_alpha_pct": -0.39, "avg_bull_ret_pct": -1.1, "avg_bear_ret_pct": -0.64, "long_short_spread_pct": -0.46, "avg_bull_alpha_pct": -0.92, "avg_bear_alpha_pct": -1.42}, "us": {"count": 194, "bull_count": 128, "bear_count": 66, "abs_hit_rate": 58.2, "alpha_hit_rate": 58.2, "institutional_hit_rate": 66.0, "double_hit_rate": 50.5, "t1_abs_hit_rate": 61.3, "t1_alpha_hit_rate": 58.2, "avg_signed_ret_pct": 0.49, "avg_signed_alpha_pct": 0.15, "avg_bull_ret_pct": 0.84, "avg_bear_ret_pct": 0.17, "long_short_spread_pct": 0.67, "avg_bull_alpha_pct": -0.51, "avg_bear_alpha_pct": -1.41}, "cn": {"count": 230, "bull_count": 201, "bear_count": 29, "abs_hit_rate": 35.2, "alpha_hit_rate": 45.7, "institutional_hit_rate": 46.1, "double_hit_rate": 34.8, "t1_abs_hit_rate": 40.4, "t1_alpha_hit_rate": 43.5, "avg_signed_ret_pct": -1.73, "avg_signed_alpha_pct": -0.85, "avg_bull_ret_pct": -2.34, "avg_bear_ret_pct": -2.48, "long_short_spread_pct": 0.14, "avg_bull_alpha_pct": -1.18, "avg_bear_alpha_pct": -1.42}, "bull": {"count": 329, "bull_count": 329, "bear_count": 0, "abs_hit_rate": 42.2, "alpha_hit_rate": 47.4, "institutional_hit_rate": 51.7, "double_hit_rate": 38.0, "t1_abs_hit_rate": 51.4, "t1_alpha_hit_rate": 46.2, "avg_signed_ret_pct": -1.1, "avg_signed_alpha_pct": -0.92, "avg_bull_ret_pct": -1.1, "avg_bear_ret_pct": 0.0, "long_short_spread_pct": null, "avg_bull_alpha_pct": -0.92, "avg_bear_alpha_pct": 0.0}, "bear": {"count": 95, "bull_count": 0, "bear_count": 95, "abs_hit_rate": 57.9, "alpha_hit_rate": 65.3, "institutional_hit_rate": 67.4, "double_hit_rate": 55.8, "t1_abs_hit_rate": 45.3, "t1_alpha_hit_rate": 64.2, "avg_signed_ret_pct": 0.64, "avg_signed_alpha_pct": 1.42, "avg_bull_ret_pct": 0.0, "avg_bear_ret_pct": -0.64, "long_short_spread_pct": null, "avg_bull_alpha_pct": 0.0, "avg_bear_alpha_pct": -1.42}}, "pending_unopened_calls_count": 284, "neutral_ew_calls_count": 157, "pair_trades_audit": {"evaluated_count": 26, "win_count": 16, "win_rate_pct": 61.5, "avg_spread_pct": 1.08, "top_pairs": [{"report_date": "2026-11-12", "market_type": "CN", "category": "AI与硬科技", "long_desc": "海光信息(688041.SH -1.50%)", "short_desc": "工业富联(601138.SH -18.33%)", "long_ret_pct": -1.5, "short_ret_pct": -18.33, "spread_pct": 16.83, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long 海光信息(688041.SH) / Short 工业富联(601138.SH)] 做多国产自主算力替代核心标的，对冲海外NVDA链条治理与情绪回撤风险"}, {"report_date": "2026-11-11", "market_type": "US", "category": "AI与硬科技", "long_desc": "博通(AVGO +4.53%) + 超威半导体(AMD +3.66%)", "short_desc": "英伟达(NVDA -3.58%)", "long_ret_pct": 4.1, "short_ret_pct": -3.58, "spread_pct": 7.68, "pair_win": true, "raw_str": "Pair Trade 配对交易：做多 AVGO + AMD (算力替代组合) / 做空 NVDA (英伟达) - 剥离行业Beta，精准博弈英伟达公司治理折价与云厂商算力架构分流"}, {"report_date": "2026-11-12", "market_type": "US", "category": "AI与硬科技", "long_desc": "博通(AVGO +0.52%)", "short_desc": "英伟达(NVDA -6.26%)", "long_ret_pct": 0.52, "short_ret_pct": -6.26, "spread_pct": 6.78, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long AVGO / Short NVDA] 做多无单一人物政治敞口的ASIC定制算力龙头，做空受困于三重集中度风险与华盛顿政治风暴的NVDA"}, {"report_date": "2026-11-13", "market_type": "US", "category": "AI与硬科技", "long_desc": "谷歌(GOOGL -0.98%)", "short_desc": "安谋控股(ARM -4.63%)", "long_ret_pct": -0.98, "short_ret_pct": -4.63, "spread_pct": 3.65, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long GOOGL / Short ARM] 做多低估值、强现金流且具备自研TPU闭环的谷歌，做空估值极度昂贵且受软银资产负债表尾部风险拖累的Arm"}, {"report_date": "2026-11-11", "market_type": "US", "category": "消费与医疗商业", "long_desc": "韦尔塔医疗房产(WELL -1.29%)", "short_desc": "嘉年华邮轮(CCL -4.91%)", "long_ret_pct": -1.29, "short_ret_pct": -4.91, "spread_pct": 3.62, "pair_win": true, "raw_str": "Pair Trade 配对交易：做多 WELL (医疗养老地产龙头) / 做空 CCL (嘉年华邮轮等传统银发可选娱乐) - 顺应婴儿潮世代从“享乐消费”向“刚性医护”的生命周期切换"}, {"report_date": "2026-11-12", "market_type": "US", "category": "消费与医疗商业", "long_desc": "韦尔塔医疗房产(WELL -1.17%)", "short_desc": "嘉年华邮轮(CCL -4.73%)", "long_ret_pct": -1.17, "short_ret_pct": -4.73, "spread_pct": 3.56, "pair_win": true, "raw_str": "Pair Trade 配对交易：做多 WELL (医疗养老地产龙头) / 做空 CCL (嘉年华邮轮等传统银发可选娱乐) - 顺应婴儿潮世代从“享乐消费”向“刚性医护”的生命周期切换"}, {"report_date": "2026-11-13", "market_type": "US", "category": "AI与硬科技", "long_desc": "印度etfishares(INDA -0.19%)", "short_desc": "费城半导体etfishares(SOXX -3.67%)", "long_ret_pct": -0.19, "short_ret_pct": -3.67, "spread_pct": 3.48, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long INDA / Short SOXX] 经典跨市场“反AI交易”配对，做多印度宽基指数对冲费城半导体指数的高估值回撤风险"}, {"report_date": "2026-11-13", "market_type": "US", "category": "消费与医疗商业", "long_desc": "名创优品(MNSO +2.47%)", "short_desc": "星巴克(SBUX -0.76%)", "long_ret_pct": 2.47, "short_ret_pct": -0.76, "spread_pct": 3.23, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long MNSO / Short SBUX] 做多向全球输出中国高效供应链与加盟模式的名创优品，做空受困于中国市场份额流失与高企人工成本的星巴克"}, {"report_date": "2026-11-12", "market_type": "US", "category": "消费与医疗商业", "long_desc": "孩之宝(HAS -2.80%)", "short_desc": "美泰(MAT -5.97%) + 罗布乐思(RBLX -5.13%)", "long_ret_pct": -2.8, "short_ret_pct": -5.55, "spread_pct": 2.75, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long HAS / Short MAT (剔除并购落地情景) 或 Long RBLX / Short 传统玩具篮子] 做多数字化IP变现能力已验证的标的，做空依赖单一硬件销售的传统玩具商"}, {"report_date": "2026-11-13", "market_type": "US", "category": "全球贸易与地缘", "long_desc": "Grab(GRAB +0.00%)", "short_desc": "微型逆变器龙头(ENPH -2.65%)", "long_ret_pct": 0.0, "short_ret_pct": -2.65, "spread_pct": 2.65, "pair_win": true, "raw_str": "Pair Trade (配对交易) - [Long GRAB / Short ENPH] 做多受益于中国廉价绿能硬件输入东南亚的出行平台，做空丧失非美新兴市场份额的高估值美股逆变器厂商"}], "worst_pairs": [{"report_date": "2026-11-13", "market_type": "CN", "category": "大宗商品与能源", "long_desc": "思源电气(002028.SZ -5.16%)", "short_desc": "山西焦煤(000983.SZ +0.64%)", "long_ret_pct": -5.16, "short_ret_pct": 0.64, "spread_pct": -5.8, "pair_win": false, "raw_str": "Pair Trade 配对交易：做多 思源电气 (002028.SZ) / 做空 山西焦煤 (000983.SZ)，博弈电气化深化对传统高碳原料的长期替代趋势"}, {"report_date": "2026-11-13", "market_type": "US", "category": "AI与硬科技", "long_desc": "博通(AVGO -4.76%) + 超威半导体(AMD -8.75%)", "short_desc": "英伟达(NVDA -2.01%)", "long_ret_pct": -6.75, "short_ret_pct": -2.01, "spread_pct": -4.74, "pair_win": false, "raw_str": "Pair Trade 配对交易：做多 AVGO + AMD 等权组合 / 做空 NVDA，博弈AI算力资本开支从“单一垄断”向“ASIC+多GPU多元化”加速分流"}, {"report_date": "2026-11-12", "market_type": "US", "category": "美国政经与宏观", "long_desc": "达美航空(DAL -5.55%)", "short_desc": "雷神技术(RTX -1.35%)", "long_ret_pct": -5.55, "short_ret_pct": -1.35, "spread_pct": -4.2, "pair_win": false, "raw_str": "Pair Trade (配对交易) - [Long DAL (达美航空) / Short RTX (雷神技术)] 博弈美国国会跨党派反战力量实质性掣肘白宫对伊军事行动，做多战争降级与油价回落受益者，做空前期透支战争预算预期的传统军工股"}, {"report_date": "2026-11-13", "market_type": "US", "category": "大宗商品与能源", "long_desc": "自由港铜业(FCX -2.00%)", "short_desc": "能源精选etfspdr(XLE +0.98%)", "long_ret_pct": -2.0, "short_ret_pct": 0.98, "spread_pct": -2.98, "pair_win": false, "raw_str": "Pair Trade 配对交易：做多 FCX (电气化铜需求多头) / 做空 XLE (传统化石能源ETF)，捕捉全球能源转型加速下的跨品种相对收益"}, {"report_date": "2026-11-14", "market_type": "CN", "category": "大宗商品与能源", "long_desc": "思源电气(002028.SZ -2.55%)", "short_desc": "山西焦煤(000983.SZ +0.16%)", "long_ret_pct": -2.55, "short_ret_pct": 0.16, "spread_pct": -2.71, "pair_win": false, "raw_str": "Pair Trade 配对交易：做多 思源电气 (002028.SZ) / 做空 山西焦煤 (000983.SZ)，博弈电气化深化对传统高碳原料的长期替代趋势"}, {"report_date": "2026-11-15", "market_type": "CN", "category": "大宗商品与能源", "long_desc": "思源电气(002028.SZ -2.55%)", "short_desc": "山西焦煤(000983.SZ +0.16%)", "long_ret_pct": -2.55, "short_ret_pct": 0.16, "spread_pct": -2.71, "pair_win": false, "raw_str": "Pair Trade 配对交易：做多 思源电气 (002028.SZ) / 做空 山西焦煤 (000983.SZ)，博弈电气化深化对传统高碳原料的长期替代趋势"}, {"report_date": "2026-11-16", "market_type": "CN", "category": "大宗商品与能源", "long_desc": "思源电气(002028.SZ -2.55%)", "short_desc": "山西焦煤(000983.SZ +0.16%)", "long_ret_pct": -2.55, "short_ret_pct": 0.16, "spread_pct": -2.71, "pair_win": false, "raw_str": "Pair Trade 配对交易：做多 思源电气 (002028.SZ) / 做空 山西焦煤 (000983.SZ)，博弈电气化深化对传统高碳原料的长期替代趋势"}, {"report_date": "2026-11-13", "market_type": "US", "category": "大宗商品与能源", "long_desc": "自由港铜业(FCX -2.00%)", "short_desc": "皮博迪能源(BTU +0.00%)", "long_ret_pct": -2.0, "short_ret_pct": 0.0, "spread_pct": -2.0, "pair_win": false, "raw_str": "Pair Trade (配对交易) - [Long FCX / Short BTU] 做多深度受益于全球电网与新能源电气化浪潮的铜矿巨头，做空受制于中国碳达峰与燃煤替代的传统煤炭商"}]}, "by_report": {"2026-11-07": {"count": 77, "bull_count": 70, "bear_count": 7, "abs_hit_rate": 45.5, "alpha_hit_rate": 41.6, "institutional_hit_rate": 48.1, "double_hit_rate": 39.0, "t1_abs_hit_rate": 51.9, "t1_alpha_hit_rate": 40.3, "avg_signed_ret_pct": -1.56, "avg_signed_alpha_pct": -1.88, "avg_bull_ret_pct": -1.28, "avg_bear_ret_pct": 4.33, "long_short_spread_pct": -5.61, "avg_bull_alpha_pct": -1.89, "avg_bear_alpha_pct": 1.74, "us_oos": {"count": 39, "bull_count": 32, "bear_count": 7, "abs_hit_rate": 61.5, "alpha_hit_rate": 48.7, "institutional_hit_rate": 61.5, "double_hit_rate": 48.7, "t1_abs_hit_rate": 66.7, "t1_alpha_hit_rate": 53.8, "avg_signed_ret_pct": 0.18, "avg_signed_alpha_pct": -1.48, "avg_bull_ret_pct": 1.16, "avg_bear_ret_pct": 4.33, "long_short_spread_pct": -3.17, "avg_bull_alpha_pct": -1.43, "avg_bear_alpha_pct": 1.74}, "cn_oos": {"count": 38, "bull_count": 38, "bear_count": 0, "abs_hit_rate": 28.9, "alpha_hit_rate": 34.2, "institutional_hit_rate": 34.2, "double_hit_rate": 28.9, "t1_abs_hit_rate": 36.8, "t1_alpha_hit_rate": 26.3, "avg_signed_ret_pct": -3.34, "avg_signed_alpha_pct": -2.28, "avg_bull_ret_pct": -3.34, "avg_bear_ret_pct": 0.0, "long_short_spread_pct": null, "avg_bull_alpha_pct": -2.28, "avg_bear_alpha_pct": 0.0}, "pending_count": 0}, "2026-11-08": {"count": 90, "bull_count": 78, "bear_count": 12, "abs_hit_rate": 40.0, "alpha_hit_rate": 45.6, "institutional_hit_rate": 47.8, "double_hit_rate": 37.8, "t1_abs_hit_rate": 51.1, "t1_alpha_hit_rate": 44.4, "avg_signed_ret_pct": -0.91, "avg_signed_alpha_pct": -0.87, "avg_bull_ret_pct": -1.1, "avg_bear_ret_pct": -0.33, "long_short_spread_pct": -0.77, "avg_bull_alpha_pct": -1.36, "avg_bear_alpha_pct": -2.31, "us_oos": {"count": 38, "bull_count": 28, "bear_count": 10, "abs_hit_rate": 57.9, "alpha_hit_rate": 63.2, "institutional_hit_rate": 68.4, "double_hit_rate": 52.6, "t1_abs_hit_rate": 73.7, "t1_alpha_hit_rate": 63.2, "avg_signed_ret_pct": 1.74, "avg_signed_alpha_pct": 0.51, "avg_bull_ret_pct": 2.47, "avg_bear_ret_pct": 0.32, "long_short_spread_pct": 2.15, "avg_bull_alpha_pct": -0.12, "avg_bear_alpha_pct": -2.27}, "cn_oos": {"count": 52, "bull_count": 50, "bear_count": 2, "abs_hit_rate": 26.9, "alpha_hit_rate": 32.7, "institutional_hit_rate": 32.7, "double_hit_rate": 26.9, "t1_abs_hit_rate": 34.6, "t1_alpha_hit_rate": 30.8, "avg_signed_ret_pct": -2.85, "avg_signed_alpha_pct": -1.87, "avg_bull_ret_pct": -3.11, "avg_bear_ret_pct": -3.58, "long_short_spread_pct": 0.47, "avg_bull_alpha_pct": -2.05, "avg_bear_alpha_pct": -2.52}, "pending_count": 0}, "2026-11-09": {"count": 192, "bull_count": 139, "bear_count": 53, "abs_hit_rate": 41.1, "alpha_hit_rate": 46.4, "institutional_hit_rate": 49.5, "double_hit_rate": 38.0, "t1_abs_hit_rate": 50.5, "t1_alpha_hit_rate": 49.0, "avg_signed_ret_pct": -1.17, "avg_signed_alpha_pct": -0.87, "avg_bull_ret_pct": -1.34, "avg_bear_ret_pct": 0.73, "long_short_spread_pct": -2.07, "avg_bull_alpha_pct": -1.54, "avg_bear_alpha_pct": -0.89, "us_oos": {"count": 87, "bull_count": 48, "bear_count": 39, "abs_hit_rate": 51.7, "alpha_hit_rate": 55.2, "institutional_hit_rate": 62.1, "double_hit_rate": 44.8, "t1_abs_hit_rate": 55.2, "t1_alpha_hit_rate": 56.3, "avg_signed_ret_pct": -0.05, "avg_signed_alpha_pct": -0.32, "avg_bull_ret_pct": 1.62, "avg_bear_ret_pct": 2.1, "long_short_spread_pct": -0.48, "avg_bull_alpha_pct": -0.97, "avg_bear_alpha_pct": -0.49}, "cn_oos": {"count": 105, "bull_count": 91, "bear_count": 14, "abs_hit_rate": 32.4, "alpha_hit_rate": 39.0, "institutional_hit_rate": 39.0, "double_hit_rate": 32.4, "t1_abs_hit_rate": 46.7, "t1_alpha_hit_rate": 42.9, "avg_signed_ret_pct": -2.1, "avg_signed_alpha_pct": -1.32, "avg_bull_ret_pct": -2.9, "avg_bear_ret_pct": -3.07, "long_short_spread_pct": 0.17, "avg_bull_alpha_pct": -1.84, "avg_bear_alpha_pct": -2.01}, "pending_count": 0}, "2026-11-11": {"count": 104, "bull_count": 83, "bear_count": 21, "abs_hit_rate": 50.0, "alpha_hit_rate": 51.0, "institutional_hit_rate": 57.7, "double_hit_rate": 43.3, "t1_abs_hit_rate": 48.1, "t1_alpha_hit_rate": 38.5, "avg_signed_ret_pct": -0.91, "avg_signed_alpha_pct": -0.36, "avg_bull_ret_pct": -1.65, "avg_bear_ret_pct": -2.02, "long_short_spread_pct": 0.37, "avg_bull_alpha_pct": -1.03, "avg_bear_alpha_pct": -2.32, "us_oos": {"count": 52, "bull_count": 34, "bear_count": 18, "abs_hit_rate": 63.5, "alpha_hit_rate": 51.9, "institutional_hit_rate": 63.5, "double_hit_rate": 51.9, "t1_abs_hit_rate": 61.5, "t1_alpha_hit_rate": 48.1, "avg_signed_ret_pct": 0.39, "avg_signed_alpha_pct": 0.21, "avg_bull_ret_pct": -0.34, "avg_bear_ret_pct": -1.76, "long_short_spread_pct": 1.42, "avg_bull_alpha_pct": -0.93, "avg_bear_alpha_pct": -2.35}, "cn_oos": {"count": 52, "bull_count": 49, "bear_count": 3, "abs_hit_rate": 36.5, "alpha_hit_rate": 50.0, "institutional_hit_rate": 51.9, "double_hit_rate": 34.6, "t1_abs_hit_rate": 34.6, "t1_alpha_hit_rate": 28.8, "avg_signed_ret_pct": -2.21, "avg_signed_alpha_pct": -0.92, "avg_bull_ret_pct": -2.57, "avg_bear_ret_pct": -3.58, "long_short_spread_pct": 1.01, "avg_bull_alpha_pct": -1.11, "avg_bear_alpha_pct": -2.12}, "pending_count": 0}, "2026-11-12": {"count": 103, "bull_count": 83, "bear_count": 20, "abs_hit_rate": 39.8, "alpha_hit_rate": 46.6, "institutional_hit_rate": 48.5, "double_hit_rate": 37.9, "t1_abs_hit_rate": 43.7, "t1_alpha_hit_rate": 53.4, "avg_signed_ret_pct": -1.79, "avg_signed_alpha_pct": -0.88, "avg_bull_ret_pct": -3.12, "avg_bear_ret_pct": -3.73, "long_short_spread_pct": 0.61, "avg_bull_alpha_pct": -1.75, "avg_bear_alpha_pct": -2.78, "us_oos": {"count": 54, "bull_count": 38, "bear_count": 16, "abs_hit_rate": 48.1, "alpha_hit_rate": 50.0, "institutional_hit_rate": 51.9, "double_hit_rate": 46.3, "t1_abs_hit_rate": 46.3, "t1_alpha_hit_rate": 50.0, "avg_signed_ret_pct": -0.5, "avg_signed_alpha_pct": -0.21, "avg_bull_ret_pct": -2.13, "avg_bear_ret_pct": -3.37, "long_short_spread_pct": 1.24, "avg_bull_alpha_pct": -1.41, "avg_bear_alpha_pct": -2.65}, "cn_oos": {"count": 49, "bull_count": 45, "bear_count": 4, "abs_hit_rate": 30.6, "alpha_hit_rate": 42.9, "institutional_hit_rate": 44.9, "double_hit_rate": 28.6, "t1_abs_hit_rate": 40.8, "t1_alpha_hit_rate": 57.1, "avg_signed_ret_pct": -3.21, "avg_signed_alpha_pct": -1.61, "avg_bull_ret_pct": -3.96, "avg_bear_ret_pct": -5.19, "long_short_spread_pct": 1.23, "avg_bull_alpha_pct": -2.05, "avg_bear_alpha_pct": -3.28}, "pending_count": 0}, "2026-11-13": {"count": 167, "bull_count": 137, "bear_count": 30, "abs_hit_rate": 43.7, "alpha_hit_rate": 55.1, "institutional_hit_rate": 56.3, "double_hit_rate": 42.5, "t1_abs_hit_rate": 38.3, "t1_alpha_hit_rate": 51.5, "avg_signed_ret_pct": -0.8, "avg_signed_alpha_pct": -0.21, "avg_bull_ret_pct": -1.38, "avg_bear_ret_pct": -1.81, "long_short_spread_pct": 0.43, "avg_bull_alpha_pct": -0.54, "avg_bear_alpha_pct": -1.3, "us_oos": {"count": 88, "bull_count": 63, "bear_count": 25, "abs_hit_rate": 53.4, "alpha_hit_rate": 61.4, "institutional_hit_rate": 63.6, "double_hit_rate": 51.1, "t1_abs_hit_rate": 53.4, "t1_alpha_hit_rate": 61.4, "avg_signed_ret_pct": -0.05, "avg_signed_alpha_pct": 0.11, "avg_bull_ret_pct": -0.33, "avg_bear_ret_pct": -0.66, "long_short_spread_pct": 0.33, "avg_bull_alpha_pct": 0.03, "avg_bear_alpha_pct": -0.3}, "cn_oos": {"count": 79, "bull_count": 74, "bear_count": 5, "abs_hit_rate": 32.9, "alpha_hit_rate": 48.1, "institutional_hit_rate": 48.1, "double_hit_rate": 32.9, "t1_abs_hit_rate": 21.5, "t1_alpha_hit_rate": 40.5, "avg_signed_ret_pct": -1.65, "avg_signed_alpha_pct": -0.56, "avg_bull_ret_pct": -2.27, "avg_bear_ret_pct": -7.54, "long_short_spread_pct": 5.27, "avg_bull_alpha_pct": -1.03, "avg_bear_alpha_pct": -6.3}, "pending_count": 0}, "2026-11-14": {"count": 81, "bull_count": 73, "bear_count": 8, "abs_hit_rate": 53.1, "alpha_hit_rate": 63.0, "institutional_hit_rate": 63.0, "double_hit_rate": 53.1, "t1_abs_hit_rate": 53.1, "t1_alpha_hit_rate": 63.0, "avg_signed_ret_pct": -0.05, "avg_signed_alpha_pct": 0.48, "avg_bull_ret_pct": -0.43, "avg_bear_ret_pct": -3.44, "long_short_spread_pct": 3.01, "avg_bull_alpha_pct": 0.23, "avg_bear_alpha_pct": -2.78, "us_oos": {"count": 0}, "cn_oos": {"count": 81, "bull_count": 73, "bear_count": 8, "abs_hit_rate": 53.1, "alpha_hit_rate": 63.0, "institutional_hit_rate": 63.0, "double_hit_rate": 53.1, "t1_abs_hit_rate": 53.1, "t1_alpha_hit_rate": 63.0, "avg_signed_ret_pct": -0.05, "avg_signed_alpha_pct": 0.48, "avg_bull_ret_pct": -0.43, "avg_bear_ret_pct": -3.44, "long_short_spread_pct": 3.01, "avg_bull_alpha_pct": 0.23, "avg_bear_alpha_pct": -2.78}, "pending_count": 100}, "2026-11-15": {"count": 72, "bull_count": 64, "bear_count": 8, "abs_hit_rate": 52.8, "alpha_hit_rate": 61.1, "institutional_hit_rate": 61.1, "double_hit_rate": 52.8, "t1_abs_hit_rate": 52.8, "t1_alpha_hit_rate": 61.1, "avg_signed_ret_pct": -0.13, "avg_signed_alpha_pct": 0.38, "avg_bull_ret_pct": -0.53, "avg_bear_ret_pct": -2.99, "long_short_spread_pct": 2.46, "avg_bull_alpha_pct": 0.13, "avg_bear_alpha_pct": -2.33, "us_oos": {"count": 0}, "cn_oos": {"count": 72, "bull_count": 64, "bear_count": 8, "abs_hit_rate": 52.8, "alpha_hit_rate": 61.1, "institutional_hit_rate": 61.1, "double_hit_rate": 52.8, "t1_abs_hit_rate": 52.8, "t1_alpha_hit_rate": 61.1, "avg_signed_ret_pct": -0.13, "avg_signed_alpha_pct": 0.38, "avg_bull_ret_pct": -0.53, "avg_bear_ret_pct": -2.99, "long_short_spread_pct": 2.46, "avg_bull_alpha_pct": 0.13, "avg_bear_alpha_pct": -2.33}, "pending_count": 87}, "2026-11-16": {"count": 78, "bull_count": 69, "bear_count": 9, "abs_hit_rate": 53.8, "alpha_hit_rate": 64.1, "institutional_hit_rate": 64.1, "double_hit_rate": 53.8, "t1_abs_hit_rate": 53.8, "t1_alpha_hit_rate": 64.1, "avg_signed_ret_pct": 0.08, "avg_signed_alpha_pct": 0.58, "avg_bull_ret_pct": -0.36, "avg_bear_ret_pct": -3.39, "long_short_spread_pct": 3.03, "avg_bull_alpha_pct": 0.3, "avg_bear_alpha_pct": -2.73, "us_oos": {"count": 0}, "cn_oos": {"count": 78, "bull_count": 69, "bear_count": 9, "abs_hit_rate": 53.8, "alpha_hit_rate": 64.1, "institutional_hit_rate": 64.1, "double_hit_rate": 53.8, "t1_abs_hit_rate": 53.8, "t1_alpha_hit_rate": 64.1, "avg_signed_ret_pct": 0.08, "avg_signed_alpha_pct": 0.58, "avg_bull_ret_pct": -0.36, "avg_bear_ret_pct": -3.39, "long_short_spread_pct": 3.03, "avg_bull_alpha_pct": 0.3, "avg_bear_alpha_pct": -2.73}, "pending_count": 97}}, "by_rating": {"强力买入": {"count": 327, "bull_count": 327, "bear_count": 0, "abs_hit_rate": 43.4, "alpha_hit_rate": 51.1, "institutional_hit_rate": 52.3, "double_hit_rate": 42.2, "t1_abs_hit_rate": 50.2, "t1_alpha_hit_rate": 51.1, "avg_signed_ret_pct": -1.22, "avg_signed_alpha_pct": -0.81, "avg_bull_ret_pct": -1.22, "avg_bear_ret_pct": 0.0, "long_short_spread_pct": null, "avg_bull_alpha_pct": -0.81, "avg_bear_alpha_pct": 0.0}, "超配增持": {"count": 469, "bull_count": 469, "bear_count": 0, "abs_hit_rate": 41.8, "alpha_hit_rate": 47.8, "institutional_hit_rate": 51.0, "double_hit_rate": 38.6, "t1_abs_hit_rate": 46.3, "t1_alpha_hit_rate": 45.8, "avg_signed_ret_pct": -1.36, "avg_signed_alpha_pct": -0.95, "avg_bull_ret_pct": -1.36, "avg_bear_ret_pct": 0.0, "long_short_spread_pct": null, "avg_bull_alpha_pct": -0.95, "avg_bear_alpha_pct": 0.0}, "低配减持": {"count": 96, "bull_count": 0, "bear_count": 96, "abs_hit_rate": 59.4, "alpha_hit_rate": 62.5, "institutional_hit_rate": 66.7, "double_hit_rate": 55.2, "t1_abs_hit_rate": 51.0, "t1_alpha_hit_rate": 63.5, "avg_signed_ret_pct": 1.22, "avg_signed_alpha_pct": 1.52, "avg_bull_ret_pct": 0.0, "avg_bear_ret_pct": -1.22, "long_short_spread_pct": null, "avg_bull_alpha_pct": 0.0, "avg_bear_alpha_pct": -1.52}, "强力规避": {"count": 72, "bull_count": 0, "bear_count": 72, "abs_hit_rate": 61.1, "alpha_hit_rate": 68.1, "institutional_hit_rate": 69.4, "double_hit_rate": 59.7, "t1_abs_hit_rate": 48.6, "t1_alpha_hit_rate": 66.7, "avg_signed_ret_pct": 0.99, "avg_signed_alpha_pct": 1.74, "avg_bull_ret_pct": 0.0, "avg_bear_ret_pct": -0.99, "long_short_spread_pct": null, "avg_bull_alpha_pct": 0.0, "avg_bear_alpha_pct": -1.74}}, "by_category": {"AI与硬科技": {"count": 224, "bull_count": 180, "bear_count": 44, "abs_hit_rate": 42.9, "alpha_hit_rate": 46.9, "institutional_hit_rate": 49.1, "double_hit_rate": 40.6, "t1_abs_hit_rate": 50.4, "t1_alpha_hit_rate": 51.8, "avg_signed_ret_pct": -1.14, "avg_signed_alpha_pct": -0.85, "avg_bull_ret_pct": -2.58, "avg_bear_ret_pct": -4.74, "long_short_spread_pct": 2.16, "avg_bull_alpha_pct": -2.12, "avg_bear_alpha_pct": -4.35}, "中国金融与产业": {"count": 34, "bull_count": 26, "bear_count": 8, "abs_hit_rate": 44.1, "alpha_hit_rate": 55.9, "institutional_hit_rate": 55.9, "double_hit_rate": 44.1, "t1_abs_hit_rate": 50.0, "t1_alpha_hit_rate": 58.8, "avg_signed_ret_pct": 0.29, "avg_signed_alpha_pct": 1.05, "avg_bull_ret_pct": -0.15, "avg_bear_ret_pct": -1.73, "long_short_spread_pct": 1.58, "avg_bull_alpha_pct": 0.76, "avg_bear_alpha_pct": -1.97}, "全球贸易与地缘": {"count": 170, "bull_count": 151, "bear_count": 19, "abs_hit_rate": 43.5, "alpha_hit_rate": 54.1, "institutional_hit_rate": 54.7, "double_hit_rate": 42.9, "t1_abs_hit_rate": 45.3, "t1_alpha_hit_rate": 52.4, "avg_signed_ret_pct": -0.79, "avg_signed_alpha_pct": -0.24, "avg_bull_ret_pct": -0.72, "avg_bear_ret_pct": 1.38, "long_short_spread_pct": -2.1, "avg_bull_alpha_pct": -0.2, "avg_bear_alpha_pct": 0.61}, "大宗商品与能源": {"count": 106, "bull_count": 88, "bear_count": 18, "abs_hit_rate": 38.7, "alpha_hit_rate": 51.9, "institutional_hit_rate": 51.9, "double_hit_rate": 38.7, "t1_abs_hit_rate": 51.9, "t1_alpha_hit_rate": 58.5, "avg_signed_ret_pct": -0.79, "avg_signed_alpha_pct": -0.2, "avg_bull_ret_pct": -0.96, "avg_bear_ret_pct": -0.06, "long_short_spread_pct": -0.9, "avg_bull_alpha_pct": -0.49, "avg_bear_alpha_pct": -1.19}, "消费与医疗商业": {"count": 265, "bull_count": 238, "bear_count": 27, "abs_hit_rate": 49.4, "alpha_hit_rate": 54.0, "institutional_hit_rate": 58.5, "double_hit_rate": 44.9, "t1_abs_hit_rate": 46.8, "t1_alpha_hit_rate": 47.2, "avg_signed_ret_pct": -0.75, "avg_signed_alpha_pct": -0.42, "avg_bull_ret_pct": -1.01, "avg_bear_ret_pct": -1.54, "long_short_spread_pct": 0.53, "avg_bull_alpha_pct": -0.72, "avg_bear_alpha_pct": -2.19}, "美国政经与宏观": {"count": 165, "bull_count": 113, "bear_count": 52, "abs_hit_rate": 49.7, "alpha_hit_rate": 52.1, "institutional_hit_rate": 55.8, "double_hit_rate": 46.1, "t1_abs_hit_rate": 47.9, "t1_alpha_hit_rate": 47.9, "avg_signed_ret_pct": -1.13, "avg_signed_alpha_pct": -0.66, "avg_bull_ret_pct": -1.2, "avg_bear_ret_pct": 0.98, "long_short_spread_pct": -2.18, "avg_bull_alpha_pct": -0.93, "avg_bear_alpha_pct": 0.09}}, "conflicted_symbols_count": 41, "conflicted_symbols_sample": {"FSLR": [["2026-11-07", "bull", "强力买入"], ["2026-11-09", "bull", "强力买入"], ["2026-11-13", "bear", "低配减持"]], "ENPH": [["2026-11-07", "bull", "强力买入"], ["2026-11-09", "bull", "强力买入"], ["2026-11-13", "bear", "低配减持"]], "TGT": [["2026-11-07", "bull", "强力买入"], ["2026-11-09", "bull", "强力买入"], ["2026-11-11", "bear", "强力规避"], ["2026-11-12", "bear", "强力规避"], ["2026-11-13", "bear", "强力规避"]], "JPM": [["2026-11-07", "bear", "强力规避"], ["2026-11-07", "bull", "超配增持"], ["2026-11-09", "bear", "强力规避"], ["2026-11-13", "bull", "强力买入"]], "GS": [["2026-11-07", "bear", "强力规避"], ["2026-11-07", "bull", "超配增持"], ["2026-11-09", "bear", "强力规避"], ["2026-11-13", "bull", "超配增持"]], "MSFT": [["2026-11-07", "bull", "强力买入"], ["2026-11-08", "bull", "超配增持"], ["2026-11-09", "bear", "低配减持"], ["2026-11-09", "bull", "超配增持"], ["2026-11-11", "bull", "强力买入"], ["2026-11-12", "bull", "强力买入"], ["2026-11-13", "bull", "强力买入"]], "00700.HK": [["2026-11-07", "bull", "强力买入"], ["2026-11-08", "bull", "超配增持"], ["2026-11-09", "bear", "低配减持"], ["2026-11-09", "bull", "强力买入"], ["2026-11-11", "bull", "超配增持"], ["2026-11-13", "bull", "超配增持"], ["2026-11-14", "bull", "超配增持"], ["2026-11-15", "bull", "超配增持"], ["2026-11-16", "bull", "超配增持"]], "09988.HK": [["2026-11-07", "bull", "强力买入"], ["2026-11-08", "bull", "超配增持"], ["2026-11-09", "bear", "低配减持"], ["2026-11-09", "bull", "强力买入"], ["2026-11-13", "bull", "超配增持"], ["2026-11-14", "bull", "超配增持"], ["2026-11-15", "bull", "超配增持"], ["2026-11-16", "bull", "超配增持"]], "603259.SH": [["2026-11-07", "bull", "超配增持"], ["2026-11-09", "bull", "强力买入"], ["2026-11-11", "bull", "超配增持"], ["2026-11-12", "bull", "超配增持"], ["2026-11-13", "bull", "超配增持"], ["2026-11-14", "bear", "低配减持"], ["2026-11-15", "bear", "低配减持"]], "02359.HK": [["2026-11-07", "bull", "超配增持"], ["2026-11-09", "bull", "超配增持"], ["2026-11-11", "bull", "超配增持"], ["2026-11-12", "bull", "超配增持"], ["2026-11-13", "bull", "超配增持"], ["2026-11-14", "bear", "低配减持"], ["2026-11-15", "bear", "低配减持"]], "GOOGL": [["2026-11-07", "bull", "强力买入"], ["2026-11-08", "bull", "强力买入"], ["2026-11-09", "bear", "低配减持"], ["2026-11-09", "bull", "强力买入"], ["2026-11-13", "bull", "强力买入"]], "688041.SH": [["2026-11-07", "bull", "超配增持"], ["2026-11-08", "bull", "超配增持"], ["2026-11-09", "bear", "低配减持"], ["2026-11-11", "bull", "强力买入"], ["2026-11-12", "bull", "强力买入"], ["2026-11-13", "bull", "强力买入"], ["2026-11-14", "bull", "强力买入"], ["2026-11-15", "bull", "强力买入"], ["2026-11-16", "bull", "强力买入"]], "LMT": [["2026-11-07", "bull", "强力买入"], ["2026-11-09", "bear", "低配减持"], ["2026-11-11", "bear", "低配减持"], ["2026-11-12", "bull", "超配增持"], ["2026-11-13", "bull", "超配增持"]], "RTX": [["2026-11-07", "bull", "强力买入"], ["2026-11-09", "bear", "低配减持"], ["2026-11-12", "bear", "强力规避"]], "NOC": [["2026-11-07", "bull", "强力买入"], ["2026-11-12", "bear", "强力规避"]]}, "best_longs": [{"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "GTN", "qt_code": "usGTN.N", "name": "格雷电视", "head_display": "NXST (Nexstar Media) / GTN (Gray Television)", "market": "US", "category": "美国政经与宏观", "rating": "强力买入", "polarity": "bull", "score": 8, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 4.92, "latest_date": "2026-11-13", "latest_close": 5.99, "fwd_bars": 5, "ret_cum_pct": 21.75, "bm_ret_pct": 2.59, "alpha_cum_pct": 19.16, "ret_t1_pct": 13.82, "alpha_t1_pct": 11.45, "ret_t3_pct": 20.33, "ret_t5_pct": 21.75, "max_gain_pct": 24.8, "max_dd_pct": 4.27, "strict_gen_ret_pct": 21.75, "article_title": "通胀与关税怒火反噬执政党：中期选举模型指向民主党重夺国会控制权", "thesis": "摇摆州参众两院席位争夺白热化，地方广播电视网成为政治竞选资金投放的最大基本面赢家", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 21.75, "signed_alpha_pct": 19.16, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "TTD", "qt_code": "usTTD.OQ", "name": "萃弈广告平台", "head_display": "TTD (萃弈广告平台) / ROKU (Roku)", "market": "US", "category": "消费与医疗商业", "rating": "强力买入", "polarity": "bull", "score": 8, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 12.93, "latest_date": "2026-11-13", "latest_close": 15.68, "fwd_bars": 5, "ret_cum_pct": 21.27, "bm_ret_pct": 2.59, "alpha_cum_pct": 18.68, "ret_t1_pct": 15.47, "alpha_t1_pct": 13.1, "ret_t3_pct": 23.59, "ret_t5_pct": 21.27, "max_gain_pct": 26.99, "max_dd_pct": 6.34, "strict_gen_ret_pct": 21.27, "article_title": "从网红短片到统治客厅：YouTube强势碾压，好莱坞传统制片厂与流媒体巨头集体失守", "thesis": "受益于客厅大屏CTV广告预算从传统线性电视向数字视频平台的加速转移", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 21.27, "signed_alpha_pct": 18.68, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "ANET", "qt_code": "usANET.N", "name": "阿里斯塔网络", "head_display": "ANET (阿里斯塔网络) / DELL (戴尔)", "market": "US", "category": "全球贸易与地缘", "rating": "超配增持", "polarity": "bull", "score": 7, "driver": "估值倍数修复", "anchor_date": "2026-11-06", "anchor_close": 170.8, "latest_date": "2026-11-13", "latest_close": 197.29, "fwd_bars": 5, "ret_cum_pct": 15.51, "bm_ret_pct": 2.59, "alpha_cum_pct": 12.92, "ret_t1_pct": 9.0, "alpha_t1_pct": 6.63, "ret_t3_pct": 15.15, "ret_t5_pct": 15.51, "max_gain_pct": 24.22, "max_dd_pct": 3.19, "strict_gen_ret_pct": 15.51, "article_title": "AI倒逼保护主义者转向自由贸易：全球贸易壁垒高筑下的科技关税豁免悖论", "thesis": "高度依赖全球化电子制造与亚洲光通信组件供应链，科技贸易壁垒放宽直接改善硬件毛利率预期", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 15.51, "signed_alpha_pct": 12.92, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "BELL", "qt_code": "usBRBR.N", "name": "bellring brands, inc", "head_display": "BELL (贝尔林营养品)", "market": "US", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 5, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 9.16, "latest_date": "2026-11-13", "latest_close": 10.56, "fwd_bars": 5, "ret_cum_pct": 15.28, "bm_ret_pct": 2.59, "alpha_cum_pct": 12.69, "ret_t1_pct": 5.02, "alpha_t1_pct": 2.65, "ret_t3_pct": 9.28, "ret_t5_pct": 15.28, "max_gain_pct": 19.0, "max_dd_pct": -0.66, "strict_gen_ret_pct": 15.28, "article_title": "握力真能成为健康核心晴雨表？功能性抗衰与长寿消费的兴起", "thesis": "旗下Premier Protein等高蛋白营养品持续受益于大众力量训练与GLP-1人群保肌需求爆发", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 15.28, "signed_alpha_pct": 12.69, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "NET", "qt_code": "usNET.N", "name": "云フレア网络", "head_display": "ZS (云安全龙头) / NET (Cloudflare)", "market": "US", "category": "AI与硬科技", "rating": "超配增持", "polarity": "bull", "score": 9, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-06", "anchor_close": 268.75, "latest_date": "2026-11-13", "latest_close": 305.81, "fwd_bars": 5, "ret_cum_pct": 13.79, "bm_ret_pct": 2.59, "alpha_cum_pct": 11.2, "ret_t1_pct": 9.3, "alpha_t1_pct": 6.93, "ret_t3_pct": 17.21, "ret_t5_pct": 13.79, "max_gain_pct": 20.93, "max_dd_pct": 1.95, "strict_gen_ret_pct": 13.79, "article_title": "“黑色十月”拉响全球网安警报：开源AI武器化倒逼主权级防御算力军备竞赛", "thesis": "零信任架构与边缘侧AI流量清洗在抵御自动化大规模漏洞扫描中具备不可替代的卡位优势", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 13.79, "signed_alpha_pct": 11.2, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "002739.SZ", "qt_code": "sz002739", "name": "万达电影", "head_display": "万达电影 (002739.SZ) / 爱奇艺 (IQ.US)", "market": "CN", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 7, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 9.24, "latest_date": "2026-11-16", "latest_close": 10.22, "fwd_bars": 6, "ret_cum_pct": 10.61, "bm_ret_pct": -1.06, "alpha_cum_pct": 11.67, "ret_t1_pct": -0.97, "alpha_t1_pct": -1.29, "ret_t3_pct": -0.32, "ret_t5_pct": 8.77, "max_gain_pct": 14.18, "max_dd_pct": -1.84, "strict_gen_ret_pct": 10.61, "article_title": "从网红短片到统治客厅：YouTube强势碾压，好莱坞传统制片厂与流媒体巨头集体失守", "thesis": "传统重资产大制作与长视频独播模式同样面临创作者经济与短剧分流的结构性挑战", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 10.61, "signed_alpha_pct": 11.67, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "VRT", "qt_code": "usVRT.N", "name": "维谛液冷技术", "head_display": "VRT (维谛液冷技术) / ETN (伊顿)", "market": "US", "category": "全球贸易与地缘", "rating": "超配增持", "polarity": "bull", "score": 7, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-06", "anchor_close": 182.86, "latest_date": "2026-11-13", "latest_close": 202.07, "fwd_bars": 5, "ret_cum_pct": 10.51, "bm_ret_pct": 2.59, "alpha_cum_pct": 7.92, "ret_t1_pct": 9.63, "alpha_t1_pct": 7.26, "ret_t3_pct": 12.93, "ret_t5_pct": 10.51, "max_gain_pct": 17.3, "max_dd_pct": 2.82, "strict_gen_ret_pct": 10.51, "article_title": "AI倒逼保护主义者转向自由贸易：全球贸易壁垒高筑下的科技关税豁免悖论", "thesis": "数据中心液冷与配电系统零部件跨境采购通畅，保障北美AI数据中心机柜按期交付", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 10.51, "signed_alpha_pct": 7.92, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "02105.HK", "qt_code": "hk02105", "name": "02105.HK", "head_display": "信达生物 (01801.HK) / 来凯医药-B (02105.HK)", "market": "CN", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 4, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 6.05, "latest_date": "2026-11-16", "latest_close": 6.67, "fwd_bars": 6, "ret_cum_pct": 10.25, "bm_ret_pct": -1.06, "alpha_cum_pct": 11.31, "ret_t1_pct": 6.28, "alpha_t1_pct": 5.96, "ret_t3_pct": 9.09, "ret_t5_pct": 11.74, "max_gain_pct": 16.69, "max_dd_pct": 4.13, "strict_gen_ret_pct": 10.25, "article_title": "握力真能成为健康核心晴雨表？功能性抗衰与长寿消费的兴起", "thesis": "布局减重保肌双靶点及ActRIIA单抗等前沿管线，对标海外增肌抗衰生物科技风口", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 10.25, "signed_alpha_pct": 11.31, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-11", "generated_day": "2026-11-11", "symbol": "688256.SH", "qt_code": "sh688256", "name": "寒武纪", "head_display": "寒武纪-U (688256.SH) / 海光信息 (688041.SH)", "market": "CN", "category": "AI与硬科技", "rating": "强力买入", "polarity": "bull", "score": 9, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-10", "anchor_close": 838.0, "latest_date": "2026-11-16", "latest_close": 918.99, "fwd_bars": 4, "ret_cum_pct": 9.66, "bm_ret_pct": -1.46, "alpha_cum_pct": 11.12, "ret_t1_pct": 7.4, "alpha_t1_pct": 6.94, "ret_t3_pct": 16.81, "ret_t5_pct": null, "max_gain_pct": 23.29, "max_dd_pct": -1.91, "strict_gen_ret_pct": 9.66, "article_title": "英伟达黄仁勋深陷“涉华间谍桃色风波”：全球AI最高市值帝国的治理黑天鹅与算力地缘地震", "thesis": "[Conviction Buy 强推 | 订单爆发与估值溢价] 英伟达涉华风波将彻底终结国内互联网大厂对“特供版NV芯片”的幻想，国产AI芯片采购份额强制跃升", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 9.66, "signed_alpha_pct": 11.12, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "NXST", "qt_code": "usNXST.OQ", "name": "nexstar media group, inc", "head_display": "NXST (Nexstar Media) / GTN (Gray Television)", "market": "US", "category": "美国政经与宏观", "rating": "强力买入", "polarity": "bull", "score": 8, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 190.02, "latest_date": "2026-11-13", "latest_close": 207.94, "fwd_bars": 5, "ret_cum_pct": 9.43, "bm_ret_pct": 2.59, "alpha_cum_pct": 6.84, "ret_t1_pct": 5.9, "alpha_t1_pct": 3.53, "ret_t3_pct": 10.38, "ret_t5_pct": 9.43, "max_gain_pct": 11.3, "max_dd_pct": 0.52, "strict_gen_ret_pct": 9.43, "article_title": "通胀与关税怒火反噬执政党：中期选举模型指向民主党重夺国会控制权", "thesis": "摇摆州参众两院席位争夺白热化，地方广播电视网成为政治竞选资金投放的最大基本面赢家", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 9.43, "signed_alpha_pct": 6.84, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-13", "generated_day": "2026-11-13", "symbol": "000400.SZ", "qt_code": "sz000400", "name": "许继电气", "head_display": "许继电气 (000400.SZ) / 平高电气 (600312.SH) / 国电南瑞 (600406.SH)", "market": "CN", "category": "大宗商品与能源", "rating": "强力买入", "polarity": "bull", "score": 8, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-12", "anchor_close": 24.01, "latest_date": "2026-11-16", "latest_close": 25.85, "fwd_bars": 2, "ret_cum_pct": 7.66, "bm_ret_pct": -1.24, "alpha_cum_pct": 8.9, "ret_t1_pct": 2.0, "alpha_t1_pct": 2.59, "ret_t3_pct": null, "ret_t5_pct": null, "max_gain_pct": 7.66, "max_dd_pct": -0.87, "strict_gen_ret_pct": 7.66, "article_title": "《经济学人》社论：中国碳排放迎来历史性下降——利己主义驱动的全球绿色技术通缩红利", "thesis": "[Conviction Buy 强推 | 订单与EPS高增] 碳减排核心瓶颈从发电侧转向电网消纳侧，特高压直流与配网智能化投资迎来三年高景气周期", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 7.66, "signed_alpha_pct": 8.9, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "GFS", "qt_code": "usGFS.OQ", "name": "globalfoundries", "head_display": "INTC (英特尔) / GFS (格罗方德)", "market": "US", "category": "全球贸易与地缘", "rating": "超配增持", "polarity": "bull", "score": 6, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-06", "anchor_close": 38.62, "latest_date": "2026-11-13", "latest_close": 41.47, "fwd_bars": 5, "ret_cum_pct": 7.38, "bm_ret_pct": 2.59, "alpha_cum_pct": 4.79, "ret_t1_pct": 4.89, "alpha_t1_pct": 2.52, "ret_t3_pct": 10.95, "ret_t5_pct": 7.38, "max_gain_pct": 14.11, "max_dd_pct": 0.21, "strict_gen_ret_pct": 7.38, "article_title": "孙中山诞辰160周年成两岸政治角力场：历史正统争夺背后的台海地缘升温", "thesis": "受益于美国政府推动芯片制造回流与跨国客户对冲台海风险的备胎产能配置", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 7.38, "signed_alpha_pct": 4.79, "t1_abs_hit": true, "t1_alpha_hit": true}], "best_shorts": [{"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "09988.HK", "qt_code": "hk09988", "name": "09988.HK", "head_display": "腾讯控股 (00700.HK) / 阿里巴巴-W (09988.HK)", "market": "CN", "category": "AI与硬科技", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "盈利利润率承压", "anchor_date": "2026-11-06", "anchor_close": 104.9, "latest_date": "2026-11-16", "latest_close": 91.35, "fwd_bars": 6, "ret_cum_pct": -12.92, "bm_ret_pct": -1.06, "alpha_cum_pct": -11.86, "ret_t1_pct": -0.29, "alpha_t1_pct": -0.61, "ret_t3_pct": -4.1, "ret_t5_pct": -13.68, "max_gain_pct": 3.05, "max_dd_pct": -14.59, "strict_gen_ret_pct": -12.92, "article_title": "中国AI股市困局敲响全球警钟：当算力与模型供给狂潮追上真实需求边界", "thesis": "凭借微信生态与阿里云规模优势在模型价格战中洗牌中小厂商，但短期云业务利润率受降价策略制约", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 12.92, "signed_alpha_pct": 11.86, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "NVDA", "qt_code": "usNVDA.OQ", "name": "英伟达", "head_display": "NVDA (英伟达) / AVGO (博通)", "market": "US", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 9, "driver": "估值倍数收缩", "anchor_date": "2026-11-06", "anchor_close": 186.64, "latest_date": "2026-11-13", "latest_close": 162.85, "fwd_bars": 5, "ret_cum_pct": -12.75, "bm_ret_pct": 2.59, "alpha_cum_pct": -15.34, "ret_t1_pct": -4.27, "alpha_t1_pct": -6.64, "ret_t3_pct": -6.92, "ret_t5_pct": -12.75, "max_gain_pct": -3.6, "max_dd_pct": -20.27, "strict_gen_ret_pct": -12.75, "article_title": "美股惊觉“蓝色浪潮”之痛：民主党中期选举大胜引发AI监管与加税恐慌抛售", "thesis": "作为美股AI高Beta核心资产，首当其冲承受超大规模云厂商因监管不确定性放缓Capex的估值杀跌", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 12.75, "signed_alpha_pct": 15.34, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-12", "generated_day": "2026-11-12", "symbol": "SMCI", "qt_code": "usSMCI.OQ", "name": "超微电脑", "head_display": "SMCI / DELL (超微电脑 / 戴尔)", "market": "US", "category": "AI与硬科技", "rating": "强力规避", "polarity": "bear", "score": 10, "driver": "份额流失 / 竞争挤压", "anchor_date": "2026-11-11", "anchor_close": 30.43, "latest_date": "2026-11-13", "latest_close": 26.87, "fwd_bars": 2, "ret_cum_pct": -11.7, "bm_ret_pct": -0.72, "alpha_cum_pct": -10.98, "ret_t1_pct": -11.3, "alpha_t1_pct": -10.95, "ret_t3_pct": null, "ret_t5_pct": null, "max_gain_pct": -4.7, "max_dd_pct": -15.54, "strict_gen_ret_pct": -11.7, "article_title": "《经济学人》社论重磅逼宫黄仁勋辞职：桃色间谍丑闻与芯片走私危机引爆英伟达治理黑天鹅", "thesis": "[UW 低配 | EPS下修] 深度绑定NVDA且对亚太二线云服务商出货占比高的服务器集成商面临严格合规审查与订单冻结", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 11.7, "signed_alpha_pct": 10.98, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-13", "generated_day": "2026-11-13", "symbol": "AMD", "qt_code": "usAMD.OQ", "name": "超威半导体", "head_display": "AMD / SMCI (超威半导体 / 超微电脑)", "market": "US", "category": "AI与硬科技", "rating": "强力规避", "polarity": "bear", "score": 9, "driver": "份额流失 / 竞争挤压", "anchor_date": "2026-11-12", "anchor_close": 585.3, "latest_date": "2026-11-13", "latest_close": 534.06, "fwd_bars": 1, "ret_cum_pct": -8.75, "bm_ret_pct": -0.36, "alpha_cum_pct": -8.39, "ret_t1_pct": -8.75, "alpha_t1_pct": -8.39, "ret_t3_pct": null, "ret_t5_pct": null, "max_gain_pct": -2.42, "max_dd_pct": -11.15, "strict_gen_ret_pct": -8.75, "article_title": "AI繁荣能否赚到足以自我维持的真金白银？华尔街开始重估商业化时间表", "thesis": "[UW 低配 | CapEx放缓高弹性受损] 若云巨头因ROI焦虑削减二线算力采购预算，二线硬件供应商将首当其冲面临EPS下修", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 8.75, "signed_alpha_pct": 8.39, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "601138.SH", "qt_code": "sh601138", "name": "工业富联", "head_display": "中际旭创 (300308.SZ) / 新易盛 (300502.SZ) / 工业富联 (601138.SH)", "market": "CN", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 6, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 40.71, "latest_date": "2026-11-16", "latest_close": 37.21, "fwd_bars": 6, "ret_cum_pct": -8.6, "bm_ret_pct": -1.06, "alpha_cum_pct": -7.54, "ret_t1_pct": 4.57, "alpha_t1_pct": 4.25, "ret_t3_pct": 11.91, "ret_t5_pct": -1.5, "max_gain_pct": 13.19, "max_dd_pct": -8.92, "strict_gen_ret_pct": -8.6, "article_title": "美股惊觉“蓝色浪潮”之痛：民主党中期选举大胜引发AI监管与加税恐慌抛售", "thesis": "深度绑定北美云巨头Capex，受纳指暴跌与美股AI投资放缓预期直接拖累", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 8.6, "signed_alpha_pct": 7.54, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-12", "generated_day": "2026-11-12", "symbol": "DELL", "qt_code": "usDELL.N", "name": "戴尔科技", "head_display": "SMCI / DELL (超微电脑 / 戴尔)", "market": "US", "category": "AI与硬科技", "rating": "强力规避", "polarity": "bear", "score": 10, "driver": "份额流失 / 竞争挤压", "anchor_date": "2026-11-11", "anchor_close": 373.68, "latest_date": "2026-11-13", "latest_close": 344.53, "fwd_bars": 2, "ret_cum_pct": -7.8, "bm_ret_pct": -0.72, "alpha_cum_pct": -7.08, "ret_t1_pct": -0.67, "alpha_t1_pct": -0.32, "ret_t3_pct": null, "ret_t5_pct": null, "max_gain_pct": 2.41, "max_dd_pct": -11.58, "strict_gen_ret_pct": -7.8, "article_title": "《经济学人》社论重磅逼宫黄仁勋辞职：桃色间谍丑闻与芯片走私危机引爆英伟达治理黑天鹅", "thesis": "[UW 低配 | EPS下修] 深度绑定NVDA且对亚太二线云服务商出货占比高的服务器集成商面临严格合规审查与订单冻结", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 7.8, "signed_alpha_pct": 7.08, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-12", "generated_day": "2026-11-12", "symbol": "BABA", "qt_code": "usBABA.N", "name": "阿里巴巴", "head_display": "KWEB (中概互联ETF) / BABA (阿里巴巴)", "market": "US", "category": "中国金融与产业", "rating": "低配减持", "polarity": "bear", "score": 5, "driver": "估值倍数收缩", "anchor_date": "2026-11-11", "anchor_close": 101.52, "latest_date": "2026-11-13", "latest_close": 94.38, "fwd_bars": 2, "ret_cum_pct": -7.03, "bm_ret_pct": -0.72, "alpha_cum_pct": -6.31, "ret_t1_pct": -7.05, "alpha_t1_pct": -6.7, "ret_t3_pct": null, "ret_t5_pct": null, "max_gain_pct": -5.52, "max_dd_pct": -8.27, "strict_gen_ret_pct": -7.03, "article_title": "大历史观下的国家安全溢价：王沪宁高频警示党国威胁与A股/港股“安全资产vs效率资产”估值分化", "thesis": "[UW 低配 | 估值受抑] 海外投资者对意识形态与国家安全优先级的担忧限制中概股P/E倍数向海外同行收敛", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 7.03, "signed_alpha_pct": 6.31, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-12", "generated_day": "2026-11-12", "symbol": "002862.SZ", "qt_code": "sz002862", "name": "实丰文化", "head_display": "实丰文化 (002862.SZ) / 传统出口玩具代工群", "market": "CN", "category": "消费与医疗商业", "rating": "低配减持", "polarity": "bear", "score": 6, "driver": "盈利利润率承压", "anchor_date": "2026-11-11", "anchor_close": 14.33, "latest_date": "2026-11-16", "latest_close": 13.37, "fwd_bars": 3, "ret_cum_pct": -6.7, "bm_ret_pct": -1.91, "alpha_cum_pct": -4.79, "ret_t1_pct": -3.14, "alpha_t1_pct": -2.47, "ret_t3_pct": -6.7, "ret_t5_pct": null, "max_gain_pct": 1.05, "max_dd_pct": -9.14, "strict_gen_ret_pct": -6.7, "article_title": "美泰IP娱乐化转型困局：传统玩具商管理层大换血与私募并购博弈下的估值重估", "thesis": "[UW 低配 | 利润率压缩] 若美泰被激进品牌管理机构收购并转向极致轻资产授权，传统OEM代工厂将面临账期拉长与毛利挤压", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 6.7, "signed_alpha_pct": 4.79, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "600186.SH", "qt_code": "sh600186", "name": "莲花控股", "head_display": "莲花控股 (600186.SH) / 鸿博股份 (002229.SZ)", "market": "CN", "category": "AI与硬科技", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "资产质量 / 信用风险", "anchor_date": "2026-11-06", "anchor_close": 8.79, "latest_date": "2026-11-16", "latest_close": 8.21, "fwd_bars": 6, "ret_cum_pct": -6.6, "bm_ret_pct": -1.06, "alpha_cum_pct": -5.54, "ret_t1_pct": -0.23, "alpha_t1_pct": -0.55, "ret_t3_pct": 3.3, "ret_t5_pct": -3.41, "max_gain_pct": 5.12, "max_dd_pct": -7.62, "strict_gen_ret_pct": -6.6, "article_title": "中国AI股市困局敲响全球警钟：当算力与模型供给狂潮追上真实需求边界", "thesis": "缺乏自有核心技术与稳定下游锁单的跨界算力租赁企业面临租金下跌与资产减值双杀", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 6.6, "signed_alpha_pct": 5.54, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "00700.HK", "qt_code": "hk00700", "name": "腾讯控股", "head_display": "腾讯控股 (00700.HK) / 阿里巴巴-W (09988.HK)", "market": "CN", "category": "AI与硬科技", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "盈利利润率承压", "anchor_date": "2026-11-06", "anchor_close": 419.8, "latest_date": "2026-11-16", "latest_close": 393.4, "fwd_bars": 6, "ret_cum_pct": -6.29, "bm_ret_pct": -1.06, "alpha_cum_pct": -5.23, "ret_t1_pct": -0.33, "alpha_t1_pct": -0.65, "ret_t3_pct": -2.43, "ret_t5_pct": -7.91, "max_gain_pct": 2.05, "max_dd_pct": -8.48, "strict_gen_ret_pct": -6.29, "article_title": "中国AI股市困局敲响全球警钟：当算力与模型供给狂潮追上真实需求边界", "thesis": "凭借微信生态与阿里云规模优势在模型价格战中洗牌中小厂商，但短期云业务利润率受降价策略制约", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 6.29, "signed_alpha_pct": 5.23, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "688111.SH", "qt_code": "sh688111", "name": "金山办公", "head_display": "科大讯飞 (002230.SZ) / 金山办公 (688111.SH)", "market": "CN", "category": "AI与硬科技", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "估值倍数收缩", "anchor_date": "2026-11-06", "anchor_close": 232.0, "latest_date": "2026-11-16", "latest_close": 218.27, "fwd_bars": 6, "ret_cum_pct": -5.92, "bm_ret_pct": -1.06, "alpha_cum_pct": -4.86, "ret_t1_pct": -2.76, "alpha_t1_pct": -3.08, "ret_t3_pct": -4.4, "ret_t5_pct": -6.37, "max_gain_pct": 1.72, "max_dd_pct": -7.22, "strict_gen_ret_pct": -5.92, "article_title": "中国AI股市困局敲响全球警钟：当算力与模型供给狂潮追上真实需求边界", "thesis": "C端付费意愿与政企预算双重考验下，高研发投入对当期净利率形成持续拖累", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 5.92, "signed_alpha_pct": 4.86, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-11", "generated_day": "2026-11-11", "symbol": "000977.SZ", "qt_code": "sz000977", "name": "浪潮信息", "head_display": "浪潮信息 (000977.SZ) / 港股海外算力租赁中间商", "market": "CN", "category": "AI与硬科技", "rating": "强力规避", "polarity": "bear", "score": 9, "driver": "盈利与估值双杀", "anchor_date": "2026-11-10", "anchor_close": 55.55, "latest_date": "2026-11-16", "latest_close": 52.45, "fwd_bars": 4, "ret_cum_pct": -5.58, "bm_ret_pct": -1.46, "alpha_cum_pct": -4.12, "ret_t1_pct": 1.82, "alpha_t1_pct": 1.36, "ret_t3_pct": -2.61, "ret_t5_pct": null, "max_gain_pct": 5.99, "max_dd_pct": -5.85, "strict_gen_ret_pct": -5.58, "article_title": "英伟达黄仁勋深陷“涉华间谍桃色风波”：全球AI最高市值帝国的治理黑天鹅与算力地缘地震", "thesis": "[UW 低配 | 供应链断供风险] 严防美国商务部BIS因该丑闻对英伟达海外算力租用及剩余合规芯片实施休克式清查", "abs_hit": true, "alpha_hit": true, "signed_ret_pct": 5.58, "signed_alpha_pct": 4.12, "t1_abs_hit": false, "t1_alpha_hit": false}], "worst_long_misses": [{"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "02158.HK", "qt_code": "hk02158", "name": "医渡科技", "head_display": "讯飞医疗科技 (02506.HK) / 医渡科技 (02158.HK)", "market": "CN", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 6, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 2.88, "latest_date": "2026-11-16", "latest_close": 2.17, "fwd_bars": 6, "ret_cum_pct": -24.65, "bm_ret_pct": -1.06, "alpha_cum_pct": -23.59, "ret_t1_pct": -7.64, "alpha_t1_pct": -7.96, "ret_t3_pct": -9.03, "ret_t5_pct": -19.44, "max_gain_pct": 1.39, "max_dd_pct": -25.35, "strict_gen_ret_pct": -24.65, "article_title": "患者正越来越像精明的消费者：医疗保健市场化革命势不可挡", "thesis": "AI医疗大模型赋能C端患者诊前自查与诊后健康管理，降低医患信息不对称", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -24.65, "signed_alpha_pct": -23.59, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "HIMS", "qt_code": "usHIMS.N", "name": "远程医疗龙头", "head_display": "HIMS (远程医疗龙头 Health)", "market": "US", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 8, "driver": "盈利预期上修", "anchor_date": "2026-11-06", "anchor_close": 26.0, "latest_date": "2026-11-13", "latest_close": 19.73, "fwd_bars": 5, "ret_cum_pct": -24.12, "bm_ret_pct": 2.59, "alpha_cum_pct": -26.71, "ret_t1_pct": -11.77, "alpha_t1_pct": -14.14, "ret_t3_pct": -19.96, "ret_t5_pct": -24.12, "max_gain_pct": -1.27, "max_dd_pct": -29.23, "strict_gen_ret_pct": -24.12, "article_title": "患者正越来越像精明的消费者：医疗保健市场化革命势不可挡", "thesis": "医疗消费化标杆，凭借透明订阅制与无需繁琐医保审批的线上问诊购药模式实现高速盈利增长", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -24.12, "signed_alpha_pct": -26.71, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-12", "generated_day": "2026-11-12", "symbol": "688066.SH", "qt_code": "sh688066", "name": "航天宏图", "head_display": "航天宏图 (688066.SH)", "market": "CN", "category": "AI与硬科技", "rating": "超配增持", "polarity": "bull", "score": 6, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-11", "anchor_close": 6.52, "latest_date": "2026-11-16", "latest_close": 5.38, "fwd_bars": 3, "ret_cum_pct": -17.48, "bm_ret_pct": -1.91, "alpha_cum_pct": -15.57, "ret_t1_pct": -8.9, "alpha_t1_pct": -8.23, "ret_t3_pct": -17.48, "ret_t5_pct": null, "max_gain_pct": 0.31, "max_dd_pct": -24.85, "strict_gen_ret_pct": -17.48, "article_title": "天基高光谱遥感跨界破局：空间相机精准识别地球入侵植物与商业遥感新范式", "thesis": "[OW 超配 | EPS修复] 女娲星座遥感数据源自主可控，高光谱农业与环境监测To-G订单进入交付拐点", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -17.48, "signed_alpha_pct": -15.57, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-11", "generated_day": "2026-11-11", "symbol": "02556.HK", "qt_code": "hk02556", "name": "迈富时", "head_display": "焦点科技 (002315.SZ) / 迈富时 (2556.HK)", "market": "CN", "category": "AI与硬科技", "rating": "超配增持", "polarity": "bull", "score": 6, "driver": "盈利与估值双升", "anchor_date": "2026-11-10", "anchor_close": 46.96, "latest_date": "2026-11-16", "latest_close": 39.18, "fwd_bars": 4, "ret_cum_pct": -16.57, "bm_ret_pct": -1.46, "alpha_cum_pct": -15.11, "ret_t1_pct": -3.79, "alpha_t1_pct": -4.25, "ret_t3_pct": -12.78, "ret_t5_pct": null, "max_gain_pct": 0.43, "max_dd_pct": -18.23, "strict_gen_ret_pct": -16.57, "article_title": "AI改写白领内容生态：企业级生成式AI从“算力基建”迈入“人力替代与降本变现”", "thesis": "[OW 超配 | EPS上修] 利用AI自动生成多语种外贸开发信、产品简报与精准营销邮件，大幅提升中小微企业获客转化率", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -16.57, "signed_alpha_pct": -15.11, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "FSLR", "qt_code": "usFSLR.OQ", "name": "第一太阳能", "head_display": "FSLR (第一太阳能) / ENPH (微型逆变器龙头)", "market": "US", "category": "美国政经与宏观", "rating": "强力买入", "polarity": "bull", "score": 10, "driver": "估值倍数修复", "anchor_date": "2026-11-06", "anchor_close": 201.14, "latest_date": "2026-11-13", "latest_close": 171.39, "fwd_bars": 5, "ret_cum_pct": -14.79, "bm_ret_pct": 2.59, "alpha_cum_pct": -17.38, "ret_t1_pct": -4.74, "alpha_t1_pct": -7.11, "ret_t3_pct": -11.45, "ret_t5_pct": -14.79, "max_gain_pct": -1.56, "max_dd_pct": -17.12, "strict_gen_ret_pct": -14.79, "article_title": "民主党中期选举压倒性大胜：选民痛击特朗普与共和党动荡新纪元", "thesis": "共和党彻底废除《通胀削减法案》IRA绿色补贴的立法风险解除，估值迎来强力修复", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -14.79, "signed_alpha_pct": -17.38, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-11", "generated_day": "2026-11-11", "symbol": "02696.HK", "qt_code": "hk02696", "name": "复宏汉霖", "head_display": "复宏汉霖 (02696.HK) / 百奥泰 (688177.SH)", "market": "CN", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 6, "driver": "订单放量 / 份额扩张", "anchor_date": "2026-11-10", "anchor_close": 50.15, "latest_date": "2026-11-16", "latest_close": 43.22, "fwd_bars": 4, "ret_cum_pct": -13.82, "bm_ret_pct": -1.46, "alpha_cum_pct": -12.36, "ret_t1_pct": -0.54, "alpha_t1_pct": -1.0, "ret_t3_pct": -4.05, "ret_t5_pct": null, "max_gain_pct": 1.69, "max_dd_pct": -14.22, "strict_gen_ret_pct": -13.82, "article_title": "美国雇主医保保费迎20年最大涨幅：企业利润率挤压与商保龙头提价周期的跨市场重估", "thesis": "[OW 超配 | 估值扩张] 美国PBM为平抑8%保费涨幅加速纳管高性价比生物类似药，利好获FDA批准的国产出海品种", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -13.82, "signed_alpha_pct": -12.36, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "IQ", "qt_code": "usIQ.OQ", "name": "爱奇艺", "head_display": "万达电影 (002739.SZ) / 爱奇艺 (IQ.US)", "market": "US", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 7, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 0.96, "latest_date": "2026-11-13", "latest_close": 0.83, "fwd_bars": 5, "ret_cum_pct": -13.54, "bm_ret_pct": 2.59, "alpha_cum_pct": -16.13, "ret_t1_pct": -5.21, "alpha_t1_pct": -7.58, "ret_t3_pct": 0.0, "ret_t5_pct": -13.54, "max_gain_pct": 2.08, "max_dd_pct": -15.62, "strict_gen_ret_pct": -13.54, "article_title": "从网红短片到统治客厅：YouTube强势碾压，好莱坞传统制片厂与流媒体巨头集体失守", "thesis": "传统重资产大制作与长视频独播模式同样面临创作者经济与短剧分流的结构性挑战", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -13.54, "signed_alpha_pct": -16.13, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "09988.HK", "qt_code": "hk09988", "name": "09988.HK", "head_display": "腾讯控股 (00700.HK) / 阿里巴巴-W (09988.HK)", "market": "CN", "category": "美国政经与宏观", "rating": "强力买入", "polarity": "bull", "score": 8, "driver": "估值倍数修复", "anchor_date": "2026-11-06", "anchor_close": 104.9, "latest_date": "2026-11-16", "latest_close": 91.35, "fwd_bars": 6, "ret_cum_pct": -12.92, "bm_ret_pct": -1.06, "alpha_cum_pct": -11.86, "ret_t1_pct": -0.29, "alpha_t1_pct": -0.61, "ret_t3_pct": -4.1, "ret_t5_pct": -13.68, "max_gain_pct": 3.05, "max_dd_pct": -14.59, "strict_gen_ret_pct": -12.92, "article_title": "民主党中期选举压倒性大胜：选民痛击特朗普与共和党动荡新纪元", "thesis": "美元指数与美债利率回落叠加中美极端摩擦尾部风险收敛，驱动全球长线外资回补港股", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -12.92, "signed_alpha_pct": -11.86, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-11", "generated_day": "2026-11-11", "symbol": "001270.SZ", "qt_code": "sz001270", "name": "铖昌科技", "head_display": "海格通信 (002465.SZ) / 铖昌科技 (001270.SZ)", "market": "CN", "category": "美国政经与宏观", "rating": "超配增持", "polarity": "bull", "score": 6, "driver": "盈利与估值双升", "anchor_date": "2026-11-10", "anchor_close": 91.04, "latest_date": "2026-11-16", "latest_close": 79.61, "fwd_bars": 4, "ret_cum_pct": -12.55, "bm_ret_pct": -1.46, "alpha_cum_pct": -11.09, "ret_t1_pct": -0.34, "alpha_t1_pct": -0.8, "ret_t3_pct": -6.43, "ret_t5_pct": null, "max_gain_pct": 0.45, "max_dd_pct": -13.2, "strict_gen_ret_pct": -12.55, "article_title": "五角大楼人事震荡与军工采购转向：赫格塞斯政治生存危机下的美中防务板块重估", "thesis": "[OW 超配 | EPS上修] 对标美军软件与卫星防务转型，国内卫星互联网与军用相控阵T/R芯片进入密集放量期", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -12.55, "signed_alpha_pct": -11.09, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "01024.HK", "qt_code": "hk01024", "name": "01024.HK", "head_display": "快手-W (01024.HK) / 腾讯控股 (00700.HK)", "market": "CN", "category": "消费与医疗商业", "rating": "超配增持", "polarity": "bull", "score": 7, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 28.92, "latest_date": "2026-11-16", "latest_close": 25.6, "fwd_bars": 6, "ret_cum_pct": -11.48, "bm_ret_pct": -1.06, "alpha_cum_pct": -10.42, "ret_t1_pct": -0.35, "alpha_t1_pct": -0.67, "ret_t3_pct": -0.9, "ret_t5_pct": -10.37, "max_gain_pct": 2.77, "max_dd_pct": -12.24, "strict_gen_ret_pct": -11.48, "article_title": "从网红短片到统治客厅：YouTube强势碾压，好莱坞传统制片厂与流媒体巨头集体失守", "thesis": "快手可灵AI视频大模型与微信视频号创作者生态共振，大幅降低独立创作者制作精品剧情内容的门槛", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -11.48, "signed_alpha_pct": -10.42, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-08", "generated_day": "2026-11-09", "symbol": "603979.SH", "qt_code": "sh603979", "name": "金诚信", "head_display": "金诚信 (603979.SH)", "market": "CN", "category": "大宗商品与能源", "rating": "强力买入", "polarity": "bull", "score": 8, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 54.94, "latest_date": "2026-11-16", "latest_close": 48.69, "fwd_bars": 6, "ret_cum_pct": -11.38, "bm_ret_pct": -1.06, "alpha_cum_pct": -10.32, "ret_t1_pct": 0.8, "alpha_t1_pct": 0.48, "ret_t3_pct": 1.22, "ret_t5_pct": -8.9, "max_gain_pct": 3.73, "max_dd_pct": -13.65, "strict_gen_ret_pct": -11.38, "article_title": "美国铜业巨头自由港的“远大梦想与谨慎扩产”：战略矿产共识下的资本开支悖论", "thesis": "矿山开发服务向资源开发一体化成功转型，受益于全球存量矿山深部开采与技改需求", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -11.38, "signed_alpha_pct": -10.32, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "02228.HK", "qt_code": "hk02228", "name": "02228.HK", "head_display": "晶泰控股-P (02228.HK)", "market": "CN", "category": "AI与硬科技", "rating": "强力买入", "polarity": "bull", "score": 9, "driver": "盈利与估值双升", "anchor_date": "2026-11-06", "anchor_close": 6.12, "latest_date": "2026-11-16", "latest_close": 5.46, "fwd_bars": 6, "ret_cum_pct": -10.78, "bm_ret_pct": -1.06, "alpha_cum_pct": -9.72, "ret_t1_pct": 2.12, "alpha_t1_pct": 1.8, "ret_t3_pct": 4.08, "ret_t5_pct": -4.08, "max_gain_pct": 6.21, "max_dd_pct": -11.27, "strict_gen_ret_pct": -10.78, "article_title": "对标美国科技竞争，中国加速布局“AI全自动无人实验室”以重塑研发与产业范式", "thesis": "文章点名核心标的，AI+机器人干湿闭环龙头，直接受益于国家级战略背书与跨国药企及新能源材料大单", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -10.78, "signed_alpha_pct": -9.72, "t1_abs_hit": true, "t1_alpha_hit": true}], "worst_short_misses": [{"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "AVGO", "qt_code": "usAVGO.OQ", "name": "博通", "head_display": "NVDA (英伟达) / AVGO (博通)", "market": "US", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 9, "driver": "估值倍数收缩", "anchor_date": "2026-11-06", "anchor_close": 293.69, "latest_date": "2026-11-13", "latest_close": 347.01, "fwd_bars": 5, "ret_cum_pct": 18.16, "bm_ret_pct": 2.59, "alpha_cum_pct": 15.57, "ret_t1_pct": 8.78, "alpha_t1_pct": 6.41, "ret_t3_pct": 17.55, "ret_t5_pct": 18.16, "max_gain_pct": 25.92, "max_dd_pct": 3.61, "strict_gen_ret_pct": 18.16, "article_title": "美股惊觉“蓝色浪潮”之痛：民主党中期选举大胜引发AI监管与加税恐慌抛售", "thesis": "作为美股AI高Beta核心资产，首当其冲承受超大规模云厂商因监管不确定性放缓Capex的估值杀跌", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -18.16, "signed_alpha_pct": -15.57, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "DJT", "qt_code": "usDJT.OQ", "name": "特朗普媒体集团", "head_display": "DJT (特朗普媒体科技集团) / COIN (加密交易平台)", "market": "US", "category": "美国政经与宏观", "rating": "强力规避", "polarity": "bear", "score": 10, "driver": "估值倍数收缩", "anchor_date": "2026-11-06", "anchor_close": 3.99, "latest_date": "2026-11-13", "latest_close": 4.64, "fwd_bars": 5, "ret_cum_pct": 16.29, "bm_ret_pct": 2.59, "alpha_cum_pct": 13.7, "ret_t1_pct": 1.75, "alpha_t1_pct": -0.62, "ret_t3_pct": 30.08, "ret_t5_pct": 16.29, "max_gain_pct": 37.34, "max_dd_pct": -3.26, "strict_gen_ret_pct": 16.29, "article_title": "民主党中期选举压倒性大胜：选民痛击特朗普与共和党动荡新纪元", "thesis": "特朗普政治资本重挫引发高Beta政治投机标的与加密监管宽松溢价回吐", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -16.29, "signed_alpha_pct": -13.7, "t1_abs_hit": false, "t1_alpha_hit": true}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "CEG", "qt_code": "usCEG.OQ", "name": "星座核电", "head_display": "CEG (星座核电) / VST (维斯特拉电力)", "market": "US", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 9, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 249.95, "latest_date": "2026-11-13", "latest_close": 280.2, "fwd_bars": 5, "ret_cum_pct": 12.1, "bm_ret_pct": 2.59, "alpha_cum_pct": 9.51, "ret_t1_pct": 10.46, "alpha_t1_pct": 8.09, "ret_t3_pct": 9.91, "ret_t5_pct": 12.1, "max_gain_pct": 14.01, "max_dd_pct": -1.18, "strict_gen_ret_pct": 12.1, "article_title": "美股惊觉“蓝色浪潮”之痛：民主党中期选举大胜引发AI监管与加税恐慌抛售", "thesis": "民主党严苛的电网公平接入与环保审批可能延缓科技巨头独享核电与燃气电厂并网协议（购电协议）进程", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -12.1, "signed_alpha_pct": -9.51, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "TSLA", "qt_code": "usTSLA.OQ", "name": "特斯拉", "head_display": "TSLA (特斯拉)", "market": "US", "category": "美国政经与宏观", "rating": "强力规避", "polarity": "bear", "score": 9, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 358.22, "latest_date": "2026-11-13", "latest_close": 390.22, "fwd_bars": 5, "ret_cum_pct": 8.93, "bm_ret_pct": 2.59, "alpha_cum_pct": 6.34, "ret_t1_pct": 5.54, "alpha_t1_pct": 3.17, "ret_t3_pct": 9.11, "ret_t5_pct": 8.93, "max_gain_pct": 12.89, "max_dd_pct": 0.5, "strict_gen_ret_pct": 8.93, "article_title": "美股惊觉“蓝色浪潮”之痛：民主党中期选举大胜引发AI监管与加税恐慌抛售", "thesis": "政治光谱与民主党高度对立，自动驾驶（全自动驾驶）与Robotaxi联邦监管放行预期遭遇重大挫折", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -8.93, "signed_alpha_pct": -6.34, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "002229.SZ", "qt_code": "sz002229", "name": "鸿博股份", "head_display": "莲花控股 (600186.SH) / 鸿博股份 (002229.SZ)", "market": "CN", "category": "AI与硬科技", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "资产质量 / 信用风险", "anchor_date": "2026-11-06", "anchor_close": 9.13, "latest_date": "2026-11-16", "latest_close": 9.92, "fwd_bars": 6, "ret_cum_pct": 8.65, "bm_ret_pct": -1.06, "alpha_cum_pct": 9.71, "ret_t1_pct": -0.22, "alpha_t1_pct": -0.54, "ret_t3_pct": 2.74, "ret_t5_pct": 10.41, "max_gain_pct": 14.13, "max_dd_pct": -0.66, "strict_gen_ret_pct": 8.65, "article_title": "中国AI股市困局敲响全球警钟：当算力与模型供给狂潮追上真实需求边界", "thesis": "缺乏自有核心技术与稳定下游锁单的跨界算力租赁企业面临租金下跌与资产减值双杀", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -8.65, "signed_alpha_pct": -9.71, "t1_abs_hit": true, "t1_alpha_hit": true}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "CAT", "qt_code": "usCAT.N", "name": "卡特彼勒", "head_display": "AAPL (苹果) / NKE (耐克) / CAT (卡特彼勒)", "market": "US", "category": "全球贸易与地缘", "rating": "低配减持", "polarity": "bear", "score": 8, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 558.63, "latest_date": "2026-11-13", "latest_close": 600.2, "fwd_bars": 5, "ret_cum_pct": 7.44, "bm_ret_pct": 2.59, "alpha_cum_pct": 4.85, "ret_t1_pct": 7.21, "alpha_t1_pct": 4.84, "ret_t3_pct": 7.69, "ret_t5_pct": 7.44, "max_gain_pct": 9.83, "max_dd_pct": 1.34, "strict_gen_ret_pct": 7.44, "article_title": "“跛脚鸭”特朗普的外交转向：内政受阻下的行政扩权与全球地缘尾部风险", "thesis": "海外收入与跨国供应链暴露度高，极易成为总统动用国家安全行政权发动突发双边摩擦的连带受损方", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -7.44, "signed_alpha_pct": -4.85, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "VST", "qt_code": "usVST.N", "name": "维斯特拉电力", "head_display": "CEG (星座核电) / VST (维斯特拉电力)", "market": "US", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 9, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 124.8, "latest_date": "2026-11-13", "latest_close": 133.01, "fwd_bars": 5, "ret_cum_pct": 6.58, "bm_ret_pct": 2.59, "alpha_cum_pct": 3.99, "ret_t1_pct": 7.31, "alpha_t1_pct": 4.94, "ret_t3_pct": 6.93, "ret_t5_pct": 6.58, "max_gain_pct": 9.56, "max_dd_pct": 0.23, "strict_gen_ret_pct": 6.58, "article_title": "美股惊觉“蓝色浪潮”之痛：民主党中期选举大胜引发AI监管与加税恐慌抛售", "thesis": "民主党严苛的电网公平接入与环保审批可能延缓科技巨头独享核电与燃气电厂并网协议（购电协议）进程", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -6.58, "signed_alpha_pct": -3.99, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "TSM", "qt_code": "usTSM.N", "name": "台积电", "head_display": "TSM (台积电)", "market": "US", "category": "全球贸易与地缘", "rating": "低配减持", "polarity": "bear", "score": 6, "driver": "估值倍数收缩", "anchor_date": "2026-11-06", "anchor_close": 375.44, "latest_date": "2026-11-13", "latest_close": 398.73, "fwd_bars": 5, "ret_cum_pct": 6.2, "bm_ret_pct": 2.59, "alpha_cum_pct": 3.61, "ret_t1_pct": 3.51, "alpha_t1_pct": 1.14, "ret_t3_pct": 10.1, "ret_t5_pct": 6.2, "max_gain_pct": 11.02, "max_dd_pct": 1.3, "strict_gen_ret_pct": 6.2, "article_title": "孙中山诞辰160周年成两岸政治角力场：历史正统争夺背后的台海地缘升温", "thesis": "处于台海地缘风险风暴眼，政治纪念节点前后的联合演训或舆论升级易引发外资阶段性压缩其估值倍数", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -6.2, "signed_alpha_pct": -3.61, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "HAL", "qt_code": "usHAL.N", "name": "哈里伯顿", "head_display": "XOM (埃克森美孚) / HAL (哈里伯顿)", "market": "US", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 31.84, "latest_date": "2026-11-13", "latest_close": 33.78, "fwd_bars": 5, "ret_cum_pct": 6.09, "bm_ret_pct": 2.59, "alpha_cum_pct": 3.5, "ret_t1_pct": 0.13, "alpha_t1_pct": -2.24, "ret_t3_pct": 3.42, "ret_t5_pct": 6.09, "max_gain_pct": 6.12, "max_dd_pct": -3.27, "strict_gen_ret_pct": 6.09, "article_title": "中期选举政治海啸与市场短暂麻木：得州堪萨斯翻蓝背后的宏观政经重构", "thesis": "得州翻蓝具有强烈象征意义，共和党“传统油气扩产”立法扩权受阻，传统油气政策红利消退", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -6.09, "signed_alpha_pct": -3.5, "t1_abs_hit": false, "t1_alpha_hit": true}, {"report_date": "2026-11-12", "generated_day": "2026-11-12", "symbol": "601857.SH", "qt_code": "sh601857", "name": "中国石油", "head_display": "中远海能 (600026.SH) / 中国石油 (601857.SH)", "market": "CN", "category": "美国政经与宏观", "rating": "低配减持", "polarity": "bear", "score": 7, "driver": "估值倍数收缩", "anchor_date": "2026-11-11", "anchor_close": 11.92, "latest_date": "2026-11-16", "latest_close": 12.64, "fwd_bars": 3, "ret_cum_pct": 6.04, "bm_ret_pct": -1.91, "alpha_cum_pct": 7.95, "ret_t1_pct": 0.92, "alpha_t1_pct": 1.59, "ret_t3_pct": 6.04, "ret_t5_pct": null, "max_gain_pct": 6.21, "max_dd_pct": -0.67, "strict_gen_ret_pct": 6.04, "article_title": "美伊战争国会博弈升级：民主党弹劾战争部长Hegseth以7票惜败与中东地缘风险溢价高波动定价", "thesis": "[UW 短期规避 | 估值溢价回落] 前期计入极高霍尔木兹海峡封锁与美伊全面战争溢价，面临美国国会反战博弈引发的多头获利了结", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -6.04, "signed_alpha_pct": -7.95, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-07", "generated_day": "2026-11-09", "symbol": "GS", "qt_code": "usGS.N", "name": "高盛集团", "head_display": "JPM (摩根大通) / GS (高盛)", "market": "US", "category": "美国政经与宏观", "rating": "强力规避", "polarity": "bear", "score": 10, "driver": "盈利与估值双杀", "anchor_date": "2026-11-06", "anchor_close": 865.82, "latest_date": "2026-11-13", "latest_close": 916.56, "fwd_bars": 5, "ret_cum_pct": 5.86, "bm_ret_pct": 2.59, "alpha_cum_pct": 3.27, "ret_t1_pct": 4.67, "alpha_t1_pct": 2.3, "ret_t3_pct": 7.04, "ret_t5_pct": 5.86, "max_gain_pct": 7.7, "max_dd_pct": 1.48, "strict_gen_ret_pct": 5.86, "article_title": "民主党中期选举压倒性大胜：选民痛击特朗普与共和党动荡新纪元", "thesis": "金融去监管预期降温叠加国会审查升温，前期累计巨大涨幅的银行板块面临获利了结", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -5.86, "signed_alpha_pct": -3.27, "t1_abs_hit": false, "t1_alpha_hit": false}, {"report_date": "2026-11-09", "generated_day": "2026-11-09", "symbol": "LMT", "qt_code": "usLMT.N", "name": "洛克希德马丁", "head_display": "LMT (洛克希德·马丁) / RTX (雷神技术)", "market": "US", "category": "全球贸易与地缘", "rating": "低配减持", "polarity": "bear", "score": 6, "driver": "份额流失 / 竞争挤压", "anchor_date": "2026-11-06", "anchor_close": 567.08, "latest_date": "2026-11-13", "latest_close": 596.04, "fwd_bars": 5, "ret_cum_pct": 5.11, "bm_ret_pct": 2.59, "alpha_cum_pct": 2.52, "ret_t1_pct": 3.72, "alpha_t1_pct": 1.35, "ret_t3_pct": 7.58, "ret_t5_pct": 5.11, "max_gain_pct": 9.24, "max_dd_pct": -0.14, "strict_gen_ret_pct": 5.11, "article_title": "孙中山诞辰160周年成两岸政治角力场：历史正统争夺背后的台海地缘升温", "thesis": "亚太地缘紧张局势强化美国印太防务预算与对台军售订单预期", "abs_hit": false, "alpha_hit": false, "signed_ret_pct": -5.11, "signed_alpha_pct": -2.52, "t1_abs_hit": false, "t1_alpha_hit": false}]};
+        let openTabIds = [];
+        let activePageId = "";
+        let archiveFilterMode = "all";
+        const mountedIframes = {};
+
+        function escHtml(s) {
+            return String(s == null ? "" : s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;");
         }
-        async function toggleArchiveAck(reportId, acked) {
+
+        function getSortedReports() {
+            return Object.values(reportsMap || {}).sort((a, b) => {
+                const da = a.date || a.report_id || "";
+                const db = b.date || b.report_id || "";
+                return db.localeCompare(da);
+            });
+        }
+
+        function mergeLocalStorageAcks() {
+            getSortedReports().forEach(r => {
+                try {
+                    const raw = localStorage.getItem("economist_ack_" + r.report_id);
+                    if (raw) {
+                        const parsed = JSON.parse(raw);
+                        if (parsed && typeof parsed.acked === "boolean" && parsed.acked && !r.acked) {
+                            r.acked = true;
+                            r.acked_at = parsed.acked_at || r.acked_at;
+                        }
+                    }
+                } catch (e) {}
+            });
+        }
+
+        function saveLocalAck(rid, acked, ackedAt) {
             try {
-                await fetch(ACK_API_BASE + "/api/ack", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ report_id: reportId, acked: acked })
-                });
-                window.location.reload();
-            } catch (e) {
-                alert("请确认本地 ACK 服务 (127.0.0.1:4288) 已启动");
+                localStorage.setItem("economist_ack_" + rid, JSON.stringify({
+                    report_id: rid,
+                    acked: !!acked,
+                    acked_at: ackedAt || new Date().toISOString().replace("T", " ").slice(0, 19)
+                }));
+            } catch (e) {}
+        }
+
+        function computeInitialTabs() {
+            const sorted = getSortedReports();
+            if (sorted.length === 0) return [];
+            const latestId = sorted[0].report_id;
+            const params = new URLSearchParams(window.location.search);
+            const focusParam = params.get("focus") || "";
+
+            const unreadIds = sorted.filter(r => !r.acked).map(r => r.report_id);
+            const set = new Set();
+            set.add(latestId);
+            unreadIds.forEach(id => set.add(id));
+            if (focusParam && reportsMap[focusParam]) {
+                set.add(focusParam);
+            }
+            if (set.size === 1 && sorted.length > 1 && unreadIds.length === 0) {
+                sorted.slice(0, Math.min(3, sorted.length)).forEach(r => set.add(r.report_id));
+            }
+            return sorted.map(r => r.report_id).filter(id => set.has(id));
+        }
+
+        function buildIframeSrc(rep) {
+            const rel = rep.rel_path || "";
+            const isHttp = window.location.protocol.startsWith("http");
+            const base = isHttp ? ("/reports/" + rel) : rel;
+            return base + (base.includes("?") ? "&embed=1" : "?embed=1");
+        }
+
+        function ensureReportPageMounted(reportId) {
+            const rep = reportsMap[reportId];
+            if (!rep) return null;
+            let pageEl = document.getElementById("ws-page-" + reportId);
+            if (!pageEl) {
+                pageEl = document.createElement("section");
+                pageEl.className = "ws-page";
+                pageEl.id = "ws-page-" + reportId;
+                document.getElementById("wsStage").appendChild(pageEl);
+            }
+            return pageEl;
+        }
+
+        function activatePage(pageId) {
+            if (!pageId) return;
+            const isSys = (pageId === "__audit__" || pageId === "__archive__");
+            if (!isSys && !reportsMap[pageId]) return;
+
+            if (!isSys && !openTabIds.includes(pageId)) {
+                const sortedOrder = getSortedReports().map(r => r.report_id);
+                openTabIds.push(pageId);
+                openTabIds.sort((a, b) => sortedOrder.indexOf(a) - sortedOrder.indexOf(b));
+            }
+
+            activePageId = pageId;
+
+            document.querySelectorAll(".ws-page").forEach(el => el.classList.remove("active"));
+
+            if (isSys) {
+                const sysEl = document.getElementById("ws-page-" + pageId);
+                if (sysEl) sysEl.classList.add("active");
+            } else {
+                const pageEl = ensureReportPageMounted(pageId);
+                if (pageEl) {
+                    pageEl.classList.add("active");
+                    if (!mountedIframes[pageId]) {
+                        const iframe = document.createElement("iframe");
+                        iframe.className = "ws-iframe";
+                        iframe.src = buildIframeSrc(reportsMap[pageId]);
+                        iframe.setAttribute("title", "经济学人研报 " + pageId);
+                        iframe.addEventListener("load", () => {
+                            const curTheme = document.documentElement.getAttribute("data-theme") || "light";
+                            try {
+                                iframe.contentWindow.postMessage({ type: "economist_theme_sync", theme: curTheme }, "*");
+                                iframe.contentWindow.postMessage({ type: "economist_ack_sync", reports: reportsMap }, "*");
+                                iframe.contentWindow.postMessage({ type: "economist_tab_activated" }, "*");
+                            } catch (e) {}
+                        });
+                        pageEl.appendChild(iframe);
+                        mountedIframes[pageId] = iframe;
+                    } else {
+                        const iframe = mountedIframes[pageId];
+                        const curTheme = document.documentElement.getAttribute("data-theme") || "light";
+                        try {
+                            iframe.contentWindow.postMessage({ type: "economist_theme_sync", theme: curTheme }, "*");
+                            iframe.contentWindow.postMessage({ type: "economist_tab_activated" }, "*");
+                        } catch (e) {}
+                    }
+                }
+            }
+
+            if (window.location.protocol.startsWith("http")) {
+                try {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set("focus", pageId);
+                    window.history.replaceState(null, "", url.toString());
+                } catch (e) {}
+            }
+
+            renderTopWorkspaceUI();
+            const activeTabEl = document.querySelector(`.pivot-tab[data-page-id="${CSS.escape(pageId)}"]`);
+            if (activeTabEl && activeTabEl.scrollIntoView) {
+                activeTabEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "nearest" });
             }
         }
+
+        function closeReportTab(ev, reportId) {
+            if (ev) ev.stopPropagation();
+            if (openTabIds.length <= 1) return;
+            const idx = openTabIds.indexOf(reportId);
+            if (idx === -1) return;
+            openTabIds.splice(idx, 1);
+            if (activePageId === reportId) {
+                const nextId = openTabIds[Math.min(idx, openTabIds.length - 1)] || "__archive__";
+                activatePage(nextId);
+            } else {
+                renderTopWorkspaceUI();
+            }
+        }
+
+        function stepReportTab(delta) {
+            const navSequence = [...openTabIds, "__audit__", "__archive__"];
+            if (navSequence.length === 0) return;
+            let idx = navSequence.indexOf(activePageId);
+            if (idx === -1) idx = 0;
+            const nextIdx = (idx + delta + navSequence.length) % navSequence.length;
+            activatePage(navSequence[nextIdx]);
+        }
+
+        function jumpNextUnreadTab() {
+            const sorted = getSortedReports();
+            const unread = sorted.filter(r => !r.acked).map(r => r.report_id);
+            if (unread.length === 0) return;
+            const curIdx = unread.indexOf(activePageId);
+            const nextId = unread[(curIdx + 1) % unread.length];
+            activatePage(nextId);
+        }
+
+        function renderTopWorkspaceUI() {
+            const sorted = getSortedReports();
+            const latestId = sorted.length > 0 ? sorted[0].report_id : "";
+            const unreadCount = sorted.filter(r => !r.acked).length;
+
+            const totEl = document.getElementById("totalArchiveCount");
+            if (totEl) totEl.textContent = String(sorted.length);
+
+            const qPill = document.getElementById("unackedQueuePill");
+            if (qPill) {
+                if (unreadCount > 0) {
+                    qPill.className = "queue-pill has-unread";
+                    qPill.textContent = `🔴 待审阅: ${unreadCount} 份`;
+                } else {
+                    qPill.className = "queue-pill all-clear";
+                    qPill.textContent = "✅ 全部报告已审阅完毕";
+                }
+            }
+
+            const nextUnreadBtn = document.getElementById("nextUnreadBtn");
+            const batchBtn = document.getElementById("batchAckAllBtn");
+            if (nextUnreadBtn) nextUnreadBtn.style.display = unreadCount > 0 ? "" : "none";
+            if (batchBtn) batchBtn.style.display = unreadCount > 0 ? "" : "none";
+
+            const titleEl = document.getElementById("wsActiveTitle");
+            const activeAckBtn = document.getElementById("activePageAckBtn");
+
+            if (activePageId === "__audit__") {
+                if (titleEl) titleEl.textContent = "跨期样本外实盘回溯总审计 (覆盖全部 9 期归档报告)";
+                if (activeAckBtn) activeAckBtn.style.display = "none";
+            } else if (activePageId === "__archive__") {
+                if (titleEl) titleEl.textContent = `全量历史归档日历总库 (共 ${sorted.length} 期 · 页内秒切无弹窗)`;
+                if (activeAckBtn) activeAckBtn.style.display = "none";
+            } else {
+                const curRep = reportsMap[activePageId];
+                if (curRep && titleEl) {
+                    titleEl.textContent = `${curRep.report_id}｜${curRep.title || "《经济学人》A股/美股深度投研总览"}`;
+                }
+                if (curRep && activeAckBtn) {
+                    activeAckBtn.style.display = "";
+                    if (curRep.acked) {
+                        activeAckBtn.className = "cmd-btn ack-done";
+                        activeAckBtn.textContent = "✅ 本页已阅 · 点击撤销";
+                    } else {
+                        activeAckBtn.className = "cmd-btn ack-primary";
+                        activeAckBtn.textContent = "✅ 确认本页已阅 (Alt+A)";
+                    }
+                }
+            }
+
+            // Render Report Pivot Tabs
+            const strip = document.getElementById("reportTabsStrip");
+            if (strip) {
+                strip.innerHTML = openTabIds.map(rid => {
+                    const r = reportsMap[rid];
+                    if (!r) return "";
+                    const isAct = (rid === activePageId);
+                    const shortDate = rid.length >= 10 ? rid.slice(5) : rid;
+                    const dotCls = r.acked ? "acked" : "unacked";
+                    const latestBadge = (rid === latestId) ? '<span class="tab-tag-latest">最新</span>' : "";
+                    const closeHtml = (openTabIds.length > 1)
+                        ? `<span class="tab-close" title="从标签栏收起 (可在归档库随时重开)" onclick="closeReportTab(event, '${escHtml(rid)}')">×</span>`
+                        : "";
+                    const tip = `${rid}｜${r.title || ""} (${r.acked ? "已审阅" : "未读待审阅"})`;
+                    return `<div class="pivot-tab ${isAct ? "active" : ""}" data-page-id="${escHtml(rid)}" title="${escHtml(tip)}" onclick="activatePage('${escHtml(rid)}')">
+                        <span class="tab-dot ${dotCls}"></span>
+                        <span>📄 ${escHtml(shortDate)}</span>
+                        ${latestBadge}
+                        ${closeHtml}
+                    </div>`;
+                }).join("");
+            }
+
+            // Update System Tab active states
+            document.querySelectorAll("#systemTabsStrip .pivot-tab").forEach(el => {
+                el.classList.toggle("active", el.getAttribute("data-page-id") === activePageId);
+            });
+
+            renderArchiveTable();
+        }
+
+        function broadcastAckSync() {
+            Object.values(mountedIframes).forEach(iframe => {
+                if (iframe && iframe.contentWindow) {
+                    try {
+                        iframe.contentWindow.postMessage({ type: "economist_ack_sync", reports: reportsMap }, "*");
+                    } catch (e) {}
+                }
+            });
+        }
+
+        async function setReportAckState(reportId, acked) {
+            const rep = reportsMap[reportId];
+            if (!rep) return;
+            const nowStr = new Date().toISOString().replace("T", " ").slice(0, 19);
+            rep.acked = !!acked;
+            rep.acked_at = acked ? nowStr : null;
+            saveLocalAck(reportId, acked, rep.acked_at);
+            renderTopWorkspaceUI();
+            broadcastAckSync();
+
+            try {
+                const resp = await fetch(ACK_API_BASE + "/api/ack", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ report_id: reportId, acked: !!acked })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.reports) reportsMap = data.reports;
+                    renderTopWorkspaceUI();
+                    broadcastAckSync();
+                }
+            } catch (e) {
+                try {
+                    const img = new Image();
+                    img.src = `${ACK_API_BASE}/api/ack-via-get?report_id=${encodeURIComponent(reportId)}&acked=${acked ? 1 : 0}&t=${Date.now()}`;
+                } catch (err) {}
+            }
+        }
+
+        function toggleActiveReportAck() {
+            if (!activePageId || activePageId.startsWith("__")) return;
+            const rep = reportsMap[activePageId];
+            if (!rep) return;
+            setReportAckState(activePageId, !rep.acked);
+        }
+
+        async function batchAckAllUnread() {
+            const unreadIds = getSortedReports().filter(r => !r.acked).map(r => r.report_id);
+            if (unreadIds.length === 0) return;
+            const nowStr = new Date().toISOString().replace("T", " ").slice(0, 19);
+            unreadIds.forEach(rid => {
+                if (reportsMap[rid]) {
+                    reportsMap[rid].acked = true;
+                    reportsMap[rid].acked_at = nowStr;
+                    saveLocalAck(rid, true, nowStr);
+                }
+            });
+            renderTopWorkspaceUI();
+            broadcastAckSync();
+
+            try {
+                const resp = await fetch(ACK_API_BASE + "/api/ack-batch", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ report_ids: unreadIds, acked: true })
+                });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.reports) reportsMap = data.reports;
+                    renderTopWorkspaceUI();
+                    broadcastAckSync();
+                }
+            } catch (e) {
+                for (const rid of unreadIds) {
+                    try {
+                        const img = new Image();
+                        img.src = `${ACK_API_BASE}/api/ack-via-get?report_id=${encodeURIComponent(rid)}&acked=1&t=${Date.now()}`;
+                    } catch (err) {}
+                }
+            }
+        }
+
+        function applyWorkspaceTheme(themeName) {
+            const next = themeName === "dark" ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", next);
+            try { localStorage.setItem("economist_theme", next); } catch (e) {}
+            const btn = document.getElementById("wsThemeBtn");
+            if (btn) btn.textContent = next === "light" ? "🌙 暗色终端" : "☀️ 投行白底";
+            Object.values(mountedIframes).forEach(iframe => {
+                if (iframe && iframe.contentWindow) {
+                    try {
+                        iframe.contentWindow.postMessage({ type: "economist_theme_sync", theme: next }, "*");
+                    } catch (e) {}
+                }
+            });
+        }
+
+        function toggleWorkspaceTheme() {
+            const cur = document.documentElement.getAttribute("data-theme") || "light";
+            applyWorkspaceTheme(cur === "light" ? "dark" : "light");
+        }
+
+        function setArchiveFilter(mode, btnEl) {
+            archiveFilterMode = mode;
+            document.querySelectorAll(".flt-pill").forEach(b => b.classList.remove("active"));
+            if (btnEl) btnEl.classList.add("active");
+            renderArchiveTable();
+        }
+
+        function renderArchiveTable() {
+            const tbody = document.getElementById("archiveTableBody");
+            if (!tbody) return;
+            const q = ((document.getElementById("archiveSearchInput") || {}).value || "").trim().toLowerCase();
+            const rows = getSortedReports().filter(r => {
+                if (archiveFilterMode === "unacked" && r.acked) return false;
+                if (archiveFilterMode === "acked" && !r.acked) return false;
+                if (q) {
+                    const hay = `${r.report_id} ${r.title || ""} ${r.window_desc || ""}`.toLowerCase();
+                    if (!hay.includes(q)) return false;
+                }
+                return true;
+            });
+
+            tbody.innerHTML = rows.map(r => {
+                const rid = r.report_id || "";
+                const acked = !!r.acked;
+                const badge = acked
+                    ? `<span class="pill-badge pill-bull">✅ 已审阅 (${escHtml(r.acked_at || "已确认")})</span>`
+                    : `<span class="pill-badge pill-bear">🔴 待审阅 (未读)</span>`;
+                const ackBtnLabel = acked ? "撤销已阅" : "✅ 确认已阅";
+                return `<tr>
+                    <td style="font-weight:800;font-family:monospace;font-size:14px;color:var(--ws-blue);">${escHtml(rid)}</td>
+                    <td>
+                        <a href="javascript:void(0)" onclick="activatePage('${escHtml(rid)}')" style="color:var(--ws-blue);font-weight:800;text-decoration:none;font-size:14px;">
+                            ${escHtml(r.title || rid)}
+                        </a>
+                        <div style="font-size:11.5px;color:var(--ws-muted);margin-top:3px;">
+                            本地路径: <code>reports/${escHtml(r.rel_path || "")}</code> ｜ 采样窗口: ${escHtml(r.window_desc || "-")}
+                        </div>
+                    </td>
+                    <td><strong>${r.core_count || 0}</strong> 篇深度卡 / 共 ${r.article_count || 0} 篇</td>
+                    <td style="font-family:monospace;font-size:12px;">${escHtml(r.generated_at || "-")}</td>
+                    <td>${badge}</td>
+                    <td>
+                        <button class="tbl-btn primary" onclick="activatePage('${escHtml(rid)}')">📑 页内打开此页</button>
+                        <button class="tbl-btn" onclick="setReportAckState('${escHtml(rid)}', ${!acked})">${ackBtnLabel}</button>
+                    </td>
+                </tr>`;
+            }).join("");
+        }
+
+        function fmtPct(v) {
+            if (v == null || isNaN(v)) return "--";
+            const n = Number(v);
+            const sign = n > 0 ? "+" : "";
+            const cls = n > 0 ? "pill-bull" : (n < 0 ? "pill-bear" : "pill-neutral");
+            return `<span class="pill-badge ${cls}" style="font-family:monospace;">${sign}${n.toFixed(2)}%</span>`;
+        }
+
+        function renderAuditSystemPage() {
+            const box = document.getElementById("auditPageContainer");
+            if (!box) return;
+            if (!auditData || !auditData.overall_per_report_dedup) {
+                box.innerHTML = `<div class="sys-card"><div class="sys-title">🎯 暂无跨期回溯审计快照</div><div class="sys-sub" style="margin-top:8px;">运行 <code>python scripts/audit_all_reports.py</code> 后即可在此页内查看全量样本外胜率。</div></div>`;
+                return;
+            }
+            const ov = auditData.overall_per_report_dedup || {};
+            const us = auditData.overall_us || {};
+            const cn = auditData.overall_cn || {};
+            const bear = auditData.overall_bear || {};
+            const uniqUs = ((auditData.unique_first_call_cohort || {}).us) || {};
+            const pairs = auditData.pair_trades_audit || {};
+            const byRep = auditData.by_report || {};
+
+            const repRowsHtml = Object.keys(byRep).sort().reverse().map(rid => {
+                const m = byRep[rid] || {};
+                return `<tr>
+                    <td style="font-family:monospace;font-weight:800;color:var(--ws-blue);">${escHtml(rid)}</td>
+                    <td><strong>${m.count || 0}</strong> 笔 (多${m.bull_count || 0} / 空${m.bear_count || 0})</td>
+                    <td><strong>${(m.abs_hit_rate || 0).toFixed(1)}%</strong></td>
+                    <td><strong>${(m.alpha_hit_rate || 0).toFixed(1)}%</strong></td>
+                    <td><span class="pill-badge ${m.institutional_hit_rate >= 55 ? 'pill-bull' : 'pill-neutral'}">${(m.institutional_hit_rate || 0).toFixed(1)}%</span></td>
+                    <td>${fmtPct(m.avg_bull_ret_pct)}</td>
+                    <td>${fmtPct(m.avg_bear_ret_pct)}</td>
+                    <td>${fmtPct(m.long_short_spread_pct)}</td>
+                    <td><button class="tbl-btn primary" onclick="activatePage('${escHtml(rid)}')">📑 页内打开该期</button></td>
+                </tr>`;
+            }).join("");
+
+            const pairRowsHtml = (pairs.top_pairs || []).slice(0, 12).map(p => {
+                const winBadge = p.pair_win
+                    ? '<span class="pill-badge pill-bull">✅ 配对胜出</span>'
+                    : '<span class="pill-badge pill-bear">❌ 配对回撤</span>';
+                return `<tr>
+                    <td style="font-family:monospace;font-weight:700;">${escHtml(p.report_date)}</td>
+                    <td>${escHtml(p.market_type === 'US' ? '🇺🇸 美股' : '🇨🇳 A股')} · ${escHtml(p.category || '')}</td>
+                    <td>${escHtml(p.long_desc || '')}</td>
+                    <td>${escHtml(p.short_desc || '')}</td>
+                    <td>${fmtPct(p.spread_pct)}</td>
+                    <td>${winBadge}</td>
+                    <td><button class="tbl-btn" onclick="activatePage('${escHtml(p.report_date)}')">查看原报告</button></td>
+                </tr>`;
+            }).join("");
+
+            const bestRowsHtml = [
+                ...(auditData.best_longs || []).slice(0, 5),
+                ...(auditData.best_shorts || []).slice(0, 4)
+            ].map(c => `<tr>
+                <td style="font-family:monospace;">${escHtml(c.report_date)}</td>
+                <td><strong>${escHtml(c.name || c.symbol)}</strong> <code>(${escHtml(c.symbol)})</code></td>
+                <td><span class="pill-badge ${c.polarity === 'bull' ? 'pill-bull' : 'pill-bear'}">${escHtml(c.rating)}</span></td>
+                <td>${fmtPct(c.ret_cum_pct)}</td>
+                <td>${fmtPct(c.alpha_cum_pct)}</td>
+                <td><button class="tbl-btn" onclick="activatePage('${escHtml(c.report_date)}')">页内定位</button></td>
+            </tr>`).join("");
+
+            const missRowsHtml = [
+                ...(auditData.worst_long_misses || []).slice(0, 5),
+                ...(auditData.worst_short_misses || []).slice(0, 4)
+            ].map(c => `<tr>
+                <td style="font-family:monospace;">${escHtml(c.report_date)}</td>
+                <td><strong>${escHtml(c.name || c.symbol)}</strong> <code>(${escHtml(c.symbol)})</code></td>
+                <td><span class="pill-badge ${c.polarity === 'bull' ? 'pill-bull' : 'pill-bear'}">${escHtml(c.rating)}</span></td>
+                <td>${fmtPct(c.ret_cum_pct)}</td>
+                <td>${fmtPct(c.alpha_cum_pct)}</td>
+                <td><button class="tbl-btn" onclick="activatePage('${escHtml(c.report_date)}')">页内复盘</button></td>
+            </tr>`).join("");
+
+            box.innerHTML = `
+                <div class="sys-card">
+                    <div class="sys-hdr">
+                        <div>
+                            <div class="sys-title">🎯 跨期全量样本外 (Out-of-Sample) 股票预测准确度回溯总表</div>
+                            <div class="sys-sub">审计时间：${escHtml(auditData.audited_at || '-')} ｜ 严格以各期研报锚定收盘价 T0 对比最新实盘价，剥离未开盘样本 (${auditData.pending_unopened_calls_count || 0} 笔待开盘) 与中性标配 (${auditData.neutral_ew_calls_count || 0} 笔)</div>
+                        </div>
+                    </div>
+                    <div class="kpi-6grid">
+                        <div class="kpi-box">
+                            <div class="kpi-lbl">已开盘样本外有效验证</div>
+                            <div class="kpi-num">${ov.count || 0} 笔</div>
+                            <div class="kpi-note">机构综合胜率 <strong>${(ov.institutional_hit_rate || 0).toFixed(1)}%</strong> ｜ 超额Alpha胜率 <strong>${(ov.alpha_hit_rate || 0).toFixed(1)}%</strong></div>
+                        </div>
+                        <div class="kpi-box kpi-green">
+                            <div class="kpi-lbl">🇺🇸 美股映射实盘胜率</div>
+                            <div class="kpi-num">${(us.institutional_hit_rate || 0).toFixed(1)}%</div>
+                            <div class="kpi-note">首推独立股综合胜率 <strong>${(uniqUs.institutional_hit_rate || 0).toFixed(1)}%</strong> (${us.count || 0}笔 · T+1胜率 ${(us.t1_abs_hit_rate || 0).toFixed(1)}%)</div>
+                        </div>
+                        <div class="kpi-box kpi-green">
+                            <div class="kpi-lbl">🛡️ 减持/规避 (空头排雷) Alpha胜率</div>
+                            <div class="kpi-num">${(bear.alpha_hit_rate || 0).toFixed(1)}%</div>
+                            <div class="kpi-note">共 ${bear.count || 0} 笔看空预警 ｜ 被规避标的均值跑输基准 <strong>${(bear.avg_bear_alpha_pct || 0).toFixed(2)}%</strong></div>
+                        </div>
+                        <div class="kpi-box kpi-gold">
+                            <div class="kpi-lbl">⚖️ 高盛/大摩式配对交易胜率</div>
+                            <div class="kpi-num">${(pairs.win_rate_pct || 0).toFixed(1)}%</div>
+                            <div class="kpi-note">${pairs.evaluated_count || 0} 组实盘配对 (${pairs.win_count || 0}胜) ｜ 多空平均净价差 <strong>+${(pairs.avg_spread_pct || 0).toFixed(2)}%</strong></div>
+                        </div>
+                        <div class="kpi-box kpi-red">
+                            <div class="kpi-lbl">🇨🇳 A股映射相对基准胜率</div>
+                            <div class="kpi-num">${(cn.alpha_hit_rate || 0).toFixed(1)}%</div>
+                            <div class="kpi-note">同期创业板跌 -4.17% 逆风下绝对胜率 ${(cn.abs_hit_rate || 0).toFixed(1)}% (多空剪刀差 +${(cn.long_short_spread_pct || 0).toFixed(2)}%)</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sys-card">
+                    <div class="sys-hdr">
+                        <div class="sys-title">📅 各期研报样本外实盘命中率演进明细 (点击可直接页内切至对应报告)</div>
+                    </div>
+                    <div class="ws-table-wrap">
+                        <table class="ws-table">
+                            <thead>
+                                <tr>
+                                    <th>报告期次</th>
+                                    <th>已开盘样本数</th>
+                                    <th>绝对方向胜率</th>
+                                    <th>超额Alpha胜率</th>
+                                    <th>机构综合胜率</th>
+                                    <th>多头平均涨跌</th>
+                                    <th>空头标的涨跌</th>
+                                    <th>多空收益剪刀差</th>
+                                    <th>页内跳转</th>
+                                </tr>
+                            </thead>
+                            <tbody>${repRowsHtml || '<tr><td colspan="9">今日新生成报告待下一交易日收盘后纳入样本外统计</td></tr>'}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="sys-card">
+                    <div class="sys-hdr">
+                        <div class="sys-title">⚖️ 多空配对交易 (Pair Trade) 实盘净价差验证榜</div>
+                    </div>
+                    <div class="ws-table-wrap">
+                        <table class="ws-table">
+                            <thead>
+                                <tr>
+                                    <th>期次</th>
+                                    <th>市场与赛道</th>
+                                    <th>多头腿 (Long) 实盘表现</th>
+                                    <th>空头腿 (Short) 实盘表现</th>
+                                    <th>多空净价差 (Spread)</th>
+                                    <th>验证结果</th>
+                                    <th>定位</th>
+                                </tr>
+                            </thead>
+                            <tbody>${pairRowsHtml}</tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="dual-grid">
+                    <div class="sys-card">
+                        <div class="sys-hdr"><div class="sys-title">🏆 实盘高光红榜 (多头暴涨 & 精准排雷)</div></div>
+                        <div class="ws-table-wrap">
+                            <table class="ws-table">
+                                <thead><tr><th>期次</th><th>标的</th><th>评级</th><th>区间涨跌</th><th>超额Alpha</th><th>查看</th></tr></thead>
+                                <tbody>${bestRowsHtml}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="sys-card">
+                        <div class="sys-hdr"><div class="sys-title">⚠️ 实盘偏差黑榜 (叙事抢跑与逆风误判复盘)</div></div>
+                        <div class="ws-table-wrap">
+                            <table class="ws-table">
+                                <thead><tr><th>期次</th><th>标的</th><th>评级</th><th>区间涨跌</th><th>超额Alpha</th><th>复盘</th></tr></thead>
+                                <tbody>${missRowsHtml}</tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        window.addEventListener("message", (event) => {
+            const msg = event.data;
+            if (!msg || typeof msg !== "object") return;
+            if (msg.type === "economist_switch_tab" && msg.pageId) {
+                activatePage(msg.pageId);
+            } else if (msg.type === "economist_child_theme_changed" && msg.theme) {
+                applyWorkspaceTheme(msg.theme);
+            } else if (msg.type === "economist_child_ack_changed") {
+                if (msg.reports && Object.keys(msg.reports).length > 0) {
+                    reportsMap = msg.reports;
+                } else if (msg.report_id && reportsMap[msg.report_id]) {
+                    reportsMap[msg.report_id].acked = !!msg.acked;
+                    reportsMap[msg.report_id].acked_at = msg.acked_at || null;
+                }
+                if (msg.report_id) {
+                    saveLocalAck(msg.report_id, !!msg.acked, msg.acked_at);
+                }
+                renderTopWorkspaceUI();
+                broadcastAckSync();
+            }
+        });
+
+        window.addEventListener("keydown", (e) => {
+            if (e.altKey && (e.key === "a" || e.key === "A")) {
+                e.preventDefault();
+                toggleActiveReportAck();
+            } else if (e.altKey && e.key === "ArrowLeft") {
+                e.preventDefault();
+                stepReportTab(-1);
+            } else if (e.altKey && e.key === "ArrowRight") {
+                e.preventDefault();
+                stepReportTab(1);
+            }
+        });
+
+        async function bootstrapWorkspace() {
+            const savedTheme = localStorage.getItem("economist_theme") || "light";
+            applyWorkspaceTheme(savedTheme);
+            mergeLocalStorageAcks();
+
+            try {
+                const resp = await fetch(ACK_API_BASE + "/api/ack-state", { cache: "no-store" });
+                if (resp.ok) {
+                    const data = await resp.json();
+                    if (data.reports) reportsMap = data.reports;
+                    mergeLocalStorageAcks();
+                }
+            } catch (e) {}
+
+            try {
+                const aResp = await fetch(ACK_API_BASE + "/api/audit-summary", { cache: "no-store" });
+                if (aResp.ok) {
+                    const aJson = await aResp.json();
+                    if (aJson && aJson.audit) auditData = aJson.audit;
+                }
+            } catch (e) {}
+
+            openTabIds = computeInitialTabs();
+            renderAuditSystemPage();
+
+            const params = new URLSearchParams(window.location.search);
+            const focusParam = params.get("focus") || "";
+            const sorted = getSortedReports();
+            const defaultPage = (focusParam && (focusParam === "__audit__" || focusParam === "__archive__" || reportsMap[focusParam]))
+                ? focusParam
+                : (openTabIds[0] || (sorted[0] ? sorted[0].report_id : "__archive__"));
+
+            activatePage(defaultPage);
+        }
+
+        window.addEventListener("DOMContentLoaded", bootstrapWorkspace);
     </script>
 </body>
 </html>

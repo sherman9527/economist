@@ -7,8 +7,8 @@
 
 $ErrorActionPreference = "Stop"
 
-$RunScript = "D:\code\economist\scripts\run_daily.ps1"
-$WorkDir   = "D:\code\economist"
+$WorkDir   = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$RunScript = Join-Path $PSScriptRoot "run_daily.ps1"
 
 $TaskAnalyzeName = "EconomistDaily_0800_Analyze"
 $TaskOpenName    = "EconomistDaily_0900_Open"
@@ -33,7 +33,7 @@ Register-ScheduledTask `
     -Action $ActionAnalyze `
     -Trigger $TriggerAnalyze `
     -Settings $Settings `
-    -Description "Daily 08:00 AM: Fetch latest Economist articles and run checkpointed Copilot (gemini-4-argon 983k high) A-share/US-stock impact analysis into D:\code\economist\reports\YYYY\MM\DD" `
+    -Description "Daily 08:00 AM: Fetch latest Economist articles and run checkpointed Copilot (gemini-4-carbon high) A-share/US-stock impact analysis into ./reports/YYYY/MM/DD" `
     -Force | Out-Null
 
 # 2. 09:00 AM Task - Open Today's Report + All Un-ACKed Reports in Browser

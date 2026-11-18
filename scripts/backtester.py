@@ -7,7 +7,7 @@ Evaluates the accuracy of Economist A-Share / US-Stock ratings against real mark
   3. Builds a 20-day Long Pool vs Short Pool vs Benchmark cumulative NAV curve & Long-Short Alpha curve
   4. Diagnoses divergences (e.g., '顺势Alpha兑现' vs '拥挤交易获利回吐/买预期卖事实' vs '左侧潜伏待催化')
   5. Computes quantitative technical levels (20D Support, 20D Resistance, Volatility, Stop-Loss Reference)
-  6. Persists historical prediction tracking ledger to D:\\code\\economist\\data\\backtest_ledger.json
+  6. Persists historical prediction tracking ledger to ./data/backtest_ledger.json
 """
 
 import json
@@ -85,9 +85,46 @@ def evaluate_backtest_and_attribution(
     us_bm_1d = spy_k.get("chg_1d_pct", 0.0)
     cn_bm_1d = sh_k.get("chg_1d_pct", 0.0)
 
+    def _compute_oos_window(kl_obj: dict, cutoff_day: str) -> dict:
+        dates = kl_obj.get("dates") or []
+        closes = kl_obj.get("closes") or []
+        if len(dates) < 5 or len(dates) != len(closes):
+            return {"pending": True, "fwd_bars": 0, "ret_pct": 0.0}
+        anchor_idx = None
+        for idx_d, d_str in enumerate(dates):
+            if d_str < cutoff_day:
+                anchor_idx = idx_d
+            else:
+                break
+        if anchor_idx is None:
+            return {"pending": True, "fwd_bars": 0, "ret_pct": 0.0}
+        fwd_bars = (len(dates) - 1) - anchor_idx
+        if fwd_bars <= 0 or dates[-1] < cutoff_day or closes[anchor_idx] <= 0:
+            return {
+                "pending": True,
+                "fwd_bars": 0,
+                "anchor_date": dates[anchor_idx],
+                "latest_date": dates[-1],
+                "ret_pct": kl_obj.get("chg_5d_pct", 0.0),
+            }
+        ret_oos = round((closes[-1] / closes[anchor_idx] - 1.0) * 100.0, 2)
+        return {
+            "pending": False,
+            "fwd_bars": fwd_bars,
+            "anchor_date": dates[anchor_idx],
+            "anchor_close": closes[anchor_idx],
+            "latest_date": dates[-1],
+            "latest_close": closes[-1],
+            "ret_pct": ret_oos,
+        }
+
+    us_bm_oos = _compute_oos_window(spy_k, report_date)
+    cn_bm_oos = _compute_oos_window(sh_k, report_date)
+
     art_pub_day_map = {idx: (a.get("pub_day") or report_date) for idx, a in enumerate(core_articles, 1)}
 
     evaluated_records = []
+    pending_records = []
     seen_sym_polarity = set()
 
     long_hits = 0
@@ -98,6 +135,8 @@ def evaluate_backtest_and_attribution(
     us_total = 0
     cn_hits = 0
     cn_total = 0
+    pending_us_total = 0
+    pending_cn_total = 0
 
     long_returns_5d = []
     short_returns_5d = []
@@ -115,85 +154,99 @@ def evaluate_backtest_and_attribution(
         q_levels = compute_quant_levels(kl, polarity)
         st["quant_levels"] = q_levels
 
-        # Calculate event-anchored return from pub_day if available in kline dates
         pub_day = art_pub_day_map.get(st["article_idx"], report_date)
-        dates = kl.get("dates") or []
         closes = kl.get("closes") or []
-
-        # Event return: compare latest close against close right before pub_day (or 5D window)
-        anchor_idx = -6 if len(closes) >= 6 else 0
-        for d_i, d_str in enumerate(dates):
-            if d_str >= pub_day and d_i > 0:
-                anchor_idx = max(0, d_i - 1)
-                break
-
-        anchor_close = closes[anchor_idx] if closes else 1.0
         latest_close = closes[-1] if closes else 1.0
-        event_ret_pct = round((latest_close - anchor_close) / anchor_close * 100, 2) if anchor_close else 0.0
-        ret_5d = kl.get("chg_5d_pct", 0.0)
+
+        oos_info = _compute_oos_window(kl, report_date)
+        is_pending = oos_info["pending"]
+        fwd_bars = oos_info["fwd_bars"]
+
         ret_1d = kl.get("chg_1d_pct", 0.0)
-
-        bm_5d = us_bm_5d if st["market_type"] == "US" else cn_bm_5d
         bm_1d = us_bm_1d if st["market_type"] == "US" else cn_bm_1d
-
-        # Benchmark-adjusted excess return (Alpha)
-        alpha_5d = round(ret_5d - bm_5d, 2)
         alpha_1d = round(ret_1d - bm_1d, 2)
 
-        # Strict Wall Street Hit / Validation Criterion (Zero sugarcoating!):
-        # A Long call is a HIT only if 5D return > 0 OR (5D Alpha >= 0 and 5D drawdown > -2%)
-        # A Short/Avoid call is a HIT only if 5D return < 0 OR 5D Alpha < -0.5%
-        if polarity == "bull":
-            is_hit = (ret_5d > 0.0) or (alpha_5d >= 0.0 and ret_5d > -2.0)
+        if not is_pending:
+            eval_ret = oos_info["ret_pct"]
+            bm_oos_obj = us_bm_oos if st["market_type"] == "US" else cn_bm_oos
+            bm_eval = bm_oos_obj["ret_pct"] if not bm_oos_obj["pending"] else 0.0
+            eval_alpha = round(eval_ret - bm_eval, 2)
+            eval_window_tag = f"报告后+{fwd_bars}日"
         else:
-            is_hit = (ret_5d < 0.0) or (alpha_5d < -0.5)
+            eval_ret = kl.get("chg_5d_pct", 0.0)
+            bm_eval = us_bm_5d if st["market_type"] == "US" else cn_bm_5d
+            eval_alpha = round(eval_ret - bm_eval, 2)
+            eval_window_tag = "待开盘(前5日)"
 
-        # Wall Street Attribution Diagnosis
-        if is_hit:
-            if polarity == "bull":
-                if ret_5d >= 3.0:
-                    verdict_tag = "✅ 强力兑现 (主升浪共振)"
-                    verdict_cls = "bt-hit-strong"
-                    diagnosis = f"多头逻辑获实盘资金强力确认，5日上涨 {ret_5d:+.2f}%（超额收益 {alpha_5d:+.2f}%），突破短期均线压制。"
-                else:
-                    verdict_tag = "✅ 稳健跑赢 (正超额收益)"
-                    verdict_cls = "bt-hit"
-                    diagnosis = f"在大盘震荡期取得正收益或显著抗跌属性（5日 {ret_5d:+.2f}%，相对基准超额 {alpha_5d:+.2f}%）。"
-            else:
-                if ret_5d <= -5.0:
-                    verdict_tag = "✅ 精准排雷 (空头暴跌兑现)"
-                    verdict_cls = "bt-hit-strong"
-                    diagnosis = f"空头预警精准兑现，标的5日重挫 {ret_5d:+.2f}%（跑输基准 {alpha_5d:+.2f}%），成功规避重大回撤。"
-                else:
-                    verdict_tag = "✅ 规避有效 (弱于基准/下行)"
-                    verdict_cls = "bt-hit"
-                    diagnosis = f"受负面基本面压制表现疲弱（5日 {ret_5d:+.2f}%，相对基准 {alpha_5d:+.2f}%），减持规避策略有效。"
+        ret_5d = eval_ret
+        alpha_5d = eval_alpha
+        event_ret_pct = eval_ret
+
+        if is_pending:
+            is_hit = False
+            verdict_tag = "⏳ 待开盘样本外验证"
+            verdict_cls = "gs-rating-ew"
+            diagnosis = (
+                f"报告发布于 {report_date}，对应市场尚未产生报告后收盘K线（基准锚定价 {latest_close}）；"
+                f"发布前5日趋势参考 {eval_ret:+.2f}%，关键支撑 {q_levels.get('support_20d', '--')} / 压力 {q_levels.get('resist_20d', '--')}。"
+            )
         else:
+            # Strict Out-of-Sample Wall Street Hit / Validation Criterion:
+            # Bull call hits if OOS return > 0% OR (OOS Alpha > 0% and drawdown > -2%)
+            # Bear/Avoid call hits if OOS return < 0% OR OOS Alpha < -0.5%
             if polarity == "bull":
-                if ret_1d >= 1.5:
-                    verdict_tag = "🔄 泥沙俱下后初现反弹"
-                    verdict_cls = "bt-diverge"
-                    diagnosis = (
-                        f"【多因子归因】前5日受宏观科技去杠杆因子主导回撤 {ret_5d:+.2f}%，但最新1日已反弹 {ret_1d:+.2f}%；"
-                        f"关键支撑位 {q_levels.get('support_20d', '--')}，止损参考 {q_levels.get('stop_level', '--')}。"
-                    )
+                is_hit = (ret_5d > 0.0) or (alpha_5d > 0.0 and ret_5d > -2.0)
+            else:
+                is_hit = (ret_5d < 0.0) or (alpha_5d < -0.5)
+
+            if is_hit:
+                if polarity == "bull":
+                    if ret_5d >= 3.0:
+                        verdict_tag = "✅ 强力兑现 (主升浪共振)"
+                        verdict_cls = "bt-hit-strong"
+                        diagnosis = f"多头逻辑获样本外资金强力确认，{eval_window_tag}上涨 {ret_5d:+.2f}%（超额收益 {alpha_5d:+.2f}%），突破短期均线压制。"
+                    else:
+                        verdict_tag = "✅ 稳健跑赢 (正收益/正Alpha)"
+                        verdict_cls = "bt-hit"
+                        diagnosis = f"在报告发布后（{eval_window_tag}）取得正收益或抗跌超额表现（实盘 {ret_5d:+.2f}%，相对基准超额 {alpha_5d:+.2f}%）。"
                 else:
-                    verdict_tag = "❌ 买预期卖事实 / 仓位拥挤回调"
+                    if ret_5d <= -5.0:
+                        verdict_tag = "✅ 精准排雷 (空头下跌兑现)"
+                        verdict_cls = "bt-hit-strong"
+                        diagnosis = f"空头预警在样本外精准兑现，{eval_window_tag}下挫 {ret_5d:+.2f}%（相对基准 {alpha_5d:+.2f}%），成功规避重大回撤。"
+                    else:
+                        verdict_tag = "✅ 规避有效 (下行/跑输基准)"
+                        verdict_cls = "bt-hit"
+                        diagnosis = f"受基本面逆风压制样本外表现疲弱（{eval_window_tag} {ret_5d:+.2f}%，相对基准 {alpha_5d:+.2f}%），低配规避策略有效。"
+            else:
+                if polarity == "bull":
+                    if ret_1d >= 1.5:
+                        verdict_tag = "🔄 回调后初现企稳反弹"
+                        verdict_cls = "bt-diverge"
+                        diagnosis = (
+                            f"【多因子归因】{eval_window_tag}受板块Beta去杠杆拖累回撤 {ret_5d:+.2f}%，最新1日已反弹 {ret_1d:+.2f}%；"
+                            f"关键支撑位 {q_levels.get('support_20d', '--')}，止损参考 {q_levels.get('stop_level', '--')}。"
+                        )
+                    else:
+                        verdict_tag = "❌ 买预期卖事实 / 拥挤回调"
+                        verdict_cls = "bt-miss"
+                        diagnosis = (
+                            f"【经济学人叙事滞后/逆向归因】虽中长期逻辑顺畅，但短期多头仓位拥挤或大盘Beta回落（{eval_window_tag} {ret_5d:+.2f}%）；"
+                            f"严禁追高，等待回踩20日支撑位 {q_levels.get('support_20d', '--')} 企稳。"
+                        )
+                else:
+                    verdict_tag = "❌ 空头逼空 / 逆势上涨背离"
                     verdict_cls = "bt-miss"
                     diagnosis = (
-                        f"【经济学人封面效应/逆向归因】虽长期基本面利好，但短期机构多头过于拥挤触发获利了结（5日 {ret_5d:+.2f}%）；"
-                        f"严禁盲目追高，等待回踩20日支撑位 {q_levels.get('support_20d', '--')} 企稳。"
+                        f"【预期差复盘】{eval_window_tag}受资金博弈或政策对冲推动逆势上涨 {ret_5d:+.2f}%（高于基准 {alpha_5d:+.2f}%），"
+                        f"上方20日压力位 {q_levels.get('resist_20d', '--')}，需观察后续财报是否证伪。"
                     )
-            else:
-                verdict_tag = "❌ 空头逼空 / 逆势反弹背离"
-                verdict_cls = "bt-miss"
-                diagnosis = (
-                    f"【预期差复盘】短期受资金博弈或防御轮动推动逆势上涨 {ret_5d:+.2f}%（高于基准 {alpha_5d:+.2f}%），"
-                    f"上方20日压力位 {q_levels.get('resist_20d', '--')}，需观察后续财报是否证伪。"
-                )
 
         st["backtest"] = {
             "pub_day": pub_day,
+            "is_pending": is_pending,
+            "fwd_bars": fwd_bars,
+            "eval_window_tag": eval_window_tag,
             "event_ret_pct": event_ret_pct,
             "ret_1d": ret_1d,
             "ret_5d": ret_5d,
@@ -209,6 +262,43 @@ def evaluate_backtest_and_attribution(
         if dedup_k in seen_sym_polarity:
             continue
         seen_sym_polarity.add(dedup_k)
+
+        rec_item = {
+            "symbol": sym,
+            "head_display": st["head_display"],
+            "market_type": st["market_type"],
+            "market_label": st["market_label"],
+            "theme_category": st["theme_category"],
+            "rating": st["rating"],
+            "badge_cls": st["badge_cls"],
+            "polarity": polarity,
+            "score": st["score"],
+            "latest_close": latest_close,
+            "is_pending": is_pending,
+            "eval_window_tag": eval_window_tag,
+            "ret_1d": ret_1d,
+            "ret_5d": ret_5d,
+            "alpha_5d": alpha_5d,
+            "event_ret_pct": event_ret_pct,
+            "is_hit": is_hit,
+            "verdict_tag": verdict_tag,
+            "verdict_cls": verdict_cls,
+            "diagnosis": diagnosis,
+            "support_20d": q_levels.get("support_20d"),
+            "resist_20d": q_levels.get("resist_20d"),
+            "stop_level": q_levels.get("stop_level"),
+            "target_level": q_levels.get("target_level"),
+            "article_idx": st["article_idx"],
+            "article_anchor": st["article_anchor"],
+        }
+
+        if is_pending:
+            if st["market_type"] == "US":
+                pending_us_total += 1
+            else:
+                pending_cn_total += 1
+            pending_records.append(rec_item)
+            continue
 
         if polarity == "bull":
             long_total += 1
@@ -232,34 +322,7 @@ def evaluate_backtest_and_attribution(
             if is_hit:
                 cn_hits += 1
 
-        evaluated_records.append(
-            {
-                "symbol": sym,
-                "head_display": st["head_display"],
-                "market_type": st["market_type"],
-                "market_label": st["market_label"],
-                "theme_category": st["theme_category"],
-                "rating": st["rating"],
-                "badge_cls": st["badge_cls"],
-                "polarity": polarity,
-                "score": st["score"],
-                "latest_close": latest_close,
-                "ret_1d": ret_1d,
-                "ret_5d": ret_5d,
-                "alpha_5d": alpha_5d,
-                "event_ret_pct": event_ret_pct,
-                "is_hit": is_hit,
-                "verdict_tag": verdict_tag,
-                "verdict_cls": verdict_cls,
-                "diagnosis": diagnosis,
-                "support_20d": q_levels.get("support_20d"),
-                "resist_20d": q_levels.get("resist_20d"),
-                "stop_level": q_levels.get("stop_level"),
-                "target_level": q_levels.get("target_level"),
-                "article_idx": st["article_idx"],
-                "article_anchor": st["article_anchor"],
-            }
-        )
+        evaluated_records.append(rec_item)
 
     total_eval = long_total + short_total
     total_hits = long_hits + short_hits
@@ -301,17 +364,30 @@ def evaluate_backtest_and_attribution(
     bm_curve = _calc_pool_curve(["SPY", "000001.SH"], n_pts)
     ls_alpha_curve = [round(long_curve[i] - short_curve[i], 2) for i in range(n_pts)]
 
-    # Sort evaluated records: show standout hits first, then divergences
+    # Sort evaluated records: show standout hits first, then divergences, then pending at end
     evaluated_records.sort(
         key=lambda r: (1 if r["is_hit"] else 0, abs(r["ret_5d"])),
         reverse=True,
     )
+    all_display_records = evaluated_records + pending_records
+
+    if us_total == 0 and pending_us_total > 0:
+        mkt_leader_note = f"A/港已验 {cn_total} 只 · 美股 {pending_us_total} 只待开盘"
+    elif cn_total == 0 and pending_cn_total > 0:
+        mkt_leader_note = f"美股已验 {us_total} 只 · A/港 {pending_cn_total} 只待开盘"
+    elif us_hit_rate >= cn_hit_rate + 3.0:
+        mkt_leader_note = f"美股样本外兑现领先 ({us_hits}/{us_total} vs A/港 {cn_hits}/{cn_total})"
+    elif cn_hit_rate >= us_hit_rate + 3.0:
+        mkt_leader_note = f"A股/港股样本外兑现领先 ({cn_hits}/{cn_total} vs 美股 {us_hits}/{us_total})"
+    else:
+        mkt_leader_note = f"跨市场样本外胜率均衡 (美股 {us_hits}/{us_total} · A/港 {cn_hits}/{cn_total})"
 
     summary = {
         "report_date": report_date,
         "updated_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
         "total_evaluated": total_eval,
         "total_hits": total_hits,
+        "pending_total": pending_us_total + pending_cn_total,
         "overall_hit_rate": overall_hit_rate,
         "long_total": long_total,
         "long_hits": long_hits,
@@ -319,8 +395,11 @@ def evaluate_backtest_and_attribution(
         "short_total": short_total,
         "short_hits": short_hits,
         "short_hit_rate": short_hit_rate,
+        "us_total": us_total,
+        "cn_total": cn_total,
         "us_hit_rate": us_hit_rate,
         "cn_hit_rate": cn_hit_rate,
+        "mkt_leader_note": mkt_leader_note,
         "avg_long_ret_5d": avg_long_ret,
         "avg_short_ret_5d": avg_short_ret,
         "long_short_spread_5d": long_short_spread_5d,
@@ -329,7 +408,7 @@ def evaluate_backtest_and_attribution(
         "short_curve": short_curve,
         "bm_curve": bm_curve,
         "ls_alpha_curve": ls_alpha_curve,
-        "records": evaluated_records,
+        "records": all_display_records,
     }
 
     # Persist to backtest_ledger.json

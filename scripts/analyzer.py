@@ -496,7 +496,7 @@ def run_checkpointed_analysis(
         save_checkpoint(cp)
         log_fn("[Checkpoint] ✓ Saved Stage 5 Macro Synthesis")
 
-    # Save final structured run output to D:\code\economist\data\runs\analysis_<run_key>.json
+    # Save final structured run output to ./data/runs/analysis_<run_key>.json
     ordered_digest = [digest_by_id.get(a["id"], a) for a in digest_articles]
     final_output = {
         "run_key": run_key,

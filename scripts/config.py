@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Global configuration for The Economist Daily Market Impact Analysis System.
-Strictly self-contained under D:\\code\\economist (Zero C: drive usage).
+Strictly self-contained under the portable project root directory (Zero C: drive usage).
 """
 
 import os
@@ -13,7 +13,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-BASE_DIR = Path(r"D:\code\economist")
+BASE_DIR = Path(__file__).resolve().parent.parent
 SCRIPTS_DIR = BASE_DIR / "scripts"
 DATA_DIR = BASE_DIR / "data"
 ARTICLE_CACHE_DIR = DATA_DIR / "article_cache"
@@ -66,6 +66,6 @@ ECONOMIST_RSS_SECTIONS = [
     ("the-world-this-week", "本周全球速览 (The World This Week)", 7),
 ]
 
-COPILOT_MODEL = "gemini-4-argon"
+COPILOT_MODEL = "gemini-4-carbon"
 COPILOT_CONTEXT_TIER = "long_context"  # 983k context window
 COPILOT_REASONING_EFFORT = "high"

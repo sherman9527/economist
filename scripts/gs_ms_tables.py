@@ -16,8 +16,9 @@ BULL_KEYWORDS = [
     "强推", "超配", "受益", "利好", "放量", "改善", "领跑", "赢家", "承接", "避险溢价",
     "红利资金", "议价空间", "护城河", "显著优于", "反击", "份额提升", "顺畅交付",
     "消除", "延续", "跑赢", "刚性扩张", "垄断", "高景气", "确定性", "修复", "突围",
-    "壁垒", "豪赚", "支撑", "提振", "扩张", "首选", "逆周期布局", "缓释", "解除",
+    "壁垒", "豪赚", "支撑", "提振", "扩张", "首选", "逆周期布局", "缓释", "缓解", "解除",
     "反弹", "先锋", "粘性", "集中采购", "刚需", "点名核心标的", "避险属性",
+    "护盘", "免遭", "风险收敛", "贴现率下调", "折现率下调", "回补", "红利",
 ]
 
 BEAR_KEYWORDS = [
@@ -213,30 +214,60 @@ def infer_stock_rating_and_driver(
     from the stock's specific rationale and market context.
     """
     txt = thesis_text or ""
-    cleaned_for_bear = re.sub(r"(缓释|解除|消除|对冲|抵消)[^，。；]{0,12}(压力|风险|冲击|成本)", "", txt)
+    cleaned_for_bear = re.sub(
+        r"(缓释|缓解|解除|消除|对冲|抵消|免遭|收敛|规避|遏制)[^，。；]{0,14}(压力|风险|冲击|成本|挤压|废除|制裁|关税|动荡)",
+        "",
+        txt,
+    )
+    cleaned_for_bear = re.sub(r"(贴现率|折现率|利率|成本|税率)下调", "", cleaned_for_bear)
     bull_hits = sum(1 for kw in BULL_KEYWORDS if kw in txt)
     bear_hits = sum(1 for kw in BEAR_KEYWORDS if kw in cleaned_for_bear)
 
-    # Explicit bracket rating override if present
-    if "Conviction Buy" in txt or "强推" in txt:
-        polarity = "bull"
-    elif "UW" in txt or "规避" in txt or "减持" in txt:
-        polarity = "bear"
-    elif "OW" in txt or "超配" in txt:
-        polarity = "bull"
-    elif bull_hits > bear_hits:
-        polarity = "bull"
-    elif bear_hits > bull_hits:
-        polarity = "bear"
-    else:
-        if "利好" in market_direction:
+    # 1. Explicit leading bracket rating tag (e.g. [OW 超配 | ...], [EW 标配 | ...], [UW 低配 | ...])
+    explicit_rating = None
+    m_br = re.search(r"\[([^\]]{1,36})\]", txt)
+    br_txt = m_br.group(1) if m_br else ""
+    if br_txt:
+        if re.search(r"Conviction\s*Buy|强推|强力买入", br_txt, flags=re.I):
             polarity = "bull"
-        elif "利空" in market_direction:
+            explicit_rating = ("强力买入", "gs-rating-cbuy")
+        elif re.search(r"Conviction\s*Sell|强力规避", br_txt, flags=re.I):
+            polarity = "bear"
+            explicit_rating = ("强力规避", "gs-rating-uw-strong")
+        elif re.search(r"\bEW\b|标配|观望|中性", br_txt, flags=re.I):
+            polarity = "neutral"
+            explicit_rating = ("标配观望", "gs-rating-ew")
+        elif re.search(r"\bUW\b|低配|减持|规避|做空|Short", br_txt, flags=re.I):
+            polarity = "bear"
+        elif re.search(r"\bOW\b|超配|增持|做多|Long", br_txt, flags=re.I):
+            polarity = "bull"
+        else:
+            br_txt = ""
+
+    if not br_txt:
+        if "Conviction Buy" in txt or "强推" in txt:
+            polarity = "bull"
+        elif re.search(r"\bEW\b|标配观望", txt):
+            polarity = "neutral"
+        elif re.search(r"\bUW\b|建议规避|强力规避|坚决规避|低配|减持", txt):
+            polarity = "bear"
+        elif re.search(r"\bOW\b|超配|增持", txt):
+            polarity = "bull"
+        elif bull_hits > bear_hits:
+            polarity = "bull"
+        elif bear_hits > bull_hits:
             polarity = "bear"
         else:
-            polarity = "neutral"
+            if "利好" in market_direction:
+                polarity = "bull"
+            elif "利空" in market_direction:
+                polarity = "bear"
+            else:
+                polarity = "neutral"
 
-    if polarity == "bull":
+    if explicit_rating:
+        rating, badge_cls = explicit_rating
+    elif polarity == "bull":
         if market_score >= 8 and bull_hits >= 1 and bear_hits == 0:
             rating = "强力买入"
             badge_cls = "gs-rating-cbuy"
@@ -318,17 +349,20 @@ def parse_ticker_entry(
 
     head_localized = localize_stock_head(head)
     thesis_localized = localize_zh_text(thesis)
+    is_pair_trade = bool(re.search(r"Pair\s*Trade|配对交易", s, flags=re.I))
 
     return {
         "market_type": market_type,  # "US" or "CN"
         "market_label": "🇺🇸 美股" if market_type == "US" else "🇨🇳 A股/港股",
         "head_display": head_localized,
         "symbol_display": symbol_display,
+        "raw_ticker_str": s,
+        "is_pair_trade": is_pair_trade,
         "thesis": thesis_localized,
-        "rating": rating,
-        "badge_cls": badge_cls,
-        "polarity": polarity,
-        "driver": driver,
+        "rating": "多空配对" if is_pair_trade else rating,
+        "badge_cls": "gs-rating-ew" if is_pair_trade else badge_cls,
+        "polarity": "pair" if is_pair_trade else polarity,
+        "driver": "多空相对价值对冲" if is_pair_trade else driver,
         "score": int(market_score or 5),
         "article_idx": article_idx,
         "article_anchor": f"#art-{article_idx}",
@@ -337,8 +371,8 @@ def parse_ticker_entry(
     }
 
 
-def extract_all_structured_stocks(core_articles: list[dict]) -> list[dict]:
-    """Extract all US and CN/HK stock rows across all core articles."""
+def extract_all_structured_stocks(core_articles: list[dict], include_pairs: bool = False) -> list[dict]:
+    """Extract all single-stock US and CN/HK rows across all core articles (excluding Pair Trade lines by default)."""
     all_rows = []
     for idx, art in enumerate(core_articles, 1):
         zh_title = art.get("zh_title") or art.get("title") or f"文章 #{idx}"
@@ -349,6 +383,8 @@ def extract_all_structured_stocks(core_articles: list[dict]) -> list[dict]:
         us_sc = int(us_m.get("score") or 5)
         for t_str in us_m.get("tickers") or []:
             row = parse_ticker_entry(t_str, "US", us_dir, us_sc, idx, zh_title, cat)
+            if not include_pairs and row.get("is_pair_trade"):
+                continue
             all_rows.append(row)
 
         cn_m = art.get("cn_market") or {}
@@ -356,6 +392,8 @@ def extract_all_structured_stocks(core_articles: list[dict]) -> list[dict]:
         cn_sc = int(cn_m.get("score") or 5)
         for t_str in cn_m.get("tickers") or []:
             row = parse_ticker_entry(t_str, "CN", cn_dir, cn_sc, idx, zh_title, cat)
+            if not include_pairs and row.get("is_pair_trade"):
+                continue
             all_rows.append(row)
 
     # Sort by score descending, then bull/bear priority

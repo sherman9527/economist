@@ -120,11 +120,13 @@ def execute_single_report(
 
 def open_pending_and_today_reports(target_date: str, days_window: int = 3, max_core: int = 24, log_fn=print) -> list[str]:
     """
-    09:00 AM Open workflow:
+    09:00 AM Open workflow (Single-Window In-Page Multi-Tab Mode):
       1. Ensure target_date's report exists (if 08:00 AM job didn't complete, resume from checkpoint and finish it).
       2. Ensure local ACK server (127.0.0.1:4288) is running.
-      3. Find all un-ACKed reports in ack_state.json (including historical un-ACKed reports + today's report).
-      4. Open all un-ACKed reports in browser tabs (or if today's is already ACKed, still open today's report).
+      3. Find all un-ACKed reports in ack_state.json (historical un-ACKed reports + today's report).
+      4. Open ONLY ONE single browser window/tab pointing to the unified In-Page Workspace
+         (/reports/index.html?focus=<target_date>), which mounts today's report + all un-ACKed
+         historical reports as in-page Pivot tabs inside a single page (zero multi-window popups).
     """
     state = load_ack_state()
     today_entry = state.get("reports", {}).get(target_date)
@@ -146,22 +148,22 @@ def open_pending_and_today_reports(target_date: str, days_window: int = 3, max_c
     state = load_ack_state()
     today_entry = state.get("reports", {}).get(target_date)
 
-    to_open = list(unacked)
-    if today_entry and all(r.get("report_id") != target_date for r in to_open):
-        to_open.append(today_entry)
+    inpage_queue = list(unacked)
+    if today_entry and all(r.get("report_id") != target_date for r in inpage_queue):
+        inpage_queue.append(today_entry)
 
-    opened_urls = []
-    log_fn(f"[OpenMode] Found {len(unacked)} un-ACKed report(s). Opening {len(to_open)} tab(s) in browser...")
-    for rep in to_open:
-        rid = rep["report_id"]
-        rel_path = rep["rel_path"]
-        url = f"{base_url}/reports/{rel_path}"
-        open_url_in_browser(url, log_fn=log_fn)
-        record_report_opened(rid)
-        opened_urls.append(url)
-        time.sleep(0.4)
+    for rep in inpage_queue:
+        record_report_opened(rep["report_id"])
 
-    return opened_urls
+    focus_id = target_date if today_entry else (inpage_queue[-1]["report_id"] if inpage_queue else "")
+    workspace_url = f"{base_url}/reports/index.html?focus={focus_id}" if focus_id else f"{base_url}/reports/index.html"
+
+    log_fn(
+        f"[OpenMode] Found {len(unacked)} un-ACKed report(s). "
+        f"Opening SINGLE in-page workspace window with {len(inpage_queue)} in-page tab(s) (focus={focus_id})..."
+    )
+    open_url_in_browser(workspace_url, log_fn=log_fn)
+    return [workspace_url]
 
 
 def run_backfill_3d(target_date: str, max_core: int = 22, batch_size: int = 6, log_fn=print):

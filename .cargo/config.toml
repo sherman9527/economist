@@ -1,0 +1,21 @@
+# China-First Cargo Registry Mirror Configuration (Verified 200 OK via rsproxy.cn & TUNA)
+# See ./rule.md Pitfall #02: USTC returns 403 Forbidden; rsproxy sparse index is primary.
+
+[source.crates-io]
+replace-with = 'rsproxy-sparse'
+
+[source.rsproxy-sparse]
+registry = "sparse+https://rsproxy.cn/index/"
+
+[source.tuna-sparse]
+registry = "sparse+https://mirrors.tuna.tsinghua.edu.cn/crates.io-index/"
+
+[registries.rsproxy]
+index = "https://rsproxy.cn/crates.io-index"
+
+[net]
+git-fetch-with-cli = true
+retry = 4
+
+[build]
+target = "x86_64-pc-windows-msvc"

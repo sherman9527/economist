@@ -13,3 +13,17 @@ checkpoints/
 data/article_cache/
 data/market_cache/
 data/analyzed_cache.json
+data/*.db
+data/*.db-wal
+data/*.db-shm
+
+# Portable x64 Toolchain, Node/Cargo Build Artifacts (<5GB auto-cleaned) & WebView2 Data
+.toolchain/
+.build/
+node_modules/
+dist/
+src-tauri/target/
+portable-release/
+telemetry/
+webview_data/
+

@@ -4,7 +4,7 @@ Local lightweight HTTP server & state manager for report ACK persistence.
 Binds strictly to 127.0.0.1:4288 (or ECONOMIST_PORT).
 Provides:
   - GET  /                    -> Redirects to /reports/index.html
-  - GET  /reports/<path>      -> Serves archived HTML reports from D:\\code\\economist\\reports
+  - GET  /reports/<path>      -> Serves archived HTML reports from ./reports
   - GET  /api/ack-state       -> Returns full ack_state.json + unacked reports list
   - POST /api/ack             -> Updates ACK status for a report_id in ack_state.json & HTML snapshot
   - GET  /api/health          -> Health check
@@ -28,6 +28,7 @@ from config import (
     ACK_SERVER_PORT,
     ACK_STATE_FILE,
     BASE_DIR,
+    DATA_DIR,
     LOGS_DIR,
     REPORTS_DIR,
     SCRIPTS_DIR,
@@ -82,7 +83,6 @@ def register_report(
             "date": report_date,
             "title": title,
             "rel_path": rel_path.replace("\\", "/"),
-            "abs_path": str((REPORTS_DIR / rel_path).resolve()),
             "article_count": article_count,
             "core_count": core_count,
             "window_desc": window_desc,
@@ -260,6 +260,19 @@ class AckRequestHandler(BaseHTTPRequestHandler):
             )
             return
 
+        if path == "/api/audit-summary":
+            audit_files = sorted(DATA_DIR.glob("full_retrospective_audit_*.json"), reverse=True)
+            if audit_files:
+                try:
+                    audit_data = json.loads(audit_files[0].read_text(encoding="utf-8"))
+                    self._respond_json(200, {"status": "ok", "audit": audit_data})
+                    return
+                except Exception as e:
+                    self._respond_json(500, {"status": "error", "message": str(e)})
+                    return
+            self._respond_json(200, {"status": "ok", "audit": None})
+            return
+
         if path == "/api/ack-via-get":
             qs = parse_qs(parsed.query)
             report_id = (qs.get("report_id") or [""])[0].strip()
@@ -313,7 +326,7 @@ class AckRequestHandler(BaseHTTPRequestHandler):
 
     def do_POST(self):
         parsed = urlparse(self.path)
-        if parsed.path != "/api/ack":
+        if parsed.path not in ("/api/ack", "/api/ack-batch"):
             self._respond_json(404, {"status": "error", "message": "Not found"})
             return
 
@@ -321,6 +334,27 @@ class AckRequestHandler(BaseHTTPRequestHandler):
             length = int(self.headers.get("Content-Length", "0"))
             raw_body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
             payload = json.loads(raw_body)
+
+            if parsed.path == "/api/ack-batch":
+                report_ids = payload.get("report_ids") or []
+                acked = bool(payload.get("acked", True))
+                updated_entries = []
+                for rid in report_ids:
+                    rid_s = str(rid).strip()
+                    if rid_s:
+                        updated_entries.append(set_report_ack(rid_s, acked=acked))
+                state = load_ack_state()
+                self._respond_json(
+                    200,
+                    {
+                        "status": "ok",
+                        "updated_count": len(updated_entries),
+                        "reports": state.get("reports", {}),
+                        "unacked_reports": get_unacked_reports(),
+                    },
+                )
+                return
+
             report_id = str(payload.get("report_id", "")).strip()
             acked = bool(payload.get("acked", True))
             note = str(payload.get("note", "")).strip()

@@ -1,0 +1,2249 @@
+{
+  "run_key": "2026-11-14",
+  "window_desc": "2026-11-11 至 2026-11-13 (过去 2 天最新刊发)",
+  "generated_at": "2026-11-14 08:08:52",
+  "model": "gemini-4-argon (long_context, reasoning=high)",
+  "total_articles": 42,
+  "core_count": 22,
+  "digest_count": 20,
+  "world_in_brief": "The world in brief](https://www.economist.com/the-world-in-brief)\nCatch up on global daily news\n\n1843\nCompelling long reads\n\nPodcasts\nTune into captivating conversations\n\nVideo\nWatch engaging short films\n\nInsider\nBehind the scenes at The Economist\n\nNewsletters\nCurated news, direct to your inbox\n\nGames\nWorkouts for agile minds\n\nweekly edition\n\nNovember 14th 2026 Whatever next?\n\n* * *\n\nPast editions\n\nCurrent topics\n*   War in the Middle East\n*   War in Ukraine\n*   Geopolitics\n*   Climate change\n*   The world economy\n*   Artificial intelligence\n*   Trump approval tracker\n\n## Current topics\n\n*   War in the Middle East\n*   War in Ukraine\n*   Geopolitics\n*   Climate change\n*   The world economy\n*   Artificial intelligence\n*   Trump approval tracker\n\nWorld\n\n* * *\n\n## World\n\n*   The world this week\n*   China\n*   United States\n*   Europe\n*   Britain\n*   Middle East\n*   Africa\n*   Asia\n*   The Americas\n*   International\n\nBusiness & economics\n\n* * *\n\n## Business & economics\n\n*   Business\n*   Finance & economics\n*   Big Mac index\n*   Economic & financial indicators\n\nOpinion\n\n* * *\n\n## Opinion\n\n*   Leaders\n*   Columns\n*   By Invitation\n*   Letters to the editor\n\nIn depth\n\n* * *\n\n## In depth\n\n*   Science & technology\n*   Briefing\n*   Graphic detail\n*   Interactives\n*   Special reports\n*   Technology Quarterly\n*   Essay\n*   Primers\n*   Schools brief\n\nCulture, history & society\n\n* * *\n\n## Culture, history & society\n\n*   Culture\n*   The Economist reads\n*   Obituary\n*   Military history\n\nOur A-to-Zs\n\n* * *\n\n## Our A-to-Zs\n\n*   Economics\n*   American politics\n*   Military terms\n*   International relations\n\n*   Weekly edition\n*   World in brief\n*   Opinion\n*   United States\n*   Finance & economics\n*   Business\n*   China\n*   Europe\n*   Americas\n*   Middle East & Africa\n*   Artificial intelligence\n*   Culture\n*   Games\n\nThe world in brief\n\nNovember 13th 2026\n\n1 of 8[](https://www.economist.com/the-world-in-brief/2026/11/13/5ad0ea74-d133-4692-9443-738cf5698142)\n\n# World in brief: America halts all flights; Bessent blames Lutnick for lax chip controls\n\nPhotograph: Houston Chronicle via Getty Imag\n\nNov 13th 2026(updated 1h ago)\n\n**America’s** Federal Aviation Administration halted **flights**at all of the country’s airports, citing “extraordinary circumstances” and “reasons of safety”. Earlier the agency reported traffic-control communications problems. It is only the second time since the September 11th attacks that the FAA has issued a nationwide ground stop.\n\n####",
+  "macro_synthesis": {
+    "headline_zh": "黄仁勋闪辞引爆美股AI去杠杆，中国自主算力与绿能出海迎重估",
+    "executive_summary": "本期《经济学人》（2026年11月11日—11月13日）揭示全球宏观与产业正经历一场剧烈的“去集中化与多极重定价”。在美股端，执掌英伟达33年的黄仁勋因涉华代理人、芯片走私及私德丑闻于11月12日闪电辞职，不仅波及特朗普内阁商务部长卢特尼克、引发国会民主党胜选后的严厉调查风暴，更叠加软银NAV暴跌与华尔街对数千亿美元AI算力CapEx商业化ROI的拷问，直接刺破美股“七巨头”极致的市值集中度与创始人治理溢价。全球资金加速撤离高Beta通用GPU硬件，涌向标普等权、定制ASIC、B/C端AI应用及印度、中资低估值内需等“反AI交易（Anti-AI Trade）”避风港。在A股与港股端，外部技术断供与地缘摩擦反而形成强烈倒逼与结构性突围：一方面，美国BIS面临极端鹰派接管，彻底打消算力进口幻想，强力催化中国国产AI芯片、晶圆代工与先进封装全栈自主化；另一方面，中国碳排放越过历史峰值并加速下行，依托压降逾70%的全产业链成本优势，中国光储、电网设备、新能源车及平价连锁餐饮正绕开欧美关税壁垒，在东南亚与南非等“全球南方”市场兑现强劲的EPS增长与估值修复。",
+    "us_market_overview": {
+      "overall_stance": "高位剧烈去集中化与防御轮动（AI硬件估值出清、分裂国会博弈升温，资金从Mag-7向等权价值与AI应用层迁徙）",
+      "sentiment_score": 38,
+      "core_drivers": [
+        "英伟达创始人治理崩塌与集中度反噬：黄仁勋闪辞令60人扁平汇报架构面临战略断层，特质性风险演变为标普500系统性风险，引爆专有GPU生态与高杠杆算力链去溢价。",
+        "AI资本开支ROI大考与一级市场去杠杆：3至5年硬件折旧周期与滞后的软件ARR裂口扩大，叠加软银质押Arm豪赌独角兽遭遇NAV跳水，市场定价重心强制切换至自由现金流。",
+        "中期选举“蓝潮”与政商监管清算：民主党重夺众议院并掀起对卢特尼克涉华出口管制及数据中心能耗的双重审查，仅佛罗里达等“阳光地带”凭零州税与人口净流入保持韧性。"
+      ],
+      "long_short_allocation": {
+        "overweight": [
+          "定制ASIC芯片、第二GPU供应商与晶圆代工枢纽：英伟达垄断溢价瓦解加速云厂商自研芯片替代与供应链议价权转移（AVGO, MRVL, AMD, TSM）",
+          "AI垂直应用软件、动态定价电商与端侧生态巨头：算力降本与动态价格优化驱动下游毛利率扩张，平稳交接的端侧生态凸显治理溢价（AAPL, PLTR, CRM, AMZN, BKNG）",
+          "“反AI交易”对冲资产、黄金军工与阳光地带公用事业：规避美股半导体回撤与主权资产武器化风险，分享红州制度套利红利（INDA, RSP, GLD, LMT, NEE）"
+        ],
+        "underweight": [
+          "单一垄断溢价GPU龙头与高杠杆算力基建：面临领导层真空、BIS全球许可冻结、ESG调降与算力租赁去杠杆四重冲击（NVDA, SMCI, ARM, CRWV）",
+          "重资产超大规模云基建与亏算AI独角兽映射股：硬件折旧吞噬自由现金流转换率，且面临民主党国会数据中心能耗与反垄断清算（高CapEx云厂、二线AI硬件）",
+          "传统跨国油气煤炭、中型好莱坞制片厂与西式快餐巨头：受制于中国碳达峰压制远期油煤曲线、影视行业“杠铃化”挤压及中国平价连锁出海抢占份额（XOM, BTU, PARA, SBUX）"
+        ]
+      }
+    },
+    "cn_market_overview": {
+      "overall_stance": "以我为主、结构性牛市深化（国产算力全栈突围、绿能与大众消费出海“全球南方”、低估值现金牛承接全球再平衡资金）",
+      "sentiment_score": 68,
+      "core_drivers": [
+        "极端鹰派管制倒逼国产算力全栈加速：黄仁勋丑闻击碎游说缓冲空间，美国BIS算力封锁彻底常态化，国内智算中心采购向自主GPU、先进封装及国产设备材料100%倾斜。",
+        "中国碳达峰拐点与“全球南方”绿能狂飙：全面电气化驱动碳排放实质下降，中国光储、EV与电力设备凭极致成本统治力在东南亚及南非市政私有化浪潮中打开高利润增量。",
+        "全球“反AI交易”再平衡与数字化供应链出海：美股科技抱团瓦解与欧洲税制摇摆驱动跨境资金回流香港财富中心，港股互联网现金牛与万店加盟新消费龙头迎来ROIC重估。"
+      ],
+      "long_short_allocation": {
+        "overweight": [
+          "国产AI算力芯片、晶圆代工与先进封装设备链：彻底断供预期下迎来订单爆发与国产替代份额非线性跃升（中芯国际 0981.HK、海光信息 688041.SH、寒武纪 688256.SH、北方华创 002371.SZ）",
+          "绿能科技出海（东南亚/非洲）与特高压智能电网：东盟工业化缺电与南非市政公用事业改革共振，国内电气化拐点重塑绿电与电网估值（比亚迪 002594.SZ、阳光电源 300274.SZ、思源电气 002028.SZ、长江电力 600900.SH）",
+          "港股低估值互联网现金牛、高股息央企与平价连锁出海：承接全球Anti-AI对冲资金与亚洲离岸财富回流，数字化加盟供应链横扫海外下沉市场（腾讯控股 0700.HK、蜜雪冰城 2097.HK、名创优品 9896.HK、香港交易所 0388.HK）"
+        ],
+        "underweight": [
+          "纯英伟达专有协议绑定硬件商与海外GPU转口租赁：面临北美大客户供应链重构、技术路线向开放以太网/ASIC切换及走私合规严查风险（部分纯NV链代工与转口算力租赁股）",
+          "传统高耗能焦煤炼化与落后煤化工：中国碳排放越过结构性峰值确立化石能源长周期需求达峰折价，缺乏绿电转型的落后产能面临出清（传统高碳高耗能周期股）",
+          "欧美重资产建厂制造业与纯外资审美无业绩题材股：主权“掠夺型国家”资产没收风险抬升跨国重资产FDI制度成本，西方驻华认知鸿沟压制纯概念估值（对欧美直接重资产暴露标的）"
+        ]
+      }
+    },
+    "cross_market_chains": [
+      {
+        "chain_title": "主线一：黄仁勋闪辞与内阁震荡 → AI算力垄断瓦解与中美科技自主分道扬镳",
+        "economist_trigger": "黄仁勋因涉华代理人、芯片走私及私生活丑闻于11月12日闪电辞职，火烧美国商务部长卢特尼克，叠加软银NAV暴跌与华尔街对AI商业化ROI的质疑。",
+        "macro_channel": "公司治理溢价蒸发 → 标普500权重股去集中化与一级市场AI去杠杆 → 美国国会对BIS实施极端鹰派接管（冻结全球高阶芯片许可）→ 算力架构向ASIC/开源分流及中国全栈国产化。",
+        "us_mapping": "英伟达（NVDA）及纯专有协议硬件链遭遇估值与业绩预期双杀；资金向博通（AVGO）、AMD、台积电（TSM）及具备即时变现能力的AI软件（PLTR、CRM）和标普等权指数（RSP）轮动。",
+        "cn_mapping": "海外算力映射与GPU转口贸易逻辑彻底证伪；国产AI算力芯片（寒武纪、海光信息）、晶圆代工与先进封装（中芯国际、长电科技）及本土云大模型在刚性替代下迎来主升浪。",
+        "divergence_insight": "美股交易的是“垄断护城河裂解与CapEx回报率下修”带来的估值压缩；A股交易的是“外部封锁见顶与内生替代刚性化”带来的订单确定性与国产份额扩张。"
+      },
+      {
+        "chain_title": "主线二：中国碳排放历史性达峰 → 绿色技术通缩红利与“全球南方”出海重估",
+        "economist_trigger": "中国碳排放越过结构性峰值并加速下降，全产业链规模效应将风光储成本压降逾70%，同时对东南亚清洁技术出口狂飙、南非非国大（ANC）地方选举惨败开启公用事业市场化。",
+        "macro_channel": "中国终端全面电气化 → 全球海运煤与原油远期需求曲线下移 → 东南亚工业化电力缺口与南非市政供电私有化承接中国过剩绿能产能 → 破局欧美关税壁垒并修复出海制造业ROIC。",
+        "us_mapping": "传统跨国油气与煤炭巨头（XOM、CVX、BTU）面临长期需求达峰折价，美国本土高成本光伏组件承压；但全球铜矿（FCX）与北美公用事业储能/电网改造受益于电气化浪潮。",
+        "cn_mapping": "大储与户用逆变器（阳光电源、德业股份）、整车KD出海（比亚迪）、特高压及配网设备（思源电气、平高电气）迎来海外EPS上修；国内绿电与核电运营商（长江电力、中国核电）现金流重估。",
+        "divergence_insight": "欧美视角将中国绿能视为“产能过剩与贸易威胁”，而东南亚与非洲等发展中国家将其视为“无本土包袱下的低成本能源转型最优解”，南方市场增量彻底扭转A股光储车的产能折价叙事。"
+      },
+      {
+        "chain_title": "主线三：美国中期选举分裂国会与主权掠夺风险 → 全球资本再平衡与制度套利",
+        "economist_trigger": "民主党重夺众议院开启对特朗普政府的传票调查风暴，佛罗里达州逆势稳守深红堡垒；同时现代经济战中“主权资产没收”回归，意大利富人离境税朝令夕改引发欧洲资本外逃。",
+        "macro_channel": "华盛顿立法僵局与财政债务博弈推升美债波动率 → 跨国产权保护公地瓦解抬升FDI风险溢价 → 资本在美境内向低税“阳光地带”迁徙、在全球向黄金及亚洲离岸财富中心与“反AI资产”分散。",
+        "us_mapping": "深蓝州高税负写字楼REITs与依赖行政去监管的传统金融承压；佛罗里达公用事业与住宅建筑商（NEE、LEN）、国防安全（LMT）、黄金矿企（NEM）及印度内需ETF（INDA）获超额配置。",
+        "cn_mapping": "黄金与战略小金属（紫金矿业、山东黄金）、港股高股息央国企（中国移动、中海油）享受安全资产溢价；香港交易所（0388.HK）及跨国财富管理（友邦保险 1299.HK）受益于亚太财富回流。",
+        "divergence_insight": "美股内部呈现激烈的“红州吸金、蓝州失血”州际套利；而在跨市场维度，美股AI高波动与欧美资产武器化风险，正把中资低估值高分红蓝筹从“地缘折价资产”重塑为“全球宏观对冲底仓”。"
+      },
+      {
+        "chain_title": "主线四：消费科技微观裂变 → 数字化加盟、AI动态定价与“杠铃化”娱乐胜出",
+        "economist_trigger": "中国餐饮零售掀起万店特许加盟出海革命，好莱坞中型制片厂困守“危险中间地带”，欧美对AI个性化定价恐慌过度，以及女性周期管理从伪科学日历App向多模态生物传感硬件演进。",
+        "macro_channel": "高通胀与消费分层下，重资产中端商业模式（传统连锁/中型制片/泛健康App）ROIC坍塌 → 数字化供应链赋能的轻资产加盟、AI动态库存收益管理、Lo-Fi微短剧/Hi-Fi实景IP及精准医疗穿戴通吃利润池。",
+        "us_mapping": "流媒体与UGC平台霸主（NFLX、GOOGL）、现场演艺（LYV）、AI动态定价电商与OTA（AMZN、BKNG）及智能穿戴生态（AAPL、DXCM）跑赢；传统影视（PARA）与老牌餐饮连锁（SBUX）份额受损。",
+        "cn_mapping": "平价茶饮与潮流零售加盟龙头（蜜雪冰城、名创优品）及餐饮供应链（安井食品）加速全球化扩张；微短剧出海与潮玩实景IP（泡泡玛特 9992.HK）、智能戒指/精密传感器ODM（歌尔股份、立讯精密）景气上行。",
+        "divergence_insight": "美股消费科技的优势在于“底层AI定价算法与全球流媒体平台生态”，而中国消费与硬科技的优势在于“极致数字化供应链效率、轻资产加盟裂变与精密传感器硬件制造”，两者在全球市场形成错位统治。"
+      }
+    ],
+    "risk_calendar_and_watchpoints": [
+      "英伟达临时继任架构与Q3财报指引大考（未来1~2周）：密切追踪黄仁勋辞职后英伟达董事会公布的新任CEO人选、60名直管高管留任情况，以及超大规模云厂商是否在最新财报电话会中下调2027年通用GPU采购CapEx指引。",
+      "美国国会涉华芯片听证会与BIS新规落地（未来2~3周）：关注重夺众议院的民主党对商务部长卢特尼克及英伟达涉华走私案的传票调查进展，警惕BIS出台无缓冲期的全球算力芯片追踪与全面禁运细则。",
+      "Anthropic超大型IPO招股书与软银债务压力测试（未来2~4周）：观察Anthropic上市定价倍数能否稳住一级市场GenAI估值锚，以及软银集团在Arm股价波动下的LTV（贷款价值比）警戒线与资产抛售动向。",
+      "东盟与南非基建招标数据及国内电网年底抢装（未来1~4周）：验证中国光储、EV及变压器11月对东盟出口高频增速，跟踪南非DA联合执政都市的首批分布式电力PPP订单，以及国网特高压年末招标落地节奏。"
+    ]
+  },
+  "core_articles": [
+    {
+      "id": "b1cb41828bc9ad77",
+      "guid": "c6442722-8e7a-4577-bca8-b311bd0a40e3",
+      "link": "https://www.economist.com/china/2026/11/12/chinas-exports-of-clean-tech-to-south-east-asia-are-soaring",
+      "title": "China’s exports of clean tech to South-East Asia are soaring",
+      "description": "Unlike in the European Union, governments don’t fret about the influx",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "china"
+      ],
+      "section_labels": [
+        "中国专栏 (China)"
+      ],
+      "section_weights": [
+        10
+      ],
+      "relevance_score": 93,
+      "fly_title": "China | Green pivot",
+      "dateline": "Nov 12th 2026|2 min read",
+      "lead_excerpt": "I n recent years, China’s green-tech manufacturers have salivated over the market for their stuff in Europe. Demand there has surged as countries and consumers try to reduce their reliance on fossil fuels. European governments are becoming fretful about the impact on their industries and are trying to curb the influx, such as by imposing quotas on electric vehicles. But Chinese firms have options closer to home. Their exports to South-East Asia are soaring. Few in the region whinge.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_CNP502.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:15",
+      "zh_title": "中国绿能科技出口狂飙东南亚：破局欧美关税壁垒的“南方增量”与出海重估",
+      "theme_category": "全球贸易与地缘",
+      "core_thesis": "面对欧盟对华电动车配额及关税围堵，中国清洁技术制造商正加速向东南亚转移，对东盟光伏、储能及EV出口额创历史新高且当地政府鲜有贸易保护阻力；东南亚工业化电力缺口与本土缺乏竞争性老牌车企的制度结构，使中国廉价绿能设备成为东盟降低化石能源依赖与能源转型成本的最优解；跨市场定价层面，东盟需求有效对冲欧美贸易壁垒引发的产能过剩折价，驱动中国光储及出海整车龙头迎来海外EPS上修与P/E估值修复。",
+      "transmission_chain": [
+        "一阶冲击：欧盟贸易壁垒升温倒逼中国光伏、锂电与电动车企加速向东盟十国倾注产能与绿地投资，东南亚跃升为中国绿能出口核心增量市场。",
+        "二阶传导（利率/监管/供应链/CapEx）：东盟各国推行零关税或本土组装补贴政策吸引中企建厂，不仅消化中国国内冗余产能，更带动区域电网改造与充电基建CapEx周期开启。",
+        "美股EPS与估值映射：美股本土光伏与老牌车企在非美新兴市场份额进一步遭中企挤压，海外营收指引面临下修；东南亚互联网与出行平台则受益于廉价EV车队普及带来的UE改善。",
+        "A股/港股映射与预期差：市场此前过度定价欧美双反与关税对出口链毛利率的毁灭性打击，忽视了东盟高增速与高毛利整车/组件出口的替代弹性，出海龙头存在显著估值预期差。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 6,
+        "sectors": [
+          "东南亚出行与数字经济平台 (OW)",
+          "美股太阳能组件与逆变器 (UW)",
+          "传统跨国燃油车企 (UW)"
+        ],
+        "tickers": [
+          "GRAB (Grab Holdings) - [OW 超配 | EPS上修] 引入比亚迪等高性价比中国EV显著降低网约车队TCO（总拥车成本），驱动移动出行业务EBITDA利润率扩张",
+          "FSLR / ENPH (First Solar / Enphase) - [UW 低配 | 估值承压] 虽受美国IRA法案保护，但全球非美市场定价权彻底让渡于中国供应链，海外增长期权归零压制远期P/E倍数",
+          "TSLA (特斯拉) - [EW 标配 | 份额博弈] 在东南亚等价格敏感型新兴市场面临中国A级/B级EV车型贴身肉搏，新兴市场ASP与交付量弹性受限",
+          "Pair Trade (配对交易) - [Long GRAB / Short ENPH] 做多受益于中国廉价绿能硬件输入东南亚的出行平台，做空丧失非美新兴市场份额的高估值美股逆变器厂商"
+        ],
+        "deep_logic": "估值折现率冲击：美股纯本土光伏制造标的丧失全球新兴市场扩张叙事，估值锚从全球成长股向区域公用事业股收敛；EPS盈利弹性：中国绿能技术向东南亚溢出直接拉低当地交通电气化与分布式光伏成本，助推Grab等东南亚本土平台提升单均履约利润；机构仓位与多空博弈：欧美长线基金正削减美股高溢价清洁能源敞口，转而通过东南亚互联网龙头与新兴市场ETF间接捕捉中国绿能供应链降本红利。"
+      },
+      "cn_market": {
+        "direction": "强烈利好",
+        "score": 8,
+        "sectors": [
+          "整车及KD件出海龙头 (OW)",
+          "大储与户用逆变器出海 (OW)",
+          "东南亚本地化建厂电池链 (OW)"
+        ],
+        "tickers": [
+          "比亚迪 (002594.SZ / 01211.HK) - [Conviction Buy 强推 | EPS与估值双升] 泰国与印尼工厂产能爬坡叠加右舵车型统治力，东盟市场高单车净利贡献强劲海外盈利增量",
+          "阳光电源 (300274.SZ) / 德业股份 (605117.SH) - [OW 超配 | 盈利上修] 东南亚电网脆弱性与工商业缺电催化光储并网需求爆发，新兴市场高毛利率支撑业绩超预期",
+          "宁德时代 (300750.SZ) - [OW 超配 | 估值修复] 东盟新能源渗透率跨越15%奇点带动动力及储能电池装机放量，缓解欧美地缘政治折价",
+          "Pair Trade (配对交易) - [Long 德业股份 (605117.SH) / Short 纯内销低端组件厂] 做多深度绑定东南亚与全球南方电网改造的逆变器龙头，规避仅依赖国内低价竞标的同质化辅材厂"
+        ],
+        "deep_logic": "外资与情绪传导：欧美关税落地后外资对中国“新三样”悲观情绪已至冰点，东南亚出口数据飙升有力证伪“出海逻辑终结”假说；国内产业政策/份额替代：中企通过“中国核心零部件出口+东盟本地组装”模式实现零贸易摩擦渗透，迅速替代日系车企在东南亚长达数十年的垄断份额；估值与基本面预期差：当前A股光储与EV龙头远期P/E仅12-16倍，隐含海外增速归零假设，东盟高景气订单将触发卖方一致预期EPS上调10%-15%。"
+      },
+      "watch_indicators": [
+        "中国海关总署月度对东盟十国电动汽车、锂电池及光伏组件出口金额同比增速与单价走势",
+        "泰国、印尼及马来西亚月度新能源乘用车注册渗透率及中国品牌（比亚迪、名爵、埃安）市占率变化",
+        "美国商务部针对东南亚四国光伏与电池组件“反规避”原产地穿透审查的最新裁定进展"
+      ]
+    },
+    {
+      "id": "6b0e85e7ea0c1933",
+      "guid": "ca286fe0-5850-4d01-9426-6d5350072d82",
+      "link": "https://www.economist.com/finance-and-economics/2026/11/12/where-to-find-the-anti-ai-trade",
+      "title": "Where to find the anti-AI trade",
+      "description": "The worse chipmakers do, the better Indian equities perform",
+      "pub_date_utc": "2026-11-12 10:38:28 UTC",
+      "pub_date_cst": "2026-11-12 18:38",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794479908.0,
+      "sections": [
+        "finance-and-economics"
+      ],
+      "section_labels": [
+        "财经与金融 (Finance & Economics)"
+      ],
+      "section_weights": [
+        10
+      ],
+      "relevance_score": 93,
+      "fly_title": "Finance & economics | Diya or don’t ya",
+      "dateline": "Nov 12th 2026|MUMBAI|3 min read",
+      "lead_excerpt": "M OST OF THE world’s traders were still enjoying a weekend break on Sunday November 8th after a rough few days in the markets—except those in Mumbai, India’s financial capital. Its two big bourses opened for a 70-minute special session to mark Diwali, the festival of lights, and to welcome Lakshmi, the goddess of wealth. Trades made during this so-called Muhurat session are meant to be particularly auspicious. Investors are supposed to make long-term purchases: buying gold and silver is common as are conviction bets for the sake of the grandchildren.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_FNP503.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:26",
+      "zh_title": "寻找全球“反AI交易”避风港：为何美股芯片股越跌，印度股市越强？",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "在全球AI算力与半导体板块剧烈震荡回调之际，孟买证券交易所排灯节特设交易时段展现出极强的逆势韧性，印度股市与全球芯片股呈现出显著的负相关性；印度股市缺乏高beta的AI硬件制造敞口，但拥有庞大的内需消费纵深、本币计价散户定投（SIP）资金池以及受益于AI应用落地的IT外包与金融服务巨头；跨市场配置上，印度权益资产已成为全球宏观对冲基金规避美股AI资本开支见顶风险与半导体周期回撤的最佳“反AI对冲资产”（Anti-AI Trade）。",
+      "transmission_chain": [
+        "一阶冲击：美股半导体与AI算力板块因估值拥挤与CapEx回报率质疑出现剧烈抛售，引发全球跨资产组合去风险化与相关性重定价。",
+        "二阶传导（利率/监管/供应链/CapEx）：全球共同基金与对冲基金从中国台湾、韩国等高半导体权重的亚洲市场抽离资金，再平衡流入以内需、金融及基建驱动的印度及非AI防御性资产。",
+        "美股EPS与估值映射：美股AI半导体面临机构高仓位踩踏与P/E倍数均值回归，而印度ADR、跨国IT服务及防御性内需板块获得避险资金溢价。",
+        "A股/港股映射与预期差：当全球资金撤离高波动AI硬件链时，除印度外，具备低估值、高股息及内需刺激期权的港股互联网应用与A股红利/消费板块同样具备“反AI硬件”轮动承接力。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 7,
+        "sectors": [
+          "AI算力芯片与半导体设备 (UW)",
+          "印度ADR与新兴市场内需ETF (OW)",
+          "企业级IT服务与银行金融 (OW)"
+        ],
+        "tickers": [
+          "INDY / INDA (iShares印度ETF) - [OW 超配 | 资金流入驱动估值坚挺] 受益于全球长线资金对冲AI硬件回撤的再平衡配置，与费城半导体指数呈现强负相关",
+          "IBN / HDB (ICICI Bank / HDFC Bank) - [OW 超配 | 盈利稳健] 纯粹受益于印度本土信贷周期与数字化渗透，完全免疫于全球硅片周期波动",
+          "NVDA / TSM (英伟达 / 台积电) - [EW 标配/战术减仓 | 估值消化] 机构多头拥挤度处于历史98%分位，任何AI变现放缓信号均易引发向非AI资产的资金抽水",
+          "INFY / ACN (Infosys / 埃森哲) - [OW 超配 | 商业化接棒] 硬件CapEx焦虑升温往往伴随企业转向低成本IT服务商寻求AI降本增效落地，享受上游算力降价红利",
+          "Pair Trade (配对交易) - [Long INDA / Short SOXX] 经典跨市场“反AI交易”配对，做多印度宽基指数对冲费城半导体指数的高估值回撤风险"
+        ],
+        "deep_logic": "估值折现率冲击：美股AI芯片板块高企的远期市销率（P/S）对盈利增速边际放缓极度敏感，一旦叙事降温即面临剧烈杀估值；EPS盈利弹性：印度银行业与消费龙头EPS增长锚定本土7%的GDP实际增速与人口红利，与硅谷云巨头CapEx周期零相关；机构仓位与多空博弈：全球CTA与多空对冲基金正利用印度资产的低AI相关性构建杠铃策略，当SOXX波动率飙升时，资金机械式向印度金融及内需蓝筹迁徙。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 6,
+        "sectors": [
+          "光模块与AI服务器代工 (UW)",
+          "高股息红利与公用事业 (OW)",
+          "必选消费与互联网低估值龙头 (OW)"
+        ],
+        "tickers": [
+          "工业富联 (601138.SH) / 中际旭创 (300308.SZ) - [UW 短期规避 | 估值联动承压] 作为美股AI算力供应链高beta映射，在全球资金执行“反AI交易”时首当其冲面临获利盘兑现",
+          "腾讯控股 (00700.HK) / 美团-W (03690.HK) - [OW 超配 | 估值安全垫] 轻资产AI应用赋能广告与本地生活，且估值远低于印度同类资产，承接亚太区高低切换外资",
+          "中国神华 (601088.SH) / 长江电力 (600900.SH) - [OW 超配 | 防御溢价] A股本土版“反AI避风港”，在科技成长回撤期凭借确定性自由现金流吸引险资与北向配置",
+          "Pair Trade (配对交易) - [Long 恒生高股息ETF / Short A股英伟达概念链] 在全球芯片股动荡期，做多低波红利与内需龙头，做空高估值海外算力硬件映射股"
+        ],
+        "deep_logic": "外资与情绪传导：亚太新兴市场基金（EM Asia ex-Japan）常在中国台湾/韩国（AI硬件）、印度（高估值内需）与中国（低估值内需+应用）间做三角轮动；国内产业政策/份额替代：当印度市场P/E突破22倍历史高位后，部分嫌弃印度过贵但又需规避AI芯片风险的全球价值基金，开始回补仅10倍P/E的港股内需巨头；估值与基本面预期差：A股海外算力链对美股芯片回调极度脆弱，而国内高股息与消费龙头则成为本土资金的“类孟买排灯节”防御阵地。"
+      },
+      "watch_indicators": [
+        "费城半导体指数（SOXX）与MSCI印度指数（MSCI India）的20日滚动收益率相关系数变化",
+        "印度国内共同基金月度系统性定投计划（SIP）净流入规模与外资（FII）在台韩印中四地的资金流向剪刀差",
+        "美股四大云巨头（Hyperscalers）下一季财报对AI基础设施CapEx ROI（投资回报率）的量化表态"
+      ]
+    },
+    {
+      "id": "819435fae63191e0",
+      "guid": "9ac6fbdd-0c14-4e93-82a4-679ad4bdb389",
+      "link": "https://www.economist.com/leaders/2026/11/12/chinas-emissions-are-falling-thank-self-interest",
+      "title": "China's emissions are falling. Thank self-interest",
+      "description": "And its technology is helping others fight climate change, too",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "leaders"
+      ],
+      "section_labels": [
+        "社论与纲领 (Leaders)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 83,
+      "fly_title": "Leaders | Results matter",
+      "dateline": "Nov 12th 2026|4 min read",
+      "lead_excerpt": "T HE CLIMATE does not care where the carbon dioxide accumulating in the atmosphere comes from. It simply takes note of how much there is and dispenses weather accordingly.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_LDP501.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:26",
+      "zh_title": "《经济学人》社论：中国碳排放迎来历史性下降——利己主义驱动的全球绿色技术通缩红利",
+      "theme_category": "大宗商品与能源",
+      "core_thesis": "中国碳排放量已越过结构性峰值并开始实质性下降，这一历史性拐点并非源于空洞的气候利他主义，而是由保障国家能源安全与培育新质生产力的“经济利己主义”所驱动；中国通过全产业链规模效应将全球光伏、风电及电池成本压降70%以上，不仅实现自身电力结构脱碳，更向全球发展中国家输出了一场可负担的绿色技术通缩；跨市场定价看，中国化石能源需求达峰将长期压制全球海运煤与原油远期曲线，同时确立中国绿电运营商与电网设备龙头的长周期现金流重估。",
+      "transmission_chain": [
+        "一阶冲击：中国风光装机与电动车普及率跨越临界点，叠加房地产向高端制造的经济结构转型，直接推动全国二氧化碳排放量进入结构性下行通道。",
+        "二阶传导（利率/监管/供应链/CapEx）：国家能源战略从“单纯扩建风光产能”转向“特高压消纳+电力市场化交易+碳排放双控”，绿电环境溢价与电网智能化CapEx全面提速。",
+        "美股EPS与估值映射：全球最大能源消费国需求达峰削弱传统跨国油气与煤炭巨头的长期终端价值（Terminal Value），而公用事业级储能与核电/电网自动化标的受益。",
+        "A股/港股映射与预期差：市场仍用周期股思维给中国电力与新能源定价，低估了“风光资本开支见顶后自由现金流拐点”以及全国碳市场（ETS）扩容对绿电运营商ROE的长期提振。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 6,
+        "sectors": [
+          "传统跨国油气与海运煤炭 (UW)",
+          "公用事业级储能与电网改造 (OW)",
+          "铜铝等能源转型关键金属 (OW)"
+        ],
+        "tickers": [
+          "XOM / CVX (埃克森美孚 / 雪佛龙) - [UW 低配 | 估值折现承压] 中国交通电气化与发电脱碳永久性削峰全球原油需求增长中枢，长期油价假设下调压制DCF估值",
+          "BTU / ARCH (皮博迪能源 / 阿奇资源) - [UW 低配 | 盈利趋势下行] 中国火电利用小时数被绿电结构性挤压，全球海运动力煤与冶金煤长期进口需求见顶",
+          "FCX (自由港麦克莫兰) - [OW 超配 | 盈利弹性] 中国主导的全球电气化与电网升级对精炼铜形成刚性耗用，对冲传统地产需求下滑",
+          "NEE / AES (NextEra Energy / AES) - [OW 超配 | 成本红利] 受益于中国供应链带来的全球电池储能与组件长期降本趋势，绿电项目IRR保持稳健",
+          "Pair Trade (配对交易) - [Long FCX / Short BTU] 做多深度受益于全球电网与新能源电气化浪潮的铜矿巨头，做空受制于中国碳达峰与燃煤替代的传统煤炭商"
+        ],
+        "deep_logic": "估值折现率冲击：中国碳排放实质性回落打破了传统化石能源多头“发展中国家化石消费永续增长”的长期假设，美股油气股Terminal Value面临系统性折价；EPS盈利弹性：中国清洁技术外溢拉低全球可再生能源平准化度电成本（LCOE），提升跨国绿电开发商的新增装机回报率；机构仓位与多空博弈：全球ESG基金与宏观商品基金正重新校准大宗商品多空头寸，从传统碳氢化合物转向铜、电网设备及核能/绿电运营商。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 8,
+        "sectors": [
+          "特高压与智能电网设备 (OW)",
+          "绿电运营商与核电龙头 (OW)",
+          "高能耗传统建材与落后煤化工 (UW)"
+        ],
+        "tickers": [
+          "许继电气 (000400.SZ) / 平高电气 (600312.SH) / 国电南瑞 (600406.SH) - [Conviction Buy 强推 | 订单与EPS高增] 碳减排核心瓶颈从发电侧转向电网消纳侧，特高压直流与配网智能化投资迎来三年高景气周期",
+          "龙源电力 (00916.HK) / 中国核电 (601985.SH) - [OW 超配 | 估值重塑] 碳排放权交易市场（ETS）扩容叠加绿证交易制度完善，绿电环境价值变现推动ROE企稳回升",
+          "长江电力 (600900.SH) - [OW 超配 | 现金流溢价] 水风光一体化基地调节价值凸显，零碳基荷电源享受确定性估值溢价",
+          "Pair Trade (配对交易) - [Long 国电南瑞 (600406.SH) / Short 高成本独立火电与落后水泥股] 做多能源转型刚需的电网自动化核心资产，做空受碳配额收紧与需求萎缩双重挤压的高碳周期股"
+        ],
+        "deep_logic": "外资与情绪传导：《经济学人》社论罕见正面肯定中国碳减排成效与全球气候贡献，有助于修复欧洲主权财富基金与ESG长线资金对中国新能源及公用事业资产的配置意愿；国内产业政策/份额替代：“能耗双控”全面转向“碳排放双控”，钢铁、电解铝、水泥纳入全国碳市场倒逼绿电直连与节能技改需求爆发；估值与基本面预期差：港股绿电板块PB跌破0.8倍，随着组件造价筑底、电网消纳改善及补贴欠款解决，板块正迎来从“重资产折价”向“高股息公用事业”的估值跃迁。"
+      },
+      "watch_indicators": [
+        "全国碳排放权交易市场（CEA）月度成交均价走势及水泥、钢铁、电解铝行业纳入配额管理的细则落地",
+        "国家电网月度电网工程投资完成额同比增速及特高压柔直设备招标中标金额",
+        "中国月度规上工业火电发电量与风光发电量同比增速剪刀差及全国新能源综合利用率数据"
+      ]
+    },
+    {
+      "id": "9e5bc25b4ae47801",
+      "guid": "738a9bd6-d17f-4783-94fc-6b0dc1c25b7d",
+      "link": "https://www.economist.com/business/2026/11/12/everything-is-going-wrong-for-softbank",
+      "title": "Everything is going wrong for SoftBank",
+      "description": "Masayoshi Son’s all-in bet on AI is looking shaky",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 80,
+      "fly_title": "Business | Egg on face",
+      "dateline": "Nov 12th 2026|4 min read",
+      "lead_excerpt": "A t the start of the summer, the outlook was sunny for SoftBank and its swashbuckling boss, Masayoshi Son. The giant investment firm briefly toppled Toyota as Japan’s most valuable company. At the end of June the net value of its assets reached ¥72.3trn ($445bn), an increase of 80% in just three months thanks to gains in its artificial-intelligence holdings. Mr Son crowed that investors had once again underestimated SoftBank (and himself), likening his creation to a goose laying golden eggs: “What matters is not the eggs. It is the goose itself.”",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBP503.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:28",
+      "zh_title": "软银帝国再度告急：孙正义“All-in AI”豪赌遭遇资产净值跳水与信贷违约阴云",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "软银集团在今夏资产净值（NAV）一度飙升80%至72.3万亿日元（约4450亿美元）并短暂超越丰田登顶日本市值第一后，近期因AI独角兽估值泡沫破裂与二级市场科技股回调而陷入全面困境；孙正义通过高杠杆质押Arm股权激进加注一级市场高溢价AI项目的商业模式，在AI算力商业化闭环受阻与利率高企环境下暴露出致命的脆弱性；跨市场定价看，软银NAV折价率再度走阔不仅敲响全球一级市场GenAI独角兽估值下修的警钟，更将引发二级市场高beta AI硬件股的去杠杆连锁反应。",
+      "transmission_chain": [
+        "一阶冲击：软银重仓的Arm及一二级市场AI投资组合估值大幅回撤，导致软银集团（9984.T）NAV显著缩水，市场重燃对其高负债率与追保风险（LTV恶化）的担忧。",
+        "二阶传导（利率/监管/供应链/CapEx）：作为全球AI创投市场最大的边际金主，软银投资节奏被迫收缩将直接冻结硅谷AI初创企业D轮以后的高估值融资并削减算力集群采购CapEx。",
+        "美股EPS与估值映射：依赖软银系资金输血或存在高估值溢价的芯片IP与二线云算力厂商面临订单及估值双杀，市场资金向具备内生自由现金流的超大盘科技巨头（Mega-cap Tech）集中。",
+        "A股/港股映射与预期差：软银历史上曾因流动性压力大举抛售阿里巴巴，其财务状况恶化将引发市场对港股/中概股潜在残余机构减持的警惕，同时压制国内纯概念亏损AI标的估值。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 8,
+        "sectors": [
+          "高估值芯片IP与二线AI算力租赁 (UW)",
+          "一级市场VC支持型亏损AI软件 (UW)",
+          "高自由现金流超大盘云巨头 (OW)"
+        ],
+        "tickers": [
+          "ARM (Arm Holdings) - [UW 低配 | 估值均值回归] 作为软银核心质押资产（持股约90%），高达60倍以上的远期P/E与低流通盘结构在软银去杠杆预期下面临剧烈估值压缩风险",
+          "NVDA / AMD (英伟达 / 超威半导体) - [EW 标配 | 边际买盘放缓] 软银千亿美元级AI芯片与数据中心宏伟蓝图受挫，削弱市场对非云巨头（Non-Hyperscaler）主权及创投算力采购的乐观预期",
+          "MSFT / GOOGL (微软 / 谷歌) - [OW 超配 | 防御性阿尔法] 坐拥每年超700亿美元内生经营现金流，在外部杠杆资金退潮期反而巩固其对AI独角兽的议价权与并购收割能力",
+          "Pair Trade (配对交易) - [Long GOOGL / Short ARM] 做多低估值、强现金流且具备自研TPU闭环的谷歌，做空估值极度昂贵且受软银资产负债表尾部风险拖累的Arm"
+        ],
+        "deep_logic": "估值折现率冲击：软银困境标志着全球AI投资从“不计成本的杠杆扩张期”转入“残酷的现金流检验期”，缺乏真实ARR（年度经常性收入）支撑的AI标的折现率陡增；EPS盈利弹性：若软银及愿景基金放缓对OpenAI生态及新型算力中心的盲目注资，二线GPU云服务商与高溢价IP授权商的远期盈利指引将面临下修；机构仓位与多空博弈：对冲基金正大举做空高P/S倍数的软银关联资产（如ARM）以对冲科技股多头账面风险，市场风格从高杠杆AI概念向高质地现金牛切换。"
+      },
+      "cn_market": {
+        "direction": "温和利空",
+        "score": 5,
+        "sectors": [
+          "高估值无业绩AI大模型概念股 (UW)",
+          "海外算力硬件二线供应商 (UW)",
+          "高现金流港股互联网巨头 (OW)"
+        ],
+        "tickers": [
+          "寒武纪-U (688256.SH) / 科创板亏损AI软件股 - [UW 低配 | 估值收缩] 软银AI投资受挫为全球AI泡沫敲响警钟，抑制A股游资与公募对高市销率亏损AI标的的风险偏好",
+          "阿里巴巴-W (09988.HK) - [OW 超配 | 利空出尽] 软银此前已通过远期合约基本清空阿里持仓，彻底摆脱软银提款机宿命，叠加自身高额回购与阿里云商业化提速具备独立抗跌性",
+          "联想集团 (00992.HK) / 浪潮信息 (000977.SZ) - [EW 标配 | 订单分化] 需警惕全球非一线云厂商AI服务器资本开支因融资环境收紧而出现订单推迟",
+          "Pair Trade (配对交易) - [Long 阿里巴巴-W (09988.HK) / Short 高估值纯概念AI应用股] 做多已脱离软银减持阴影且拥有强劲自由现金流与回购支撑的互联网龙头，做空缺乏商业化闭环的高估值AI概念股"
+        ],
+        "deep_logic": "外资与情绪传导：软银在东京市场的暴跌直接冲击亚太科技股风险偏好（Risk-on Sentiment），日股科技板块外溢资金有望部分回流估值更具性价比的港股龙头；国内产业政策/份额替代：硅谷与软银依靠天量金融杠杆堆砌大模型的模式遇挫，反而印证了中国互联网巨头聚焦“低成本工程化落地+垂直行业应用变现”务实路线的合理性；估值与基本面预期差：投资者需严格区分“依赖外部融资烧钱的AI伪成长”与“具有真实利润表支撑的AI赋能龙头”，后者在泥沙俱下中将显现错杀买点。"
+      },
+      "watch_indicators": [
+        "软银集团（9984.T）股价相对于其所持Arm等上市资产净值（NAV）的折价率（NAV Discount）扩大程度",
+        "软银集团贷款价值比（LTV Ratio）变化、日元信用违约掉期（CDS）利差走阔幅度及Arm股票质押融资动向",
+        "硅谷头部生成式AI独角兽（如OpenAI、Anthropic等）最新一轮一级市场私募融资估值与ARR倍数变化"
+      ]
+    },
+    {
+      "id": "a0ee1371d8168300",
+      "guid": "ad9ee0c9-babe-4479-9551-205527a40ea4",
+      "link": "https://www.economist.com/business/2026/11/12/a-franchise-revolution-is-stirring-in-china",
+      "title": "A franchise revolution is stirring in China",
+      "description": "It is bringing buzzy retail brands to every corner of the country—and beyond",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 80,
+      "fly_title": "Business | All over the shop",
+      "dateline": "Nov 12th 2026|NANCHANG AND SHANGHAI|5 min read",
+      "lead_excerpt": "Y ang Guofu spent much of the 1990s running from the _chengguan_, a dreaded troop of goons with the authority to rough up street vendors in the name of tidier cities. At the time he was grilling squid from a cart in a north-eastern town. Since then Mr Yang has turned his business into a global restaurant franchise with more than 7,000 outlets. His company, Yangguofu, dishes up a spicy Chinese soup known as _malatang_. Most of its shops are in China, but it has expanded to more than 20 other countries, opening in London and Rome last year, and in Luxembourg last month, far from the reach of the _chengguan_.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBP002.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:35",
+      "zh_title": "中国零售与餐饮特许加盟革命：从街头摊贩到万店连锁与全球化品牌输出",
+      "theme_category": "消费与医疗商业",
+      "core_thesis": "以杨国福麻辣烫（超7000家门店、遍布20余国）及蜜雪冰城、名创优品为代表的中国大众餐饮与零售品牌，正掀起一场席卷下沉市场并远征欧美的特许经营（Franchise）革命；在国内消费降级、商业地产租金下行以及地方产业升级被大举转投加盟创业的宏观背景下，品牌方通过“重数字化供应链+轻门店资产”的加盟模式实现了极致的资本回报率（ROIC）；跨市场定价看，中国供应链效率赋能的平价连锁巨头正打破欧美传统餐饮巨头在新兴市场乃至本土的垄断，重塑全球大众消费板块估值版图。",
+      "transmission_chain": [
+        "一阶冲击：中国现制茶饮、平价快餐与潮流杂货通过标准化加盟体系完成国内三四线城市高密度渗透，并加速向东南亚、欧洲及北美市场输出门店。",
+        "二阶传导（利率/监管/供应链/CapEx）：品牌总部的核心盈利模式从赚取终端零售差价转向“向加盟商销售标准化食材/商品+数字化SaaS管理费”，抗周期能力与现金流周转率大幅跃升。",
+        "美股EPS与估值映射：星巴克、麦当劳及百胜等美股跨国餐饮巨头在中国及东南亚面临本土极致性价比加盟品牌的降维打击，同店销售额（SSS）与单店利润率持续承压。",
+        "A股/港股映射与预期差：市场过度担忧国内餐饮内卷与关店潮，忽视了头部万店平台凭借规模化中央厨房供应链在海外高毛利市场复制成功的第二增长曲线。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 6,
+        "sectors": [
+          "跨国连锁咖啡与快餐巨头 (UW)",
+          "中概海外上市新消费连锁 (OW)",
+          "商业地产与跨境支付服务 (EW)"
+        ],
+        "tickers": [
+          "SBUX (星巴克) - [UW 低配 | 中国区EPS下修] 在中国下沉市场及东南亚面临瑞幸、库迪与蜜雪冰城加盟大军的价格战围剿，中国区同店销售（Comp Sales）与客单价双重承压",
+          "YUM / MCD (百胜餐饮 / 麦当劳) - [EW 标配 | 份额侵蚀] 中国本土中式快餐与汉堡加盟品牌（如塔斯汀、杨国福）快速抢占年轻客群与商圈点位，抑制外资品牌展店空间",
+          "MNSO (名创优品美股) - [OW 超配 | 海外高增驱动估值扩张] 依托中国极致供应链与代理加盟模式在欧美核心商圈高速拓店，海外高客单价带动集团毛利率持续创历史新高",
+          "LKNCY (瑞幸咖啡OTC) - [OW 超配 | 规模壁垒] 联营加盟模式筑牢下沉市场护城河，单杯履约成本优势令外资对手难以企及",
+          "Pair Trade (配对交易) - [Long MNSO / Short SBUX] 做多向全球输出中国高效供应链与加盟模式的名创优品，做空受困于中国市场份额流失与高企人工成本的星巴克"
+        ],
+        "deep_logic": "估值折现率冲击：过去十年美股跨国消费巨头（SBUX、YUM）凭借“中国中产扩容期权”享受25-30倍高P/E溢价，如今中国本土加盟革命彻底终结其超额增长叙事，触发估值中枢下移；EPS盈利弹性：中国连锁品牌将工业化预制供应链与加盟商自负盈亏机制结合，门店盈亏平衡点远低于美资直营店，迫使美企降价促销进而侵蚀营业利润率；机构仓位与多空博弈：长线消费基金正下调美股餐饮巨头亚太区盈利权重，转而增持具备全球开店弹性的中国平价连锁ADR。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 7,
+        "sectors": [
+          "平价茶饮与快餐连锁龙头 (OW)",
+          "潮流零售与黄金珠宝加盟 (OW)",
+          "餐饮供应链与速冻调味品 (OW)"
+        ],
+        "tickers": [
+          "名创优品 (09896.HK) / 百胜中国 (09987.HK) - [OW 超配 | 盈利确定性] 名创优品海外加盟与直营共振高增；百胜中国亦加速推进下沉市场特许加盟比例以提升ROIC与股东回报",
+          "古茗 (01364.HK) / 茶百道 (02555.HK) / 蜜雪冰城链 - [OW 精选龙头 | 份额集中] 行业洗牌期具备万店供应链规模壁垒与东南亚出海能力的头部加盟平台将收割尾部出清份额",
+          "安井食品 (603345.SH) / 颐海国际 (01579.HK) / 千味央厨 (001215.SZ) - [Conviction Buy 强推 | 卖水人逻辑] 无论终端哪个加盟品牌胜出，上游标准化速冻食材与复合调味料工业化渗透率均确定性提升",
+          "Pair Trade (配对交易) - [Long 安井食品 (603345.SH) / Short 纯直营重资产高客单价餐饮股] 做多受益于连锁加盟率提升的B端餐饮供应链龙头，做空受制于消费降级与高租金杠杆的纯直营正餐企业"
+        ],
+        "deep_logic": "外资与情绪传导：中国本土品牌在伦敦、罗马等欧洲核心城市的加盟门店扩张，扭转了外资对中国消费股“仅局限于内需存量博弈”的刻板印象；国内产业政策/份额替代：中国餐饮连锁化率已从五年前的13%跃升至22%以上，但距美国（54%）仍有翻倍空间，加盟模式是消化国内白领转型创业资金与下沉商圈铺位的核心载体；估值与基本面预期差：港股及A股大众餐饮与B端供应链估值已回调至15倍P/E以下的历史低位，海外门店单店UE跑通将带来戴维斯双击。"
+      },
+      "watch_indicators": [
+        "中国头部茶饮与快餐连锁品牌月度净增加盟门店数、加盟商闭店率及单店GMV同店同比变化",
+        "名创优品、百胜中国等上市连锁企业季报中海外门店营收占比及加盟管理费/供应链销售毛利率走势",
+        "A股餐饮供应链龙头（速冻丸滑、预制烘焙、复合调味品）大B端连锁客户订单金额同比增速"
+      ]
+    },
+    {
+      "id": "d3943136450deb8d",
+      "guid": "4d93782a-09c8-496d-9223-740422bbea07",
+      "link": "https://www.economist.com/china/2026/11/12/ted-plafker-a-stalwart-of-our-china-coverage-has-died",
+      "title": "Ted Plafker, a stalwart of our China coverage, has died",
+      "description": "He was a giant among Western journalists in the country",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "china"
+      ],
+      "section_labels": [
+        "中国专栏 (China)"
+      ],
+      "section_weights": [
+        10
+      ],
+      "relevance_score": 79,
+      "fly_title": "China | China hand",
+      "dateline": "Nov 12th 2026|1 min read",
+      "lead_excerpt": "C hina does not make reporting easy for foreign correspondents from the West. They are often harassed by local authorities when doing their jobs. They are routinely warned against reporting that offends the Communist Party. Resident visas can be hard to obtain. It is a difficult country for any Western journalist truly to call home.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_CNP503.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:36",
+      "zh_title": "《经济学人》资深中国通Ted Plafker逝世：西方驻华记者黄金时代落幕与跨国资本信息鸿沟加深",
+      "theme_category": "全球贸易与地缘",
+      "core_thesis": "深耕中国数十年的《经济学人》传奇驻华记者Ted Plafker（裴וט）逝世，文章在缅怀其职业生涯的同时，深刻揭示了当前西方驻华外媒面临的签证收紧、基层调查受阻与监管合规压力；随着兼具本土人脉与跨文化理解力的老一代“中国通”（China Hands）逐渐谢幕，叠加地缘政治摩擦导致的实地调研障碍，西方主流舆论与华尔街机构对中国的微观认知正日益走向碎片化与意识形态化；跨市场定价看，这种结构性的“信息不对称与认知赤字”将长期抬升外资配置中国资产的股权风险溢价（ERP），同时加剧跨国尽调合规与本土另类数据服务的价值重估。",
+      "transmission_chain": [
+        "一阶冲击：西方驻华资深记者与一线调研力量持续萎缩，导致欧美主流财经媒体与智库对中国地方经济、社会演进的实地颗粒度报道大幅减少。",
+        "二阶传导（利率/监管/供应链/CapEx）：华尔街长线基金（Long-only）与跨国企业董事会因缺乏可信的第三方独立微观信息源，在进行对华直接投资（FDI）与二级市场配置时要求更高的合规缓冲与风险补偿。",
+        "美股EPS与估值映射：深度依赖中国市场但面临中美双向合规审查的美股跨国巨头（苹果、特斯拉、美资投行及咨询机构）需承担更高的地缘摩擦成本与舆论合规折价。",
+        "A股/港股映射与预期差：外资“信息盲区”导致中概股与港股长期存在非理性地缘折价，但也为具备本土深度投研能力的中资南向资金与上市公司大额回购创造了极佳的定价权接管机会。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 3,
+        "sectors": [
+          "跨国金融数据与合规信息服务商 (OW)",
+          "高中国营收敞口的美股跨国消费/工业股 (UW)",
+          "美资精品投行与跨国咨询机构 (EW)"
+        ],
+        "tickers": [
+          "SPGI / MSCI / FDS (标普全球 / 明晟 / FactSet) - [OW 超配 | 刚需溢价] 实地人工调研受阻迫使全球机构高度依赖卫星遥感、供应链图谱与量化另类数据平台监测中国经济",
+          "AAPL / NKE (苹果 / 耐克) - [EW 标配 | 预期波动加大] 西方市场对中国本土消费趋势与国潮竞争格局的认知滞后，导致财报季大中华区业绩屡屡引发美股预期差剧震",
+          "FXI / KWEB (中国大盘股ETF / 中概互联网ETF) - [EW 标配 | 高ERP折价] 认知鸿沟导致欧美养老金难以回归战略性超配，板块表现更多受制于对冲基金战术性波段交易",
+          "Pair Trade (配对交易) - [Long SPGI / Short 高中国敞口传统美股可选消费] 做多提供全球供应链与量化信用数据的垄断服务商，规避因中美信息割裂而频遭业绩预判失误的传统跨国消费股"
+        ],
+        "deep_logic": "估值折现率冲击：信息透明度与可预测性是决定股权风险溢价（ERP）的核心变量，西方“中国通”断代加剧了美股市场对中概及涉华资产的“黑箱折价”（Black-box Discount）；EPS盈利弹性：直接基本面冲击有限，但跨国企业在华尽职调查、法务合规及公关成本呈刚性上升；机构仓位与多空博弈：欧美长线共同基金因投委会尽调合规门槛提高而持续低配涉华资产，使得美股中概ADR定价权高度集中于高频量化与宏观对冲基金手中，放大了财报季的隐含波动率（IV）。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 4,
+        "sectors": [
+          "高回购与高分红港股蓝筹 (OW)",
+          "本土金融信息终端与企业征信服务 (OW)",
+          "高度依赖外资审美溢价的纯概念股 (UW)"
+        ],
+        "tickers": [
+          "腾讯控股 (00700.HK) / 阿里巴巴-W (09988.HK) - [OW 超配 | 股东回报重估] 在外资因认知鸿沟给予低估值之际，管理层通过千亿级注销式回购直接向在岸投资者让渡高额EPS增厚",
+          "同花顺 (300033.SZ) / 指南针 (300803.SZ) - [OW 超配 | 本土定价权] 随着A股与港股定价权从外资北向资金向本土机构及个人投资者转移，本土金融数据与AI投研终端粘性持续强化",
+          "中芯国际 (00981.HK) / 华虹半导体 (01347.HK) - [OW 超配 | 内资主导定价] 彻底脱敏外资舆论偏见，估值完全由国内国产替代产业基金与南向资金主导",
+          "Pair Trade (配对交易) - [Long 高南向持股+高注销式回购港股龙头 / Short 外资重仓但基本面恶化的旧白马] 顺应“西退南进”的定价权转移趋势，做多内资具备绝对定价权与高股东回报的核心资产"
+        ],
+        "deep_logic": "外资与情绪传导：西方媒体圈“老中国通”的消逝象征着中美跨文化沟通缓冲带的变薄，欧美主动型外资回流A股/港股的叙事阻力长期存在；国内产业政策/份额替代：外资因信息不对称产生的“无差别低配”，加速了港股市场从“离岸外资定价”向“南向港股通内资定价”的结构性更替；估值与基本面预期差：当外资因为缺乏一线感知而将中国优秀跨国企业按7-9倍P/E抛售时，上市公司自身的强劲自由现金流回购与南向险资配置正构筑坚实的估值铁底。"
+      },
+      "watch_indicators": [
+        "港股通南向资金月度净买入额占港股主板日均成交额比重及外资长线基金（EPFR口径）对中国权益资产的仓位偏离度",
+        "中概股与恒生科技成分股季度注销式股票回购执行金额及隐含股权风险溢价（ERP）分位数变化",
+        "商务部与外商协会发布的季度外商直接投资（FDI）实际使用金额及跨国企业在华合规信心指数"
+      ]
+    },
+    {
+      "id": "838263af7525ce2a",
+      "guid": "eb8a70dd-f6fc-4d30-8387-6c451bc4e52d",
+      "link": "https://www.economist.com/china/2026/11/12/chinas-carbon-dioxide-emissions-have-begun-to-fall",
+      "title": "China’s carbon-dioxide emissions have begun to fall",
+      "description": "Its progress with electrification has been a big help",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "china"
+      ],
+      "section_labels": [
+        "中国专栏 (China)"
+      ],
+      "section_weights": [
+        10
+      ],
+      "relevance_score": 79,
+      "fly_title": "China | COphew",
+      "dateline": "Nov 12th 2026|BEIJING|5 min read",
+      "lead_excerpt": "I n the effort to slow the rise in global temperatures, no country matters more than China. It has been the biggest annual emitter of carbon dioxide for the past 20 years; its multitudes of factories, steel mills, cars and power plants released over 12bn tonnes of the gas last year, or nearly one-third of the world’s total. Still, that was a sliver less than the year before. In recent months, that fall has begun to speed up.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_CNP001.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:51",
+      "zh_title": "中国碳排放迎历史性拐点：全面电气化重塑全球能源与工业定价逻辑",
+      "theme_category": "大宗商品与能源",
+      "core_thesis": "原文核心事实：作为过去20年占全球碳排放近三分之一（年排放超120亿吨）的最大排放国，中国碳排放量去年已现微降，且近月降幅显著加速，核心驱动力来自终端全面电气化与风光装机爆发；经济学逻辑：高比例新能源并网与电动车渗透率突破临界点，正触发传统化石能源边际替代弹性非线性跃升，电网消纳与储能成为新资本开支核心瓶颈；跨市场定价结论：传统高碳大宗商品面临长期需求达峰折价，而中国具备全球成本统治力的电网设备、储能与绿电产业链迎来结构性估值重估。",
+      "transmission_chain": [
+        "一阶冲击：中国碳排放实质性跨越达峰拐点并加速下行，终端工业、交通与电力部门电气化率超预期跃升，直接削减动力煤与成品油边际消费需求。",
+        "二阶传导（利率/监管/供应链/CapEx）：资本开支重心从火电与传统炼化转向特高压、配网智能化及长时储能，同时中国低碳工业品在欧盟CBAM碳关税框架下获得相对成本优势。",
+        "美股EPS与估值映射：全球原油与动力煤远期需求曲线下移压制美股传统油气巨头远期终端价值（Terminal Value），而铜矿及电网自动化硬件商受益于全球电气化共振。",
+        "A股/港股映射与预期差：市场对中国新能源“产能过剩”的线性悲观预期面临修正，特高压、出海逆变器及绿电运营商迎来EPS兑现与DCF永续增长率上调的双击。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 6,
+        "sectors": [
+          "全球铜矿与电气化关键金属 (OW)",
+          "电网设备与能源管理软件 (OW)",
+          "传统油气开采与炼化巨头 (UW)",
+          "美国本土光伏组件制造 (EW)"
+        ],
+        "tickers": [
+          "FCX (Freeport-McMoRan) - [OW 超配 | EPS上修] 中国电气化与配网改造加速拉动全球精炼铜结构性紧缺，支撑铜价中枢与资源端利润弹性",
+          "ETN / GEV (伊顿 / GE Vernova) - [OW 超配 | 估值扩张] 全球电网升级与电气化周期共振，订单积压（Backlog）高能见度支撑高P/E溢价",
+          "XOM / CVX (埃克森美孚 / 雪佛龙) - [UW 低配 | 估值收缩] 中国交通电气化加速侵蚀全球增量原油需求峰值预期，压制长期DCF估值中枢",
+          "Pair Trade 配对交易：做多 FCX (电气化铜需求多头) / 做空 XLE (传统化石能源ETF)，捕捉全球能源转型加速下的跨品种相对收益"
+        ],
+        "deep_logic": "估值折现率冲击：中国碳排加速下行确认全球化石能源需求达峰周期提前，传统油气板块面临长期贴现率隐含风险溢价上行及终端估值（P/E与EV/EBITDA）结构性压缩。EPS盈利弹性：电气化深水区对铜材、变压器及智能电网调度软件形成刚性需求，美股电力设备与铜矿龙头2027年一致预期EPS具备5%~8%上修空间。机构仓位与多空博弈：海外长线LO资金正从传统能源高股息防御仓位撤出，切换至“电网基础设施+铜资源”多头组合。"
+      },
+      "cn_market": {
+        "direction": "强烈利好",
+        "score": 8,
+        "sectors": [
+          "特高压与智能配电网设备 (OW)",
+          "大储与工商储系统集成 (OW)",
+          "绿电运营商与核电资产 (OW)",
+          "传统高耗能焦煤与炼化 (UW)"
+        ],
+        "tickers": [
+          "宁德时代 (300750.SZ) / 阳光电源 (300274.SZ) - [Conviction Buy 强推 | EPS与估值双击] 国内外新型电力系统构网型储能需求爆发，盈利能力超越市场一致预期",
+          "平高电气 (600312.SH) / 思源电气 (002028.SZ) - [OW 超配 | EPS上修] 绿电跨区消纳倒逼国网特高压与主网投资维持高景气，海内外订单共振",
+          "中国电力 (02380.HK) / 龙源电力 (00916.HK) - [OW 超配 | 估值修复] 碳减排加速背景下绿电环境溢价与碳市场配额价值重估，PB估值处于历史底部区间",
+          "Pair Trade 配对交易：做多 思源电气 (002028.SZ) / 做空 山西焦煤 (000983.SZ)，博弈电气化深化对传统高碳原料的长期替代趋势"
+        ],
+        "deep_logic": "外资与情绪传导：《经济学人》对中国碳减排加速的确认将显著改善外资ESG基金与中国清洁能源板块的配置情绪，驱动北向与海外长线资金回流低碳硬科技龙头。国内产业政策/份额替代：能耗双控向碳排放双控全面转型，国家电网CapEx向配网扩容与构网型储能倾斜，头部设备商国内份额与出海毛利率双升。估值与基本面预期差：当前A股电网与储能龙头动态P/E仅15x~20x，尚未充分计价全球电气化外溢及国内碳市场扩容带来的ROE中枢抬升。"
+      },
+      "watch_indicators": [
+        "国家电网月度电网工程投资完成额同比增速及特高压设备招标批次中标单价变化",
+        "全国碳排放权交易市场（CEA）碳配额成交均价及水泥、钢铁等新纳入行业配额分配细则",
+        "中国月度新能源重卡与乘用车渗透率数据，以及火电发电量同比降幅与风光利用率指标"
+      ]
+    },
+    {
+      "id": "8878d0ce41093bf8",
+      "guid": "90d65872-b147-486d-be87-cb1fcb9a9baa",
+      "link": "https://www.economist.com/finance-and-economics/2026/11/12/the-return-of-the-snatch-and-grab-state",
+      "title": "The return of the snatch-and-grab state",
+      "description": "A new history of confiscation sheds light on modern economic warfare",
+      "pub_date_utc": "2026-11-12 10:40:24 UTC",
+      "pub_date_cst": "2026-11-12 18:40",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794480024.0,
+      "sections": [
+        "finance-and-economics"
+      ],
+      "section_labels": [
+        "财经与金融 (Finance & Economics)"
+      ],
+      "section_weights": [
+        10
+      ],
+      "relevance_score": 79,
+      "fly_title": "Finance & economics | Free Exchange",
+      "dateline": "Nov 12th 2026|5 min read",
+      "lead_excerpt": "A S A QUAKER, A. Mitchell Palmer did not relish conflict. In 1913 the American congressman turned down an offer to serve as secretary of war. But conflict in Europe challenged his pacifism. Six months after America joined the fight against Germany and Austria-Hungary in 1917, Palmer was appointed Alien Property Custodian. The job put him at the forefront of the economic battle against the two aggressors. Tasked with seizing enemy-owned assets across the American economy, his office hoovered up factories, stocks, buildings, patents and more. Soon it began auctioning these to raise money for the war effort. By 1918 Palmer was helping to finance the fighting with the enemies’ own wealth. Germany began the war as the world’s third-biggest foreign investor, after Britain and France. By the time the guns fell silent, more than half of its foreign assets had been confiscated.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_FND000.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:52",
+      "zh_title": "“掠夺型国家”回归：现代经济战下的主权资产没收风险与安全资产重定价",
+      "theme_category": "全球贸易与地缘",
+      "core_thesis": "原文核心事实：文章复盘一战时期美国外籍财产托管局（Palmer）没收并拍卖德国在美工厂、股票与专利（致使德国超半数海外资产被充公）的历史，指出主权与跨国私人资产没收正重回现代地缘经济战核心；经济学逻辑：当国际产权保护的制度公地被武器化，跨国FDI与外汇储备的“无风险”假设彻底瓦解，地缘风险溢价将内生化为跨境资本的永久性制度成本；跨市场定价结论：全球央行与主权基金将加速去单一法币化并增配黄金与本土硬资产，高地缘暴露的跨国企业面临估值折价。",
+      "transmission_chain": [
+        "一阶冲击：主权资产冻结与外资企业强制接管从历史极值事件演变为常态化地缘博弈工具，跨境产权安全边界实质性收缩。",
+        "二阶传导（利率/监管/供应链/CapEx）：全球南方国家央行加速削减美欧主权债配置比例并转向实物黄金，跨国巨头被迫推进“友岸外包”与供应链冗余建设，推升全球中枢通胀与CapEx成本。",
+        "美股EPS与估值映射：高度依赖全球化布局与海外重资产运营的跨国工业与消费巨头面临地缘折价，而黄金矿企、国防军工及主权云安全厂商获得长期估值溢价。",
+        "A股/港股映射与预期差：中资出海企业从“重资产欧美建厂”转向“轻资产技术授权+一带一路布局”，黄金与战略金属资源及自主可控产业链成为机构底仓配置核心。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 7,
+        "sectors": [
+          "黄金开采与贵金属流转商 (OW)",
+          "国防军工与国家安全科技 (OW)",
+          "高海外重资产暴露跨国工业股 (UW)",
+          "跨境金融清算与托管银行 (EW)"
+        ],
+        "tickers": [
+          "NEM / AEM (纽蒙特矿业 / 伊格尔矿业) - [OW 超配 | EPS与估值双击] 全球主权储备规避没收风险持续增持黄金，金价中枢上移带来显著自由现金流弹性",
+          "LMT / PLTR (洛克希德·马丁 / Palantir) - [OW 超配 | 估值扩张] 经济战与地缘对抗常态化驱动西方盟友防务及供应链情报分析预算刚性增长",
+          "CAT / DE (卡特彼勒 / 迪尔股份) - [UW 低配 | 估值收缩] 跨境关税、制裁与海外资产安全担忧抑制全球重资产工业CapEx周期扩张",
+          "Pair Trade 配对交易：做多 GDX (黄金矿业ETF) / 做空 高海外收入占比跨国工业股篮子，对冲主权产权武器化与去全球化摩擦风险"
+        ],
+        "deep_logic": "估值折现率冲击：海外资产征收风险上升迫使投资者上调跨国公司的股权风险溢价（ERP），同时非美央行减持美债的边际趋势抬升长端美债期限溢价（Term Premium），压制长久期高估值股票。EPS盈利弹性：供应链去风险化（De-risking）与重复建厂推高跨国企业SG&A与折旧成本，拉低标普500非美业务净利率；唯金矿与防务板块盈利逆势扩张。机构仓位与多空博弈：宏观对冲基金持续加仓实物黄金与矿企看涨期权，作为对冲尾部法币信用与资产冻结风险的核心工具。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 7,
+        "sectors": [
+          "黄金与战略小金属资源 (OW)",
+          "半导体与工业软件国产替代 (OW)",
+          "欧美重资产建厂出海制造业 (UW)",
+          "中资高股息央国企红利资产 (OW)"
+        ],
+        "tickers": [
+          "紫金矿业 (601899.SH / 02899.HK) / 山东黄金 (600547.SH) - [Conviction Buy 强推 | EPS上修] 央行购金长周期逻辑强化，资源自给率高企支撑业绩持续超预期",
+          "北方华创 (002371.SZ) / 中芯国际 (00981.HK) - [OW 超配 | 估值溢价] 海外知识产权与技术资产封锁风险倒逼国内晶圆厂与设备国产化率加速提升",
+          "中远海控 (601919.SH) / 欧美重资产建厂制造业 - [UW 短期规避 | 估值折价] 海外港口、工厂及股权投资面临更高CFIUS及欧盟外资审查与潜在征收风险折价",
+          "Pair Trade 配对交易：做多 紫金矿业 (601899.SH) / 做空 高度依赖欧美单一市场重资产产能的出口制造标的，规避海外地缘合规黑天鹅"
+        ],
+        "deep_logic": "外资与情绪传导：地缘经济战升温强化全球资本的“本土偏好”（Home Bias），外资对涉及敏感技术与跨境并购标的保持审慎，但内资险资与主权资金对本土核心资产配置意愿增强。国内产业政策/份额替代：面对海外资产扣押与专利战历史镜鉴，国内政策加速推动核心技术供应链闭环与跨境人民币结算（CIPS）替代，国产半导体与信创直接受益。估值与基本面预期差：市场已对出口关税充分计价，但对海外重资产FDI面临的产权折价及技术授权（Licensing）轻资产出海模式的估值分化尚未充分定价。"
+      },
+      "watch_indicators": [
+        "各国央行月度官方黄金储备增持吨数及美债海外官方持有者（TIC报告）仓位变化",
+        "欧美外资投资审查机制（美国CFIUS与欧盟FDI审查）对跨境并购与绿地投资的否决/附加条件案例数",
+        "伦敦金现（XAU/USD）与10年期美债实际收益率（TIPS）的背离幅度及隐含地缘风险溢价"
+      ]
+    },
+    {
+      "id": "355b805b285a8fb9",
+      "guid": "1fe47c76-409c-4124-b475-fd7a7b4d0783",
+      "link": "https://www.economist.com/finance-and-economics/2026/11/12/italys-proposed-exit-tax-causes-ructions",
+      "title": "Italy’s proposed exit tax causes ructions",
+      "description": "Taxing rich emigrants’ capital gains may be good in theory. Practice is harder",
+      "pub_date_utc": "2026-11-12 10:35:00 UTC",
+      "pub_date_cst": "2026-11-12 18:35",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794479700.0,
+      "sections": [
+        "finance-and-economics"
+      ],
+      "section_labels": [
+        "财经与金融 (Finance & Economics)"
+      ],
+      "section_weights": [
+        10
+      ],
+      "relevance_score": 79,
+      "fly_title": "Finance & economics | Fight or flight",
+      "dateline": "Nov 12th 2026|BERLIN|3 min read",
+      "lead_excerpt": "O nly a few days after Giorgia Meloni, Italy’s prime minister, said her draft budget bill for next year would contain an “exit tax” on wealthy emigrants’ capital gains, she was back-pedalling. On November 5th her deputy economy minister, Maurizio Leo, said the government was “open to changes”. From tax lawyers to politicians, critics have been vocal. They include Matteo Renzi, who as prime minister proposed a flat tax of €100,000 ($111,000) on rich immigrants’ income from abroad. Introduced in 2017, it has been credited with making Italy attractive to foreign professionals. A populist measure, he says, will waste a decade of work.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_FNP504.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:53",
+      "zh_title": "意大利“富人离境税”朝令夕改：欧洲财政困局与全球高净值资本争夺战",
+      "theme_category": "全球贸易与地缘",
+      "core_thesis": "原文核心事实：意大利总理梅洛尼在明年预算草案中拟对富豪移民征收资本利得“离境税”，但仅数日后便在11月5日迫于政商界强烈反弹宣布“对修改持开放态度”，因该举动威胁废掉2017年推出的10万欧元海外收入单一税红利；经济学逻辑：在高资本流动性时代，主权国家面临“拉弗曲线”约束与国际税收套利博弈，单边加征资本利得或离境税极易引发高净值人群与税基加速外逃；跨市场定价结论：欧洲财政整顿与税制摇摆削弱其对全球财富的吸引力，利好瑞士、中东及亚洲离岸财富管理中心与高端商业地产。",
+      "transmission_chain": [
+        "一阶冲击：意大利预算案“离境税”风波暴露出欧洲高负债国家在填补财政赤字与维持低税竞争优势之间的两难困境，引发欧洲高净值资本避险外流担忧。",
+        "二阶传导（利率/监管/供应链/CapEx）：英国废除非定居者（Non-dom）税制后意大利又现政策摇摆，加速全球家族办公室与超高净值人群（UHNWI）向瑞士、迪拜、新加坡及香港迁移。",
+        "美股EPS与估值映射：具备全球跨司法管辖区财富规划、另类资产配置能力的华尔街顶级投行与资管巨头受益于跨境资产重组与税务架构调整需求。",
+        "A股/港股映射与预期差：香港推进新资本投资者入境计划及家办税务宽减制度，在欧洲税制不确定性上升背景下承接全球与亚太回流财富，利好港股财富管理与交易所生态。"
+      ],
+      "us_market": {
+        "direction": "温和利好",
+        "score": 4,
+        "sectors": [
+          "全球财富管理与私人银行 (OW)",
+          "跨境另类资产管理巨头 (OW)",
+          "欧洲本土区域性银行与地产 (UW)"
+        ],
+        "tickers": [
+          "MS / GS (摩根士丹利 / 高盛) - [OW 超配 | EPS上修] 全球超高净值客户因应欧洲税制变动加速跨境信托与投资组合重构，拉动财富管理管理费（AUM fee）与咨询收入",
+          "BX / KKR (黑石 / KKR) - [OW 超配 | 估值扩张] 私人财富渠道（Private Wealth）配置半流动性另类基金需求旺盛，受益于家族办公室全球化多元配置趋势",
+          "UBS (瑞银集团) - [OW 超配 | EPS弹性] 意大利与英国税制红利动摇，强化瑞士作为欧洲最稳定离岸财富避风港的净新增资金（NNM）流入动能",
+          "Pair Trade 配对交易：做多 UBS / MS (全球跨区财富管理龙头) / 做空 EWI (MSCI意大利ETF)，规避意大利财政预算博弈与主权利差波动"
+        ],
+        "deep_logic": "估值折现率冲击：意大利预算草案引发的税制争议反映出欧元区外围国家财政整顿空间逼仄，意德10年期国债利差（BTP-Bund Spread）面临走阔压力，压制欧洲金融与内需资产估值。EPS盈利弹性：各国税制频繁变动显著提升跨国税务筹划与离岸资产架构调整需求，美股及瑞士头部私人银行高净值客户净流入（Net New Money）与托管费率维持坚挺。机构仓位与多空博弈：跨大西洋股票配置资金继续维持“超配美股金融与全球资管、低配欧洲财政脆弱国本土资产”的头寸结构。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 5,
+        "sectors": [
+          "港股跨国保险与财富管理 (OW)",
+          "香港金融基础设施与交易所 (OW)",
+          "欧洲敞口较高的大众消费出口 (EW)"
+        ],
+        "tickers": [
+          "友邦保险 (01299.HK) / 保诚 (02378.HK) - [OW 超配 | 估值修复] 受益于亚太及全球华人高净值财富向香港离岸中心集聚，高利润率储蓄与传承保单新业务价值（VONB）高增",
+          "香港交易所 (00388.HK) - [OW 超配 | EPS与估值共振] 香港家族办公室税制确定性对比欧洲政策摇摆优势凸显，中长期沉淀资金池扩容支撑港股流动性生态",
+          "汇丰控股 (00005.HK) / 渣打集团 (02888.HK) - [OW 超配 | 盈利稳健] 亚洲财富管理业务AUM与手续费收入双位数增长，有效对冲欧美降息周期净息差（NIM）收窄",
+          "Pair Trade 配对交易：做多 友邦保险 (01299.HK) / 做空 欧洲高敞口中资周期品标的，捕捉全球高净值财富向亚洲金融中心回流的结构性红利"
+        ],
+        "deep_logic": "外资与情绪传导：欧洲多国针对富人加税的民粹倾向引发全球家族办公室重新评估资产驻地，政策高度稳定且无资本利得税与离境税的香港及新加坡国际金融中心地位相对受益。国内产业政策/份额替代：香港特区政府持续优化新资本投资者入境计划与单一家族办公室税务宽减，直接承接从欧洲回流的亚太财富及中东增量资金。估值与基本面预期差：港股核心保险与国际银行股当前P/EV及P/B仍处于历史偏低分位，市场尚未充分计价全球离岸财富再分配带来的长期ROE提升。"
+      },
+      "watch_indicators": [
+        "意大利议会2027年预算案最终表决文本中关于资本利得税与10万欧元单一税条款的修订结果",
+        "意大利与德国10年期国债收益率利差（BTP-Bund Spread）是否突破150bps警戒线",
+        "香港与瑞士头部私人银行及保险机构季度财报披露的净新增资金（Net New Money）与新业务价值增速"
+      ]
+    },
+    {
+      "id": "68405673d76ec554",
+      "guid": "b9a09942-9b42-4481-adf0-eae0999f3324",
+      "link": "https://www.economist.com/business/2026/11/12/jensen-huang-is-out-his-successor-has-the-toughest-job-in-tech",
+      "title": "Jensen Huang is out. His successor has the toughest job in tech",
+      "description": "A company built around one man must now learn to run without him",
+      "pub_date_utc": "2026-11-12 14:28:59 UTC",
+      "pub_date_cst": "2026-11-12 22:28",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794493739.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 73,
+      "fly_title": "Business | After Jensen",
+      "dateline": "Nov 12th 2026(updated 8h ago)|SAN FRANCISCO|4 min read",
+      "lead_excerpt": "T WO OF THE world’s most valuable companies have changed bosses in recent months. They could hardly have done so more differently. At Apple, Tim Cook made way for John Ternus in September under what the iPhone-maker called a “long-term succession plan”. Nvidia’s succession plan lasted four days. Jensen Huang, the chip giant’s only boss in its 33-year history, never intended to leave. On November 8th he confessed to an affair; on November 12th, after further revelations about his private life, he resigned.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBP509.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:00:54",
+      "zh_title": "后黄仁勋时代的英伟达：科技界最严峻的接班大考与“去创始人化”组织重构",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "原文核心事实：与苹果库克向John Ternus的长期平稳交接截然不同，执掌英伟达33年的灵魂人物黄仁勋因11月8日承认婚外情及随后的私生活爆料，在短短4天内于11月12日闪电辞职；经济学逻辑：英伟达高度依赖黄仁勋个人远见的扁平化管理架构（60名高管直接汇报、无COO副手）面临突发性“关键人断层”，组织协调成本与战略转向摩擦将陡然上升；跨市场定价结论：英伟达所享受的“创始人愿景溢价”面临系统性重估，AI算力产业链定价权将从单一巨头垄断向第二供应商（AMD）及云厂商自研ASIC扩散。",
+      "transmission_chain": [
+        "一阶冲击：黄仁勋4天内闪电辞职打破英伟达33年单一强人统治架构，公司从无正式接班计划的扁平化体系被迫进入紧急权力交接期。",
+        "二阶传导（利率/监管/供应链/CapEx）：新任管理层需重建内部汇报层级并安抚超大规模云厂商（Hyperscalers），客户为对冲英伟达领导层过渡期路线图执行风险，将加速推进自研ASIC与AMD多供应商采购策略。",
+        "美股EPS与估值映射：英伟达中短期订单虽受在手合同保护，但远期市场份额垄断假设松动，导致Forward P/E估值倍数收缩，而博通、Marvell及AMD迎来配置资金分流与估值上修。",
+        "A股/港股映射与预期差：果链因John Ternus平稳接班强化硬件创新与AI端侧确定性，而A股算力链需从“单一绑定NVDA”转向“拥抱开放以太网、ASIC及国产算力”的多元化重估。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 9,
+        "sectors": [
+          "定制化AI芯片与ASIC产业链 (OW)",
+          "端侧AI生态与平稳交接科技巨头 (OW)",
+          "英伟达单一垄断溢价标的 (UW)",
+          "通用GPU第二供应商 (OW)"
+        ],
+        "tickers": [
+          "NVDA (英伟达) - [UW 短期规避 | 估值收缩] 丧失33年创始人掌舵溢价，无COO的扁平组织面临权力过渡摩擦，Forward P/E面临3x~5x结构性下修",
+          "AVGO / MRVL (博通 / 迈威尔科技) - [Conviction Buy 强推 | EPS与估值双升] 云巨头借英伟达换帅窗口加速自研XPU/ASIC部署以降低单一供应商风险，直接拉动定制芯片订单",
+          "AMD (超威半导体) - [OW 超配 | 份额预期上修] 微软、Meta等大客户在后黄仁勋时代提升第二GPU供应商采购权重的边际动力显著增强",
+          "AAPL (苹果) - [OW 超配 | 治理溢价] 库克向John Ternus的教科书级有序交接凸显治理稳健性，吸引从NVDA流出的超大型科技股避险资金",
+          "Pair Trade 配对交易：做多 AVGO + AMD 等权组合 / 做空 NVDA，博弈AI算力资本开支从“单一垄断”向“ASIC+多GPU多元化”加速分流"
+        ],
+        "deep_logic": "估值折现率冲击：黄仁勋的闪电离任消除了市场赋予英伟达的“不可替代创始人溢价”（Founder Premium），组织架构从60人直管向常规层级过渡的不确定性将推升隐含股权资本成本（Ke），引发P/E倍数向常规硬件龙头回归。EPS盈利弹性：未来2~3个季度业绩仍有Blackwell/Rubin积压订单支撑，但2027~2028年超额毛利率（75%+）面临大客户扶持ASIC与AMD压价的侵蚀风险。机构仓位与多空博弈：主动型多头基金在NVDA上的极端拥挤超配仓位将被迫再平衡，资金快速轮动至AVGO、AAPL及软件应用层。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 8,
+        "sectors": [
+          "苹果端侧AI硬件供应链 (OW)",
+          "开放以太网光模块与ASIC配套 (OW)",
+          "国产AI算力芯片与服务器 (OW)",
+          "纯英伟达专有协议绑定硬件商 (UW)"
+        ],
+        "tickers": [
+          "立讯精密 (002475.SZ) / 蓝思科技 (300433.SZ) - [OW 超配 | 订单确定性] 苹果硬件负责人John Ternus平稳接班巩固硬件工程创新主线，端侧AI换机周期确定性提升",
+          "中际旭创 (300308.SZ) / 新易盛 (300502.SZ) - [OW 超配 | 估值修复] 虽短期受NVDA情绪扰动，但云厂商扩容自研ASIC与以太网集群反而放大1.6T通用光模块需求弹性",
+          "寒武纪 (688256.SH) / 海光信息 (688041.SH) - [OW 超配 | 逻辑强化] 海外算力霸主突发管理层巨震，进一步强化国内智算中心加快国产AI芯片替代的战略紧迫性",
+          "Pair Trade 配对交易：做多 立讯精密 (002475.SZ) (治理稳健的果链核心) / 做空 纯NVDA专有供应链高估值小票，规避海外单一客户路线图调整风险"
+        ],
+        "deep_logic": "外资与情绪传导：美股NVDA换帅冲击波短期将通过纳指期货传染至A股达链（NVDA供应链），引发量化与动量资金条件反射式减仓；但苹果交接的稳健表现为消费电子板块提供锚定支撑。国内产业政策/份额替代：后黄仁勋时代若英伟达在生态封闭性（NVLink/CUDA）上的防御力边际弱化，开放以太网联盟（UEC）与多芯片互联标准将加速普及，利好中国具备全球产能优势的通用光通信与PCB龙头。估值与基本面预期差：A股市场易将“英伟达换帅”简单等同于“AI算力见顶”，实则全球AI CapEx总量未变而集中度分散，错杀的通用光模块与国产算力迎来买点。"
+      },
+      "watch_indicators": [
+        "英伟达董事会宣布的正式新任CEO人选背景（内部高管提拔vs外部空降）及核心工程高管留任率",
+        "北美四大云厂商（微软、谷歌、Meta、亚马逊）最新季度财报电话会关于自研ASIC与AMD采购比例的表态",
+        "NVDA相对SOX费城半导体指数的远期P/E估值溢价率收敛幅度及期权隐含波动率（IV）期限结构变化"
+      ]
+    },
+    {
+      "id": "3ed9d60716beded1",
+      "guid": "c9b0934f-f551-4d26-9b96-fc5c47d6b002",
+      "link": "https://www.economist.com/business/2026/11/12/jensen-huangs-recklessness-leaves-nvidia-with-no-good-options",
+      "title": "Jensen Huang’s recklessness leaves Nvidia with no good options",
+      "description": "His affair will bring lasting damage to the company",
+      "pub_date_utc": "2026-11-12 10:20:28 UTC",
+      "pub_date_cst": "2026-11-12 18:20",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794478828.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 73,
+      "fly_title": "Business | CUDA known better",
+      "dateline": "Nov 12th 2026|San Francisco|6 min read",
+      "lead_excerpt": "_Editor’s note: Jensen Huang resigned on November 12th._",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBD003.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:01:01",
+      "zh_title": "“CUDA早该料到”：黄仁勋个人鲁莽行为令英伟达陷入治理与战略无解困局",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "原文核心事实：在11月12日黄仁勋正式辞职后，文章深度剖析其私生活丑闻对英伟达造成的持久性伤害——由于公司战略、生态构建与商业谈判高度绑定其个人声誉，董事会陷入“留任则招致合规反噬、辞退则引发战略真空”的双输困局；经济学逻辑：当技术垄断巨头的护城河（CUDA软硬一体与年度架构迭代节奏）高度依赖创始人强人威权协调时，突发性治理危机将削弱其对上下游供应链的议价霸权；跨市场定价结论：英伟达的ESG治理评分与机构持仓上限面临下调，台积电等晶圆代工核心节点及开源软件生态在产业链中的相对博弈地位上升。",
+      "transmission_chain": [
+        "一阶冲击：黄仁勋因个人鲁莽丑闻辞职暴露出英伟达长期存在的公司治理（Corporate Governance）短板与关键人风险（Key-Man Risk）失控。",
+        "二阶传导（利率/监管/供应链/CapEx）：严格遵循ESG与治理合规准则的欧美养老金与主权基金被迫下调NVDA持仓权重，同时公司在推动高难度Rubin架构迭代及主权AI大单谈判时的顶层推进力受损。",
+        "美股EPS与估值映射：英伟达在供应链（CoWoS封装配额锁死）与软件端（CUDA商业化变现）的极端溢价能力弱化，软件生态竞争对手与开源AI框架迎来突围窗口。",
+        "A股/港股映射与预期差：A股AI硬件映射逻辑从“炒作英伟达独家技术路径（如特定铜连接/液冷专案）”转向“受益于行业标准开放化与云厂商白盒化”的通用硬件龙头。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 8,
+        "sectors": [
+          "晶圆代工与先进封装核心枢纽 (OW)",
+          "AI云平台与开源软件生态 (OW)",
+          "英伟达及强绑定专有硬件生态 (UW)",
+          "企业级治理合规与大型云服务商 (OW)"
+        ],
+        "tickers": [
+          "NVDA (英伟达) - [UW 低配 | 治理折价] 董事会危机处理暴露治理脆弱性，主权AI业务（Sovereign AI）与超大型政企公关能力因黄仁勋离场受损",
+          "TSM (台积电) - [Conviction Buy 强推 | 议价权提升] 无论英伟达、AMD或云厂ASIC谁占上风均需争夺台积电先进制程与CoWoS产能，且英伟达换帅后对代工提价的抗拒力减弱",
+          "MSFT / META (微软 / Meta) - [OW 超配 | CapEx议价改善] 作为英伟达最大买方，趁其管理层动荡期在下一代GPU采购定价及推动Triton/PyTorch去CUDA化上获得更大主动权",
+          "Pair Trade 配对交易：做多 TSM (先进制程确定性卖铲人) / 做空 NVDA，剥离单一芯片设计商的治理与关键人风险，锁定全球AI算力底层物理刚需"
+        ],
+        "deep_logic": "估值折现率冲击：机构投资者将在DCF模型中计入更高的公司治理折价（Governance Discount），尤其是黄仁勋亲自推动的“主权AI”叙事（各国元首级直接推销）难以被继任者复制，削弱远期TAM扩张预期。EPS盈利弹性：若缺乏黄仁勋的铁腕跨部门协调，英伟达“一年一代架构”的极限研发节奏若出现1~2个季度的延期（Slippage），将直接冲击2027财年营收增速与高达75%的毛利率防线。机构仓位与多空博弈：ESG合规约束型基金面临机械式减仓压力，卖方一致预期目标价进入密集下调通道。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 7,
+        "sectors": [
+          "国产大模型与AI算力云服务 (OW)",
+          "半导体先进封装与测试产业链 (OW)",
+          "英伟达独家认证边缘供应链 (UW)",
+          "通用服务器ODM与交换机 (OW)"
+        ],
+        "tickers": [
+          "长电科技 (600584.SH) / 通富微电 (002156.SZ) - [OW 超配 | 景气确定] AMD与各类ASIC芯片订单崛起带动非NVDA阵营先进封装外溢需求，封测稼动率维持高位",
+          "紫光股份 (000938.SZ) / 锐捷网络 (301165.SZ) - [OW 超配 | 份额扩张] 英伟达InfiniBand专有网络推力因换帅减弱，利好基于开放以太网标准的白盒交换机厂商",
+          "腾讯控股 (00700.HK) / 阿里巴巴-W (09988.HK) - [OW 超配 | ROI改善] 全球GPU一家独大溢价松动有助于降低国内云巨头未来算力采购TCO成本，提升AI资本开支投资回报率",
+          "Pair Trade 配对交易：做多 锐捷网络 (301165.SZ) (开放以太网受益者) / 做空 仅依靠NVDA单一架构认证题材炒作的高溢价概念股"
+        ],
+        "deep_logic": "外资与情绪传导：英伟达治理危机促使外资科技基金重新审视全球AI供应链的集中度风险，港股互联网巨头因估值低廉且受益于算力硬件买方议价权回升，成为亚太科技资金避风港。国内产业政策/份额替代：英伟达在CUDA软件生态与NVLink硬件捆绑上的统治力若因核心领导层更迭出现裂痕，将加速国内智算中心向开源算子库及国产异构算力集群迁移。估值与基本面预期差：A股此前对“英伟达独供”给予过高估值溢价，随着算力生态向开放标准回归，具备规模制造优势的通用服务器、交换机与封测龙头迎来估值纠偏。"
+      },
+      "watch_indicators": [
+        "英伟达下一代GPU架构（Rubin及后续系列）流片与量产时间表是否出现官方微调或供应链排期延后",
+        "MSCI与Sustainalytics等主流评级机构对英伟达ESG及公司治理（Governance）分项评级的调整动作",
+        "开源AI编译器（如OpenAI Triton）及AMD ROCm生态在主流大模型训练中的代码提交量与渗透率变化"
+      ]
+    },
+    {
+      "id": "2de0f07a0043ec89",
+      "guid": "cd5cca13-57bc-45b6-b697-34338fa0b007",
+      "link": "https://www.economist.com/business/2026/11/11/there-has-never-been-a-scandal-like-the-jensen-huang-affair",
+      "title": "There has never been a scandal like the Jensen Huang affair",
+      "description": "A journey through the annals of corporate crises",
+      "pub_date_utc": "2026-11-11 21:56:28 UTC",
+      "pub_date_cst": "2026-11-12 05:56",
+      "pub_day": "2026-11-11",
+      "timestamp": 1794434188.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 73,
+      "fly_title": "Business | Schumpeter",
+      "dateline": "Nov 11th 2026(updated 9h ago)|5 min read",
+      "lead_excerpt": "_Editor’s note (November 12th 2026): This article has been updated to take account of Jensen Huang’s resignation._",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBD000.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:01:16",
+      "zh_title": "熊彼特专栏：商业史上空前的“黄仁勋丑闻”——超级巨头关键人崩塌与美股集中度重估",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "原文核心事实：文章在黄仁勋11月12日辞职后更新，纵览现代商业史上的企业危机（对比惠普Mark Hurd、英特尔Krzanich、波音Stonecipher等先例），指出从未有一家处于全球市值之巅、承担整个宏观技术革命核心支点的公司遭遇如此剧烈的创始人私德丑闻与闪辞冲击；经济学逻辑：在标普500指数市值集中度创百年极值的结构下，最大权重股的“特殊风险（Idiosyncratic Risk）”已异化为全市场的“系统性风险（Systematic Risk）”；跨市场定价结论：美股“七巨头（Mag-7）”极致的抱团溢价将被迫瓦解，驱动全球权益资金向美股等权指数（SPW）及低估值中国资产进行跨市场再平衡。",
+      "transmission_chain": [
+        "一阶冲击：商业史上首例“全球市值第一梯队核心引擎+不可替代技术教父”因私生活丑闻闪辞事件，彻底击穿机构对超大盘科技股“大而不能倒、稳如主权债”的信仰。",
+        "二阶传导（利率/监管/供应链/CapEx）：华尔街风控模型被迫重新评估标普500与纳指100的单一成分股集中度上限，触发量化风险平价基金与被动/主动混合资金降低Mag-7权重。",
+        "美股EPS与估值映射：美股市场宽度（Market Breadth）迎来剧烈均值回归，资金从高估值AI硬件权重股溢出，流向标普500等权成分股（工业、金融、医疗）及软件应用层。",
+        "A股/港股映射与预期差：美股AI硬件信仰松动打破全球资金单边虹吸效应，亚太配置型外资增配估值处于历史洼地、具备治理确定性与股东回报的港股互联网及A股核心资产。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 8,
+        "sectors": [
+          "标普500等权指数与非美科技价值股 (OW)",
+          "企业级AI软件与SaaS应用层 (OW)",
+          "超大盘硬件权重股与市值加权科技ETF (UW)",
+          "高治理标准防御性蓝筹与金融板块 (OW)"
+        ],
+        "tickers": [
+          "RSP (标普500等权重ETF) - [Conviction Buy 强推 | 估值均值回归] 历史级商业丑闻刺破市值加权指数的极端集中度泡沫，资金从头部科技权重向其余493只成分股扩散",
+          "CRM / NOW (Salesforce / ServiceNow) - [OW 超配 | 资金轮动受益] AI投资叙事从“高度集中且有治理瑕疵的底层芯片”转向“商业治理成熟的企业级AI Agent软件变现”",
+          "NVDA / QQQ (英伟达 / 纳指100市值加权ETF) - [UW 低配 | 集中度去杠杆] 单一巨头黑天鹅引发组合风险预算（VaR）超标，触发机构被动降仓与波动率放大",
+          "BRK.B / JPM (伯克希尔 / 摩根大通) - [OW 超配 | 避险溢价] 具备深厚管理层梯队与严格公司治理传统的价值蓝筹承接从科技股溢出的低风险偏好长线资金",
+          "Pair Trade 配对交易：做多 RSP (标普500等权重ETF) / 做空 SPY (标普500市值加权ETF)，直接做空美股历史极值的头部集中度溢价"
+        ],
+        "deep_logic": "估值折现率冲击：黄仁勋丑闻成为商业史分水岭，证明即便万亿级科技帝国也无法免疫个人道德风险，市场对Mag-7长期充当“准无风险现金流资产”的认知逆转，市值加权指数整体P/E面临结构性下修。EPS盈利弹性：事件本身不改变美国宏观经济与非科技行业盈利韧性，标普493成分股EPS增速与Mag-7的剪刀差正在收敛，支撑市场宽度扩张。机构仓位与多空博弈：全球养老金与共同基金面临严格的单一标的集中度合规审查，主动管理人借机削减科技巨头超配头寸以锁定年度相对收益。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 6,
+        "sectors": [
+          "港股低估值互联网与平台经济龙头 (OW)",
+          "A股沪深300核心蓝筹与高股息央企 (OW)",
+          "美股AI映射高估值题材股 (UW)"
+        ],
+        "tickers": [
+          "腾讯控股 (00700.HK) / 美团-W (03690.HK) - [Conviction Buy 强推 | 跨市场重估] 美股头部科技股抱团松动促使全球再平衡资金寻找高性价比替代品，港股科技龙头以12x~15x P/E及强回购提供极高安全边际",
+          "贵州茅台 (600519.SH) / 招商银行 (600036.SH) - [OW 超配 | 外资回流] 全球权益组合去美股集中度过程中，具备稳健现金流与完善治理机制的中国核心资产配置价值凸显",
+          "中证A500指数ETF (159338.SZ) - [OW 超配 | 宽基吸金] 行业分布均衡、规避单一巨头风险的中国新一代核心宽基指数，承接海内外长线配置型资金流入",
+          "Pair Trade 配对交易：做多 恒生科技指数 (HSTECH) / 做空 纳斯达克100指数 (NDX)，博弈全球科技股估值裂口收敛与跨市场资金再平衡"
+        ],
+        "deep_logic": "外资与情绪传导：过去两年全球资金极端拥挤于“做多美股AI巨头、低配中国资产”的杠铃交易；英伟达史诗级治理黑天鹅将打破美股科技不败神话，触发全球宏观对冲基金平仓“Long US Tech / Short China”配对头寸。国内产业政策/份额替代：新“国九条”与市值管理指引持续强化A股与港股上市公司治理规范、分红与注销式回购，提升中国资产在全球比价中的治理吸引力。估值与基本面预期差：恒生科技与沪深300相对标普500的估值折价率仍处历史极值，美股集中度瓦解带来的边际外资流入将产生显著的估值修复弹性。"
+      },
+      "watch_indicators": [
+        "标普500等权指数（RSP）相对市值加权指数（SPY）的周度超额收益及前十大权重股占比变化",
+        "EPFR全球跨境资金流向监测中美股科技基金净流出规模与新兴市场/中国股票基金净流入数据",
+        "CBOE隐含相关性指数（COR1M）与VIX恐慌指数走势，验证单一股票风险是否演化为美股系统性去杠杆"
+      ]
+    },
+    {
+      "id": "85fb0dda3eed9bfb",
+      "guid": "91fde12e-a295-4e99-9013-1763ffb7f4aa",
+      "link": "https://www.economist.com/leaders/2026/11/12/why-you-should-expect-an-ai-crash",
+      "title": "Why you should expect an AI crash",
+      "description": "But not necessarily a financial cataclysm",
+      "pub_date_utc": "2026-11-12 09:54:50 UTC",
+      "pub_date_cst": "2026-11-12 17:54",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794477290.0,
+      "sections": [
+        "leaders"
+      ],
+      "section_labels": [
+        "社论与纲领 (Leaders)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 69,
+      "fly_title": "Leaders | Our cover",
+      "dateline": "Nov 12th 2026|5 min read",
+      "lead_excerpt": "C ould the news be much more dramatic? Artificial-intelligence models keep growing more powerful, faster than almost anyone predicted. Next week Anthropic, a frontier model-maker, is expected to list its shares in what could be the biggest-ever IPO of an AI firm. Yet in some ways the AI boom is looking wobbly. A sex-and-spying scandal is rocking Nvidia, the top chipmaker. America’s Democratic Party, having won the midterms, is raring to go after data centres and Trump-adjacent tech titans. Some fear an almighty tech bust is coming. How worried should the world be?",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_LDD001_FH.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:01:32",
+      "zh_title": "为何应当预判一场AI泡沫破裂：虽有估值出清，但绝非系统性金融浩劫",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "前沿大模型商Anthropic即将迎来史上最大规模AI IPO，但英伟达深陷治理与间谍丑闻，且赢得中期选举的民主党正准备对数据中心能耗与亲特朗普科技巨头发起严厉监管清算；通用技术革命初期普遍存在资本过度集中与政治周期反噬，但当前AI基建主要由科技巨头高自由现金流而非高杠杆债务驱动，资产负债表韧性阻断了次贷式传染链条；跨市场定价将从“算力狂热”转向“去伪存真”，美股AI硬件面临P/E估值倍数收缩，而低估值、具备内生现金流护城河的中资互联网龙头与高股息防御资产将迎来相对收益重估。",
+      "transmission_chain": [
+        "一阶冲击：Anthropic天量IPO抽水效应叠加英伟达治理丑闻与美国国会民主党监管转向，触发AI板块高处不胜寒的获利了结与情绪见顶。",
+        "二阶传导（利率/监管/供应链/CapEx）：民主党针对数据中心电网负荷、反垄断及环保审查收紧，迫使北美超大规模云商（Hyperscalers）放缓激进的AI算力CapEx扩张斜率。",
+        "美股EPS与估值映射：半导体与算力基建板块面临Forward P/E从35x+向均值回归的估值下杀（De-rating），市场采取Long防御型软件与现金牛、Short高Beta算力硬件的配对策略。",
+        "A股/港股映射与预期差：海外AI算力链映射标的短期承压，但全球多头资金从拥挤的美股Mag-7溢出，估值处于历史低位且股东回报率（回购+分红）清晰的港股互联网与国产自主算力形成显著预期差。"
+      ],
+      "us_market": {
+        "direction": "温和利空",
+        "score": 8,
+        "sectors": [
+          "AI算力芯片与服务器硬件 (UW 低配)",
+          "第三方高杠杆数据中心与电力配套 (UW 低配)",
+          "企业级防御型软件与高现金流医疗/必需消费 (OW 超配)"
+        ],
+        "tickers": [
+          "NVDA (英伟达) - [UW 短期规避 | 估值与治理双杀] 治理丑闻叠加下游CapEx审视，短期面临机构降仓与P/E倍数压缩",
+          "VST / CEG (Vistra / Constellation Energy) - [UW 低配 | 政策逆风] 民主党中期选举获胜后针对数据中心耗电与电价补贴的监管审查升温",
+          "MSFT / GOOGL (微软 / 谷歌) - [EW 标配 | 现金流防御] 虽受AI估值回调拖累，但庞大经营性现金流足以缓冲非系统性科技泡沫出清",
+          "BRK.B / JNJ (伯克希尔 / 强生) - [OW 超配 | Pair Trade多头腿] 承接从高拥挤度AI科技股轮动撤出的避险与价值配置资金"
+        ],
+        "deep_logic": "1. 估值折现率冲击：监管不确定性溢价与公司治理风险推升股权风险溢价（ERP），AI算力硬件板块难以维持完美定价，P/E估值倍数面临15%~25%的均值回归收缩；2. EPS盈利弹性：由于AI投资主要由巨头账面现金而非银行信贷融资支持，即便泡沫破裂也不会引发信贷冻结或宏观经济衰退，标普500非科技板块EPS具备极强抗跌韧性；3. 机构仓位与多空博弈：长线LO与对冲基金在AI硬件上的多头拥挤度处于历史极值，Anthropic IPO成为流动性虹吸拐点，建议执行Long低波红利/防御软件 vs Short高估值算力硬件的Pair Trade。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 7,
+        "sectors": [
+          "海外算力供应链/光模块与服务器代工 (UW 低配)",
+          "港股核心互联网平台与低估值现金牛 (OW 超配)",
+          "国产信创与自主可控算力芯片 (OW 超配)"
+        ],
+        "tickers": [
+          "中际旭创 (300308.SZ) / 新易盛 (300502.SZ) - [EW 下调至标配 | 情绪与估值压制] 受英伟达丑闻与北美数据中心监管预期拖累，短期面临外资与机构获利回吐",
+          "工业富联 (601138.SH) - [UW 短期规避 | 订单斜率担忧] 海外AI服务器资本开支节奏重估压制估值上限",
+          "腾讯控股 (0700.HK) / 阿里巴巴-W (9988.HK) - [OW 超配 | 估值洼地+资本开支纪律] 资本开支远比美股同行克制，千亿级回购叠加AI渐进变现提供极高安全边际",
+          "寒武纪-U (688256.SH) / 海光信息 (688041.SH) - [OW 超配 | 独立内循环逻辑] 免疫于美国民主党内部监管博弈，受益于国内政企算力国产化刚性替代"
+        ],
+        "deep_logic": "1. 外资与情绪传导：美股AI泡沫降温将在短期内通过供应链映射压制A股光模块、PCB及服务器代工板块的风险偏好，但全球资金再平衡（Rebalancing）有望推动部分外资从高估值的美股科技流向低估值的新兴市场核心资产；2. 国内产业政策/份额替代：中国AI发展高度聚焦产业端降本增效与自主可控，不受美国两党针对本土数据中心政治清算的干扰；3. 估值与基本面预期差：港股科技龙头Forward P/E仅12x~15x，远低于美股同行且未计入任何AI泡沫溢价，建议配对交易：Long腾讯/阿里（高自由现金流收益率）vs Short纯海外映射高估值硬件。"
+      },
+      "watch_indicators": [
+        "Anthropic IPO最终定价区间、首日换手率及机构基石认购倍数对二级市场AI流动性的抽水幅度",
+        "美国国会民主党能源与商业委员会针对大型数据中心电网接入及科技巨头反垄断听证会的具体议程",
+        "英伟达内部治理丑闻调查进展、高管层变动通报及下季度Blackwell/后续架构出货指引是否下修"
+      ]
+    },
+    {
+      "id": "43f32817179dd9dd",
+      "guid": "7449f2a0-89a8-4ee3-9005-43cc134683c2",
+      "link": "https://www.economist.com/briefing/2026/11/12/can-the-ai-boom-make-enough-money-to-sustain-itself",
+      "title": "Can the AI boom make enough money to sustain itself?",
+      "description": "Wall Street has started to worry",
+      "pub_date_utc": "2026-11-12 09:54:13 UTC",
+      "pub_date_cst": "2026-11-12 17:54",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794477253.0,
+      "sections": [
+        "briefing"
+      ],
+      "section_labels": [
+        "深度专题 (Briefing)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 69,
+      "fly_title": "Briefing | Anticipating roaring revenue",
+      "dateline": "Nov 12th 2026|14 min read",
+      "lead_excerpt": "B oth artificial intelligence and the tricky business of valuing stocks boil down to questions of timelines. Establishing what a company is worth is a hazy exercise at the best of times, full of courageous assumptions about which cashflows will arrive when. Consider, too, timelines for AI—the years, few or many, until the technology’s capabilities surpass humans’—and the exercise veers into incoherence.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_FBD001.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:01:33",
+      "zh_title": "AI繁荣能否赚到足以自我维持的真金白银？华尔街开始重估商业化时间表",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "华尔街对AI股票的估值正陷入“现金流兑现时间表”与“AGI技术演进时间表”高度错配的困境，数千亿美元算力资本开支（CapEx）与当前滞后的软件端增量营收（ARR）之间裂口扩大；根据贴现现金流（DCF）与资本回报率（ROIC）框架，硬件折旧周期仅3~5年，而企业级AI大规模商业化变现被推迟至远期，导致科技巨头自由现金流（FCF）转换率阶段性恶化；市场定价重心正从“军备竞赛式的CapEx投入”强制切换至“可验证的AI ROI与净利润贡献”，具备高粘性场景与B端/C端即时变现能力的AI应用层将跑赢纯重资产算力基建。",
+      "transmission_chain": [
+        "一阶冲击：买方机构严苛审视AI投入产出比（ROI），对超大规模云商天量CapEx却缺乏匹配营收增速的质疑全面升温。",
+        "二阶传导（利率/监管/供应链/CapEx）：巨额GPU折旧费用（D&A）开始集中计入损益表侵蚀营业利润率，倒逼云巨头优化算力采购节奏并向B端软件客户转嫁成本。",
+        "美股EPS与估值映射：重资产投入但变现路径模糊的科技股遭遇DCF久期惩罚与EPS下修风险，具备确定性席位费/调用量提价权的垂直SaaS与数据分析龙头获得重估。",
+        "A股/港股映射与预期差：国内大模型早已放弃“盲目烧钱堆算力”模式而转向高性价比架构与垂直行业落地，A股/港股应用端与轻资产AI赋能标的展现出更优的ROIC斜率。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 9,
+        "sectors": [
+          "超大规模云基础设施与重资产算力 (UW 低配)",
+          "AI原生企业数据平台与垂直应用软件 (OW 超配)",
+          "半导体设备与高带宽存储HBM (EW 标配)"
+        ],
+        "tickers": [
+          "META / AMZN (Meta / 亚马逊) - [EW 标配 | 折旧压制利润率] 巨额AI资本开支推高未来两年折旧摊销成本，需证明广告与云业务的超额ROIC以维持估值",
+          "PLTR / NOW (Palantir / ServiceNow) - [OW 超配 | AI商业化兑现先锋] 率先将大模型转化为企业工作流自动化订单，AI增量ARR与EPS上修确定性最高",
+          "CRM / ADBE (Salesforce / Adobe) - [EW 标配 | 变现周期拉长] AI Agent商业化提价速度慢于市场预期，估值受制于传统席位制向消费制转型的阵痛",
+          "AMD / SMCI (超威半导体 / 超微电脑) - [UW 低配 | CapEx放缓高弹性受损] 若云巨头因ROI焦虑削减二线算力采购预算，二线硬件供应商将首当其冲面临EPS下修"
+        ],
+        "deep_logic": "1. 估值折现率冲击：在长端利率高企环境下，DCF模型对远期（5~10年后）才兑现的AGI故事极度敏感，现金流久期过长的AI概念股面临严重的估值倍数折价；2. EPS盈利弹性：过去两年云巨头的CapEx正转化为未来12~24个月高达数百亿美元的折旧费用，若AI软件收入增速低于30%临界点，科技七巨头将面临营业利润率（OPM）见顶回落与EPS下修；3. 机构仓位与多空博弈：华尔街正从“买铲子”转向“查账本”，建议配对交易：Long具备真实AI合同变现能力的企业级软件（PLTR/NOW）vs Short缺乏护城河的二线算力硬件与纯概念AI股。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 6,
+        "sectors": [
+          "A股/港股AI垂直应用与办公/ERP软件 (OW 超配)",
+          "消费电子端侧AI与智能硬件 (OW 超配)",
+          "纯概念高溢价微盘AI标的 (UW 低配)"
+        ],
+        "tickers": [
+          "金山办公 (688111.SH) / 金蝶国际 (0268.HK) - [OW 超配 | ARPU提升与B端付费兑现] 依托成熟办公与ERP客群直接实现AI助手订阅变现，轻资产模式下EPS弹性显著",
+          "快手-W (1024.HK) / 美团-W (3690.HK) - [OW 超配 | 算法降本与商业化闭环] 视频生成大模型与AI智能调度直接转化为广告加载率提升与配送履约降本，ROI清晰可见",
+          "科大讯飞 (002230.SZ) - [EW 标配 | 研发费用压制净利] 虽在教育医疗有落地，但底座大模型持续研发投入仍对短期自由现金流与P/E构成掣肘",
+          "润泽科技 (300442.SZ) - [EW 标配 | 机柜上架率与回款验证] 算力租赁与IDC业务需跟踪下游大模型客户实际现金流造血能力及续约率"
+        ],
+        "deep_logic": "1. 外资与情绪传导：华尔街对美股AI高CapEx低回报的反思，反而凸显了中国科技企业“低成本工程化创新+应用优先”路线的财务健康度，提升了外资对中资应用型科技股的配置意愿；2. 国内产业政策/份额替代：国内政策导向明确支持“人工智能+”赋能制造业、金融与政务消费场景，不追求脱离现金流的无序算力竞赛；3. 估值与基本面预期差：港股及A股核心应用软件与互联网龙头已完成降本增效周期，AI直接服务于广告eCPM提升与SaaS付费率转化，建议Long具备真实付费转化率的办公/互联网平台 vs Short高CapEx无收入支撑的纯算力概念股。"
+      },
+      "watch_indicators": [
+        "微软、谷歌、Meta与亚马逊下季财报中AI相关云收入增量与新增算力CapEx的边际比值（AI增量ROIC指标）",
+        "标普500科技巨头资本开支占经营性现金流比重（CapEx/OCF）是否突破历史警戒水位及折旧费用同比增速",
+        "中美主流企业级SaaS与办公软件厂商披露的AI Copilot付费渗透率、续费率（NDR）及ARPU提升幅度"
+      ]
+    },
+    {
+      "id": "99dc425e9486e797",
+      "guid": "a612020c-7050-4ad1-9535-9c7d37bb8dd7",
+      "link": "https://www.economist.com/business/2026/11/12/the-panic-over-personalised-pricing-is-overdone",
+      "title": "The panic over personalised pricing is overdone",
+      "description": "Lawmakers are getting ahead of themselves",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 66,
+      "fly_title": "Business | Bartleby",
+      "dateline": "Nov 12th 2026|4 min read",
+      "lead_excerpt": "O ne of the great promises of artificial intelligence is personalisation. The ability to crunch vast amounts of data and generate tailored content at scale raises all sorts of possibilities: individualised lesson plans for pupils in a classroom, treatments geared to the needs of specific patients, financial advice for a person rather than a persona. But in one area in particular, personalisation looks poisonous.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBD001.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-13 08:01:36",
+      "zh_title": "对“AI千人千面定价”的恐慌言过其实：立法者过度超前干预或扭曲市场效率",
+      "theme_category": "消费与医疗商业",
+      "core_thesis": "AI强大的数据处理能力使大规模个性化服务成为可能，但在零售与消费领域，“个性化动态定价”（即大数据杀熟/一级价格歧视）引发欧美立法者与监管机构强烈恐慌并酝酿一刀切禁令；从福利经济学与博弈论看，品牌商若滥用算法榨取消费者剩余将迅速招致声誉反噬与客户流失，而适度的动态差异化定价实则能通过交叉补贴降低价格敏感群体的消费门槛、提升社会总产出；市场对监管扼杀AI商业化定价工具的悲观预期过度反应，具备强品牌信任度、利用AI进行精准个性化促销与库存动态优化的电商、航旅及零售龙头仍将实现毛利率（Gross Margin）结构性扩张。",
+      "transmission_chain": [
+        "一阶冲击：欧美监管层针对AI“监控式定价（Surveillance Pricing）”发起立法调查，引发市场对电商、出行与零售平台算法变现受阻的担忧。",
+        "二阶传导（利率/监管/供应链/CapEx）：企业主动规避引发公关危机的“看人下菜碟式提价”，转而采用合规的“AI个性化折扣券、动态库存出清与精准会员权益”策略。",
+        "美股EPS与估值映射：合规框架下的AI动态定价与推荐引擎持续提升转化率与毛利率，前期因监管恐慌回调的电商、共享出行及CRM软件龙头迎来估值修复与EPS上修。",
+        "A股/港股映射与预期差：中国早在数年前已完成平台经济“大数据杀熟”反垄断整改，中资电商与本地生活巨头早已演化出成熟的合规AI千人千面补贴算法，监管免疫度显著高于欧美同行。"
+      ],
+      "us_market": {
+        "direction": "温和利好",
+        "score": 6,
+        "sectors": [
+          "全球电商与数字化零售巨头 (OW 超配)",
+          "共享出行、在线旅游OTA与票务平台 (OW 超配)",
+          "AI客户关系管理与个性化营销SaaS (OW 超配)"
+        ],
+        "tickers": [
+          "UBER / BKNG (优步 / Booking Holdings) - [OW 超配 | 动态定价护城河稳固] 算法核心在于供需实时匹配而非恶意价格歧视，监管恐慌消退后Take Rate与EPS增长逻辑无虞",
+          "AMZN / WMT (亚马逊 / 沃尔玛) - [OW 超配 | 毛利率扩张] 利用AI个性化推荐与动态促销优化库存周转并提升高毛利广告收入，具备极强消费者信任壁垒",
+          "HUBS / KVYO (HubSpot / Klaviyo) - [OW 超配 | 合规AI营销受益] 企业转向合规的AI个性化内容与定向优惠券发放，驱动智能营销SaaS需求扩张",
+          "CART (Instacart) - [EW 标配 | 政策舆论敏感] 杂货生鲜动态定价易受消费者通胀情绪与议员质询针对，短期估值弹性受限"
+        ],
+        "deep_logic": "1. 估值折现率冲击：市场此前担忧FTC及州立法机构禁止算法定价会削弱平台经济商业模式，随着实证研究表明恶性个性化提价并不普遍且市场具备自我纠偏机制，政策尾部风险溢价回落支撑P/E估值修复；2. EPS盈利弹性：AI在零售与服务业的核心价值是通过“个性化折扣”激活边际需求并减少尾货折损，而非单纯提价，这将在不触碰监管红线的前提下提升平台GMV转化率与100~150bps的营业利润率；3. 机构仓位与多空博弈：建议逢低做多因监管噪音被错杀的动态撮合平台（UBER/BKNG），配对做空缺乏AI数据闭环与议价能力的传统线下百货零售商。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 5,
+        "sectors": [
+          "港股综合电商与本地生活平台 (OW 超配)",
+          "在线旅游OTA与航空酒店收益管理 (OW 超配)",
+          "A股AI电商SaaS与精准营销传媒 (EW 标配)"
+        ],
+        "tickers": [
+          "携程集团-S (9961.HK) / 同程旅行 (0780.HK) - [OW 超配 | AI动态打包与交叉销售] 依托合规AI行程定制与动态收益管理提升高星酒店及出境游连带率，EPS持续超预期",
+          "拼多多 (PDD.US) / 阿里巴巴-W (9988.HK) - [OW 超配 | 算法匹配效率全球领先] 将AI个性化能力用于“千人千面精准降价与供应链拼单”，完全契合消费者剩余最大化方向",
+          "美团-W (3690.HK) - [OW 超配 | 动态补贴效率优化] 利用AI大模型精准识别用户价格弹性以优化神券补贴投放ROI，推动核心本地商业OPM稳步改善",
+          "焦点科技 (002315.SZ) / 值得买 (300785.SZ) - [EW 标配 | AI导购转化待验证] 受益于AI个性化导购应用落地，但商业化抽佣率提升仍需业绩验证"
+        ],
+        "deep_logic": "1. 外资与情绪传导：《经济学人》为AI个性化定价正名，有助于缓解全球投资者对平台经济算法监管新一轮收紧的担忧，利好中美互联网消费平台整体估值情绪；2. 国内产业政策/份额替代：中国《互联网信息服务算法推荐管理规定》已运行多年，国内平台企业早已跑通“不搞同物不同价杀熟、改用千人千面千券定向补贴”的合规范式，制度摩擦成本已提前出清；3. 估值与基本面预期差：在消费分级背景下，中国电商与OTA利用AI个性化算法帮助商家精准清库存、向价格敏感用户提供定制折扣，实为促消费利器，建议超配具备极高算法转化效率的携程、美团与头部电商。"
+      },
+      "watch_indicators": [
+        "美国联邦贸易委员会（FTC）关于“监控式定价”6(b)调查的最终报告措辞及是否提起实质性反垄断诉讼",
+        "欧美主流电商与出行平台在黑五/假日季期间AI个性化促销带来的客单价（AOV）与购物车转化率同比变化",
+        "国内双十一及年末促消费周期中，头部电商平台AI智能投放工具（如全站推广）对商家ROI与平台货币化率（Take Rate）的拉动幅度"
+      ]
+    },
+    {
+      "id": "7edc6becc63cc847",
+      "guid": "4b09add6-fe3c-4256-a191-385d58836e24",
+      "link": "https://www.economist.com/business/2026/11/12/quebecs-strategic-maple-syrup-reserve-is-running-dry",
+      "title": "Quebec’s strategic maple-syrup reserve is running dry",
+      "description": "The province’s cartel is losing its grip",
+      "pub_date_utc": "2026-11-12 00:29:27 UTC",
+      "pub_date_cst": "2026-11-12 08:29",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794443367.0,
+      "sections": [
+        "business"
+      ],
+      "section_labels": [
+        "商业与公司 (Business)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 66,
+      "fly_title": "Business | Sticky business",
+      "dateline": "Nov 12th 2026|2 min read",
+      "lead_excerpt": "Q UEBEC’S STRATEGIC maple-syrup reserve is probably sweeter in the imagination than in reality, with its whitewashed barrels stacked from floor to ceiling in industrial halls. Yet the reserve, established in 2000 to stabilise prices and supply, is in a sticky situation: this winter it will run dry.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_WBP504.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:00:19",
+      "zh_title": "魁北克战略枫糖浆储备面临枯竭：农业卡特尔定价权瓦解与食品成本传导",
+      "theme_category": "大宗商品与能源",
+      "core_thesis": "魁北克自2000年建立、掌控全球逾七成供应的战略枫糖浆储备将于今冬彻底耗尽，持续数年的缓冲库存机制宣告失效；暖冬气候扰动叠加美国等非卡特尔产区扩产，打破了单一产区通过配额管制人为平滑价格的垄断均衡，农业供给刚性向市场化弹性定价过渡；包装食品与餐饮连锁面临特色甜味剂采购成本阶段性跳升，具备上游垂直整合能力与品牌提价权的必需消费龙头将跑赢中游加工商。",
+      "transmission_chain": [
+        "一阶冲击：魁北克战略枫糖浆库存今冬清零，全球天然甜味剂现货溢价跳升，卡特尔配额体制丧失缓冲垫。",
+        "二阶传导（利率/监管/供应链/CapEx）：美国东北部独立糖农加速扩产CapEx以抢占份额，下游餐饮与包装食品商启动配方替代或终端提价。",
+        "美股EPS与估值映射：餐饮连锁与包装食品面临毛利率（GPM）20-40bps的食材通胀挤压，具备供应链锁价能力的零售巨头估值韧性凸显。",
+        "A股/港股映射与预期差：国内高端烘焙茶饮进口原辅料成本微升，但本土代糖、功能性糖醇及植物提取物龙头迎来出口替代窗口与盈利上修。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 4,
+        "sectors": [
+          "北美包装食品与调味品 (UW)",
+          "美国家庭与休闲餐饮连锁 (UW)",
+          "大型仓储会员零售商 (OW)"
+        ],
+        "tickers": [
+          "COST (Costco) - [OW 超配 | 估值溢价维持] 依托Kirkland自有品牌庞大直采议价权与全球替代产区锁价，有效对冲枫糖浆现货飙升并巩固份额",
+          "KHC / GIS (卡夫亨氏 / 通用磨坊) - [UW 低配 | EPS下修] 糖浆及甜味剂原料库存缓冲消失推升COGS，终端涨价受制于消费者价格敏感度",
+          "DRI / DENN (达登餐饮 / Denny's) - [UW 低配 | 毛利率收缩] 早餐连锁高度依赖天然糖浆供应，现货断档直接侵蚀单店餐厅层面利润率",
+          "Pair Trade 配对交易 - [做多 COST / 做空 DENN] 做多具备全球供应链溢价的仓储渠道霸主，做空受制于单一食材通胀的传统早餐餐饮"
+        ],
+        "deep_logic": "①估值折现率冲击：软商品局部逼空强化市场对食品通胀粘性的担忧，限制必需消费板块整体P/E扩张空间；②EPS盈利弹性：魁北克储备见底意味着2027财年合同锁价基准上移15%-25%，缺乏品牌溢价的中游品牌商与早餐连锁面临毛利率下修压力；③机构仓位与多空博弈：长线共同基金正从缺乏量增弹性的传统包装食品撤出，调仓至具备供应链规模壁垒与会员费高确定性的零售龙头。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 5,
+        "sectors": [
+          "功能性代糖与糖醇出海龙头 (OW)",
+          "天然植物甜味剂提取商 (OW)",
+          "高端现制烘焙与西式餐饮 (EW)"
+        ],
+        "tickers": [
+          "百龙创园 (605016.SH) - [OW 超配 | EPS与估值双升] 北美天然甜味剂短缺与价格高企加速海外食品巨头向阿洛酮糖及膳食纤维配方切换",
+          "华康股份 (605077.SH) - [OW 超配 | 订单放量] 全球功能性糖醇核心供应商，受益于海外客户降低高价传统糖浆依赖的长期配方重构",
+          "莱茵生物 (002166.SZ) - [OW 超配 | 盈利弹性释放] 甜菊糖苷与罗汉果提取物在北美餐饮与饮料巨头的天然复配替代渗透率持续提升",
+          "Pair Trade 配对交易 - [做多 百龙创园 (605016.SH) / 做空 奈雪的茶 (2150.HK)] 做多受益于全球甜味剂替代出海的上游龙头，规避受制于进口原辅料成本及同店压力的餐饮终端"
+        ],
+        "deep_logic": "①外资与情绪传导：海外特色农产品卡特尔失灵引发全球食品工业对单一产地供应链脆弱性的重估，提升中国化工与生物发酵制造的供应链安全溢价；②国内产业政策/份额替代：跨国食品饮料巨头为控制BOM成本，加速采用阿洛酮糖、甜菊糖等复配方案替代昂贵天然枫糖浆，中国头部企业占据全球逾60%产能份额；③估值与基本面预期差：A股功能糖板块当前动态P/E仅15-18倍，市场尚未充分计入北美天然甜味剂通胀带来的海外大客户长单提价弹性。"
+      },
+      "watch_indicators": [
+        "魁北克枫糖浆生产者协会（PPAQ）2027年春收配额增发幅度与现货拍卖溢价率",
+        "美国农业部（USDA）佛蒙特与缅因州枫糖产区扩产数据及北美包装食品CPI分项环比增速",
+        "中国海关阿洛酮糖、赤藓糖醇及甜菊糖苷对北美月度出口量价齐升验证数据"
+      ]
+    },
+    {
+      "id": "c9e44b456c6892a3",
+      "guid": "c6ce1a9b-f6d9-45cf-a95c-d0d0d4cca5e4",
+      "link": "https://www.economist.com/united-states/2026/11/13/the-jensen-huang-scandal-reaches-donald-trumps-cabinet",
+      "title": "The Jensen Huang scandal reaches Donald Trump’s cabinet",
+      "description": "Howard Lutnick, the commerce secretary, is in the firing line",
+      "pub_date_utc": "2026-11-13 21:12:16 UTC",
+      "pub_date_cst": "2026-11-14 05:12",
+      "pub_day": "2026-11-13",
+      "timestamp": 1794604336.0,
+      "sections": [
+        "united-states"
+      ],
+      "section_labels": [
+        "美国政经 (United States)"
+      ],
+      "section_weights": [
+        8
+      ],
+      "relevance_score": 63,
+      "fly_title": "United States | Howard’s end?",
+      "dateline": "Nov 13th 2026|WASHINGTON, DC|4 min read",
+      "lead_excerpt": "J UST WEEKS ago Jensen Huang, the boss of Nvidia, was seated, quite literally, at the right hand of President Donald Trump, _primus inter pares_ among the assembled tech titans. On November 12th he resigned after 33 years in charge, felled by a baroque scandal involving sex, chip smuggling and Chinese agents—not necessarily in that order. Mr Huang’s demise is still rippling through the world of artificial intelligence. But it could also bring down members of the Trump administration—most notably Howard Lutnick, the commerce secretary—and result in a hardening of American policy towards China.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_USP506.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:00:28",
+      "zh_title": "黄仁勋辞职丑闻波及特朗普内阁：商务部长卢特尼克受困与对华芯片管制极端鹰派化",
+      "theme_category": "AI与硬科技",
+      "core_thesis": "英伟达掌门人黄仁勋于11月12日因涉华代理人、算力芯片走私及私生活丑闻突然辞职，结束33年执掌生涯并直接将美国商务部长卢特尼克推向问责风暴中心；该黑天鹅彻底击碎科技巨头通过游说白宫换取出口管制柔性的政商默契，美国工业与安全局（BIS）面临国会强制接管式的极端鹰派重构；美股AI算力龙头遭遇治理溢价蒸发与全球许可冻结的双杀，而中国国产AI算力链将在彻底断供倒逼下迎来全栈自主化加速。",
+      "transmission_chain": [
+        "一阶冲击：黄仁勋闪辞引发英伟达管理层权力真空，卢特尼克面临国会听证与辞职压力，美股半导体板块遭遇剧烈恐慌性抛售。",
+        "二阶传导（利率/监管/供应链/CapEx）：美国商务部紧急冻结所有主权AI及第三方转口算力许可，国会两党联手推进无豁免的全球芯片物理追踪与连带刑责法案。",
+        "美股EPS与估值映射：NVDA痛失“创始人治理溢价”且海外灰色及转口收入归零，P/E面临5-8倍系统性下杀，定制ASIC与本土合规云厂商获避险资金分流。",
+        "A股/港股映射与预期差：海外高端GPU灰产走私渠道被连根拔起，国内大厂彻底放弃海外算力幻想，将千亿级CapEx全额转向国产AI芯片与先进封装。"
+      ],
+      "us_market": {
+        "direction": "强烈利空",
+        "score": 10,
+        "sectors": [
+          "通用GPU与AI服务器供应链 (UW)",
+          "定制ASIC芯片与网络交换 (OW)",
+          "供应链合规审计与国防安全软件 (OW)"
+        ],
+        "tickers": [
+          "NVDA (英伟达) - [UW 短期规避 | 估值与EPS双杀] 灵魂人物离职引发明星治理溢价坍塌，叠加司法部与商务部对过往海外渠道的全面追溯审查",
+          "AVGO / MRVL (博通 / 迈威尔) - [OW 超配 | 份额加速替代] 云巨头为规避单一GPU供应商合规及治理风险，全速将CapEx倾斜至自研ASIC芯片集群",
+          "AMD / INTC (超威半导体 / 英特尔) - [EW 标配 | 监管连带压制] 虽受益于客户二供分流，但同样受制于BIS全面收紧全球算力出口配额的行业性逆风",
+          "PLTR (Palantir) - [OW 超配 | 订单上修] 联邦政府与防务部门紧急升级全球战略物资流向监控与反间谍合规追踪系统",
+          "Pair Trade 配对交易 - [做多 AVGO / 做空 NVDA] 做多治理稳健且受益于CSP自研ASIC浪潮的博通，对冲NVDA创始人离职与监管清算带来的估值回归"
+        ],
+        "deep_logic": "①估值折现率冲击：黄仁勋个人的战略远见与白宫游说能力曾赋予NVDA约15%-20%的治理与确定性溢价，丑闻引爆导致股权风险溢价（ERP）飙升，远期P/E中枢面临从35x向25x的剧烈压缩；②EPS盈利弹性：商务部为自证清白必将严查东南亚及中东转口贸易，抹去全球AI硬件链约8%-12%的潜在边际需求并推高合规成本；③机构仓位与多空博弈：全球对冲基金在NVDA上的多头拥挤度处于历史极值，黑天鹅触发CTA与风险平价基金机械式去杠杆，资金向AVGO及软件防御板块轮动。"
+      },
+      "cn_market": {
+        "direction": "强烈利好",
+        "score": 9,
+        "sectors": [
+          "国产AI算力芯片与晶圆代工 (OW)",
+          "半导体先进封装与设备材料 (OW)",
+          "依赖海外GPU转口的算力租赁商 (UW)"
+        ],
+        "tickers": [
+          "寒武纪-U (688256.SH) / 海光信息 (688041.SH) - [Conviction Buy 强推 | 订单与估值双升] 芯片走私通道彻底封死倒逼国内互联网与智算中心100%采购国产主力训练/推理卡",
+          "中芯国际 (0981.HK / 688981.SH) - [OW 超配 | 产能溢价重估] 先进制程代工成为国内AI算力唯一底座，本土Fabless流片排队锁定未来三年高稼动率与ASP提价",
+          "北方华创 (002371.SZ) / 中微公司 (688012.SH) - [OW 超配 | EPS持续上修] 美国商务部对华政策硬化预期坐实，国内晶圆厂去美化设备采购比例向极限值冲刺",
+          "工业富联 (601138.SH) - [UW 短期规避 | 估值承压] 作为NVDA核心服务器ODM代工商，短期受大客户管理层震荡及全球出货合规审查连带冲击",
+          "Pair Trade 配对交易 - [做多 寒武纪-U (688256.SH) / 做空 工业富联 (601138.SH)] 做多纯正国产算力替代核心资产，做空受海外AI供应链动荡拖累的出海代工链"
+        ],
+        "deep_logic": "①外资与情绪传导：事件初期美股科技崩盘将通过北向与港股外资引发海外算力映射链（光模块、服务器代工）膝跳式回调，但内资机构将迅速定价“自主可控终极加速”逻辑；②国内产业政策/份额替代：过往部分国内云大厂仍依赖高溢价走私卡维持前沿模型训练，美国内阁级风暴将彻底断绝侥幸心理，国家大基金三期与地方智算专项债将超预期加码本土生态；③估值与基本面预期差：国产算力龙头从“备胎逻辑”跃升为“唯一主航道”，2027年营收增速一致预期有望上修30%以上，支撑高估值溢价消化。"
+      },
+      "watch_indicators": [
+        "英伟达董事会代理CEO人选公告、独立合规调查委员会成立及Q4业绩指引中海外渠道收入的计提减值规模",
+        "美国国会针对商务部长卢特尼克及BIS出口审批漏洞的听证会排期与对华半导体全面禁令升级草案",
+        "国内字节、阿里、腾讯等大厂2027年国产AI芯片集采招标份额跳升幅度及中芯国际先进制程资本开支指引"
+      ]
+    },
+    {
+      "id": "14e931d811ea090e",
+      "guid": "93c57eca-a964-4a36-a17d-e1470b78dddf",
+      "link": "https://www.economist.com/united-states/2026/11/12/donald-trump-has-an-unusual-chance-to-make-progress",
+      "title": "Donald Trump has an unusual chance to make progress",
+      "description": "He also has an unusual gift for blowing such chances",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "united-states"
+      ],
+      "section_labels": [
+        "美国政经 (United States)"
+      ],
+      "section_weights": [
+        8
+      ],
+      "relevance_score": 63,
+      "fly_title": "United States | Lexington",
+      "dateline": "Nov 12th 2026|5 min read",
+      "lead_excerpt": "N ot long ago, after a whopping defeat in midterm elections, the president made some conciliatory noises and some belligerent ones. He issued a warning to the opposition party that was taking control of the House. “You can’t legislate and investigate simultaneously—it just doesn’t work that way,” he said. “You can’t go down two tracks at the same time.” Yet when they did go down both tracks, he did, too, battling congressional investigations while collaborating with his congressional adversaries to achieve legislation on trade and the environment. When crisis struck he worked with the House to deliver an historic economic rescue package—even though by then, in a party-line vote, the opposition had impeached him.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_USD000.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:00:44",
+      "zh_title": "中期选举惨败后的特朗普困局：分裂国会下的调查风暴与跨党派交易窗口",
+      "theme_category": "美国政经与宏观",
+      "core_thesis": "民主党在2026年中期选举中大获全胜并重夺众议院控制权，特朗普重演首任期“一边遭遇国会连环传票调查、一边寻求跨党派立法交易”的双轨博弈；历史经验表明分裂政府虽阻断了激进单边减税与全面放松监管的空间，但在基建、贸易保护及危机救助上仍存在交易可能；然而特朗普难以自控的政治报复本能极易葬送妥协窗口，推升美国财政僵局、债务上限博弈与政策波动率溢价。",
+      "transmission_chain": [
+        "一阶冲击：民主党掌控众议院各核心委员会传票权，白宫单边财政扩张法案停摆，华盛顿进入高频调查与立法拉锯战。",
+        "二阶传导（利率/监管/供应链/CapEx）：10年期美债期限溢价因极端财政赤字失控风险下降而阶段性回落，但行政令绕道实施关税与行业监管的不可预测性上升。",
+        "美股EPS与估值映射：“特朗普交易”中的激进放松监管与企业税进一步下调预期落空，两党具备罕见共识的对华强硬、本土基建与国防开支成为确定性公约数。",
+        "A股/港股映射与预期差：民主党控制众议院强化人权、劳工与绿色贸易壁垒立法，但制约了白宫随心所欲的全面财政刺激，弱美元与美债利率喘息利好港股流动性。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 7,
+        "sectors": [
+          "美国本土基建与工程机械 (OW)",
+          "国防军工与网络安全 (OW)",
+          "高度依赖行政放松监管的传统金融与化石能源 (UW)"
+        ],
+        "tickers": [
+          "CAT / URI (卡特彼勒 / 联合租赁) - [OW 超配 | EPS高确定性] 基建与制造业回流是分裂国会与特朗普唯一能达成跨党派政绩交易的公约数",
+          "LMT / RTX (洛克希德马丁 / 雷神技术) - [OW 超配 | 估值锚定] 两党鹰派在国防预算扩容上高度一致，不受众议院弹劾或调查博弈拖累",
+          "GEO / CXW (GEO集团 / CoreCivic) - [UW 低配 | 估值收缩] 民主党重掌众议院拨款委员会，私人监狱与边境执法激进预算面临严格审查与削减",
+          "CBOE / CME (芝加哥期权交易所 / 芝商所) - [OW 超配 | 交易量上修] 华盛顿双轨冲突加剧宏观与利率政策不确定性，直接推升期权与期货对冲交易量",
+          "Pair Trade 配对交易 - [做多 URI / 做空 GEO] 做多受益于两党基建妥协公约数的设备租赁龙头，做空受制于民主党众议院拨款狙击的纯特朗普概念股"
+        ],
+        "deep_logic": "①估值折现率冲击：分裂国会（Gridlock）在历史上往往压制无序财政扩张，有助于缓解长端美债收益率突破5%的尾部风险，为美股大盘提供估值托底，但政治内耗将抬升VIX中枢；②EPS盈利弹性：原市场预期的企业税率进一步下调或大规模去监管红利被迫剔除出2027年标普500 EPS模型，盈利驱动回归内生增长与两党共识领域；③机构仓位与多空博弈：宏观对冲基金正在平仓前期过度拥挤的“纯粹特朗普概念股”，转向对政治周期免疫的质量因子（Quality）与两党基建标的。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 6,
+        "sectors": [
+          "港股互联网与高弹性科技 (OW)",
+          "黄金与避险贵金属板块 (OW)",
+          "对美直接出口且涉劳工/环境审查制造业 (UW)"
+        ],
+        "tickers": [
+          "腾讯控股 (0700.HK) / 美团-W (3690.HK) - [OW 超配 | 估值修复] 华盛顿财政扩张受阻带动美债长端利率与美元指数阶段性见顶回落，改善港股外资折现率环境",
+          "山东黄金 (600547.SH / 1787.HK) / 紫金矿业 (601899.SH) - [OW 超配 | 盈利与估值双升] 特朗普与国会调查战及潜在政府停摆风险持续强化全球央行与机构购金配置需求",
+          "药明康德 (603259.SH / 2359.HK) - [UW 短期规避 | 估值压制] 众议院民主党与共和党在生物安全、供应链脱钩等涉华立法上更容易达成跨党派妥协交易",
+          "Pair Trade 配对交易 - [做多 腾讯控股 (0700.HK) / 做空 药明康德 (2359.HK)] 做多受益于美债利率缓和且无地缘敞口的本土互联网核心资产，规避美国两党反华立法交集标的"
+        ],
+        "deep_logic": "①外资与情绪传导：分裂政府意味着美国“例外论”财政刺激退潮，美元指数上行动能衰减，新兴市场尤其是估值处于历史底部的港股迎来海外长线资金再平衡流入；②国内产业政策/份额替代：需警惕特朗普为转移国内被众议院调查的政治危机，与民主党在对华贸易法案、取消最惠国待遇或生物安全立法上进行“联手交易”；③估值与基本面预期差：内需主导与非美出海链将明显跑赢对美敞口链，市场对美国政治僵局带来的黄金与港股流动性利好计价仍不充分。"
+      },
+      "watch_indicators": [
+        "新一届众议院监督与司法委员会针对特朗普内阁发出的首轮传票清单及白宫回应姿态",
+        "2027财年联邦政府临时拨款法案（CR）与债务上限谈判中两党能否达成跨党派妥协",
+        "10年期美债期限溢价（ACM Term Premium）与美元指数（DXY）在中期选举尘埃落定后的走势"
+      ]
+    },
+    {
+      "id": "d45ce1cc28b26ffb",
+      "guid": "3b826fae-ae80-429c-9050-283899c6b326",
+      "link": "https://www.economist.com/united-states/2026/11/12/how-florida-withstood-a-blue-wave",
+      "title": "How Florida withstood a blue wave",
+      "description": "The quintessential swing state of 2000 is the bastion of Republicanism in 2026",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "united-states"
+      ],
+      "section_labels": [
+        "美国政经 (United States)"
+      ],
+      "section_weights": [
+        8
+      ],
+      "relevance_score": 63,
+      "fly_title": "United States | Walking on sunshine",
+      "dateline": "Nov 12th 2026|5 min read",
+      "lead_excerpt": "“T O CALL IT a wave I don’t think would be fully accurate,” Ron DeSantis, the governor of Florida, said the morning after Democrats won control of Congress. “It’s the political equivalent of a meteor strike that went all around the United States—blue states, red states, everything in between. And the one state that was able to hold the line and withstand that is right here in the free state of Florida.”",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_USP002.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:00:52",
+      "zh_title": "佛罗里达何以抵御全美“蓝潮”：阳光地带的保守派堡垒化与州际资本大迁徙",
+      "theme_category": "美国政经与宏观",
+      "core_thesis": "在2026年中期选举民主党席卷全美的“陨石级蓝潮”中，佛罗里达州在州长德桑蒂斯治下逆势稳守共和党绝对优势，彻底完成从2000年典型摇摆州向深红大本营的结构性蜕变；零个人所得税、商业去监管以及后疫情时代高净值人群与企业总部的持续净流入，重塑了该州选民人口结构与财政税基；全美“蓝州加税监管、红州亲商吸金”的州际制度套利进一步固化，阳光地带（Sunbelt）地产、区域银行与公用事业享受长期基本面α。",
+      "transmission_chain": [
+        "一阶冲击：佛罗里达在全美政治左转浪潮中独善其身，确认其政策连续性、零州税环境与保守派治理框架的长期锁定。",
+        "二阶传导（利率/监管/供应链/CapEx）：华尔街金融机构、科技高管与富裕退休阶层加速向迈阿密及坦帕走廊进行资产配置与总部搬迁，拉动区域电力、基建与商业地产CapEx。",
+        "美股EPS与估值映射：深耕佛州及东南部的公用事业、医疗服务与高端住宅REITs享受远超全美均值的量价增长，而高税率深蓝州商业地产持续面临空置率折价。",
+        "A股/港股映射与预期差：佛州基础设施扩建与住宅繁荣支撑北美电网设备及建材家居补库需求，但德桑蒂斯主导的深红州对华土地与公共养老金投资限制将长期维持。"
+      ],
+      "us_market": {
+        "direction": "温和利好",
+        "score": 6,
+        "sectors": [
+          "佛罗里达及阳光地带公用事业 (OW)",
+          "东南部高端住宅建造与商业地产REITs (OW)",
+          "深蓝州高税负城市写字楼REITs (UW)"
+        ],
+        "tickers": [
+          "NEE (NextEra Energy) - [OW 超配 | EPS持续增长] 旗下FPL为佛州最大电力公用事业公司，直接受益于人口净流入、数据中心落户及温和的州级监管环境",
+          "LEN / TOL (莱纳房产 / Toll Brothers) - [OW 超配 | 订单韧性] 迈阿密总部及佛州高土储占比赋能，高净值移民全款购房需求有效对冲高按揭利率冲击",
+          "CDP / CUZ (Copt Defense / Cousins Properties) - [OW 超配 | 租金溢价] 深度布局阳光地带核心商务区写字楼，承接金融与科技企业“南下迁徙”租户红利",
+          "SLG / VNO (SL Green / Vornado) - [UW 低配 | 估值折价] 民主党蓝潮强化传统深蓝州加税与租户保护预期，加速高端金融租户向佛州外流",
+          "Pair Trade 配对交易 - [做多 CUZ / 做空 SLG] 做多受益于阳光地带人口与企业净流入的南部商业地产，做空受制于蓝州财政与税负压力的东北走廊传统写字楼"
+        ],
+        "deep_logic": "①估值折现率冲击：佛州在全美政治动荡中展现出的极高政策可预测性，降低了本土公用事业与不动产项目的监管风险溢价，支撑区域资产资本化率（Cap Rate）维持低位；②EPS盈利弹性：每年数十万高收入纳税人的净迁入推动佛州GDP增速持续跑赢全美150-200bps，转化为区域电网负荷、高端医疗及商超消费的稳健内生EPS增长；③机构仓位与多空博弈：不动产与基建长线基金正将“州际政商分化”作为核心配置因子，系统性超配阳光地带并减持加州、纽约及伊利诺伊州敞口。"
+      },
+      "cn_market": {
+        "direction": "中性分化",
+        "score": 3,
+        "sectors": [
+          "北美电网变压器与电力设备出海 (OW)",
+          "对美出口园林工具与家居建材 (OW)",
+          "涉美州级公共采购与中国制造直接设厂企业 (UW)"
+        ],
+        "tickers": [
+          "金盘科技 (688676.SH) / 思源电气 (002028.SZ) - [OW 超配 | 海外订单景气] 佛州等阳光地带人口扩容与飓风后电网韧性改造，拉动北美干式与油浸式变压器进口需求",
+          "巨星科技 (002444.SZ) / 创科实业 (0669.HK) - [OW 超配 | 终端动销修复] 美国东南部独栋住宅建设与飓风季修缮需求旺盛，支撑五金与园林电动工具渠道补库",
+          "比亚迪 (1211.HK / 002594.SZ) - [EW 标配 | 美国本土准入受限] 佛州等红州持续强化针对中国智能网联汽车、无人机及储能系统接入市政网络的州级禁令",
+          "Pair Trade 配对交易 - [做多 创科实业 (0669.HK) / 做空 比亚迪 (1211.HK)] 在北美映射维度，做多深度绑定美国南部地产与修缮繁荣的本土化品牌工具龙头，规避受制于红州排华法案的直接品牌出海"
+        ],
+        "deep_logic": "①外资与情绪传导：佛州稳固的共和党基本盘及德桑蒂斯政治影响力的延续，意味着美国地方层面（State-level）针对中资购地、州养老金（FRS）清退中概股等鹰派政策不会因全美蓝潮而松动；②国内产业政策/份额替代：阳光地带旺盛的住宅建设、空调制冷与电网扩容需求，仍高度依赖中国高性价比机电与家居供应链通过墨西哥或东南亚基地履约；③估值与基本面预期差：市场过度关注联邦层面关税，忽视了美国阳光地带结构性繁荣对电网设备与工具出海链2027年订单可见度的强力支撑。"
+      },
+      "watch_indicators": [
+        "美国人口普查局与U-Haul年度州际人口与高收入家庭净流入佛罗里达最新追踪数据",
+        "佛罗里达电力与照明公司（FPL）2027-2030年电网资本开支与费率审批（Rate Case）结果",
+        "佛州议会2027年立法季针对外国实体投资不动产及基础设施采购限制法案的动向"
+      ]
+    },
+    {
+      "id": "a0dc403a1747c707",
+      "guid": "adaced88-b9f7-4757-ab90-ffb0900bc322",
+      "link": "https://www.economist.com/science-and-technology/2026/11/13/should-women-sync-their-lifestyle-to-their-menstrual-cycle",
+      "title": "Should women sync their lifestyle to their menstrual cycle?",
+      "description": "What works for one woman may not suit another",
+      "pub_date_utc": "2026-11-13 19:21:16 UTC",
+      "pub_date_cst": "2026-11-14 03:21",
+      "pub_day": "2026-11-13",
+      "timestamp": 1794597676.0,
+      "sections": [
+        "science-and-technology"
+      ],
+      "section_labels": [
+        "科技与AI (Science & Technology)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 62,
+      "fly_title": "Science & technology | Well Informed",
+      "dateline": "Nov 13th 2026|3 min read",
+      "lead_excerpt": "A LL ELITE athletes face similar challenges. Juggling a busy training schedule with a personal life, for example, or constantly tracking calories and hydration levels. Female athletes have an extra data set to track: their menstrual cycles. In a study of female athletes published in _PLOS ONE_ in 2016, over half of those classified as elite reported that their cycles affected their performance.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261121_STD001.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:00:59",
+      "zh_title": "生理周期同步生活方式的科学祛魅：从标准化网红伪科学向个性化多模态生物传感演进",
+      "theme_category": "消费与医疗商业",
+      "core_thesis": "针对女性精英运动员及大众消费群体的“生理周期同步训练与饮食（Cycle Syncing）”风潮正遭遇运动医学与循证科学的严谨审视，研究表明个体间激素波动反应差异巨大，单一标准化的日历算法模板并无普适功效；这一科学结论正在刺破同质化基础经期日历App的营销泡沫，同时将消费需求推向具备连续体温、心率变异性（HRV）及激素无创监测能力的AI可穿戴硬件与个性化数字医疗；具备高精度生物传感器与闭环AI教练算法的智能硬件及运动生态龙头将迎来ARPU与用户粘性双升。",
+      "transmission_chain": [
+        "一阶冲击：医学界证伪“一刀切”生理周期同步法则，依赖通用日历推算的传统轻量化健康App面临用户留存率与付费转化率下滑。",
+        "二阶传导（利率/监管/供应链/CapEx）：女性健康管理（FemTech）研发重心从软件日历转向底层连续生物标志物传感（体温、皮质醇、睡眠深度）与个体级AI基线建模。",
+        "美股EPS与估值映射：拥有庞大个人历史生理数据集与高粘性硬件生态的智能穿戴巨头及专业女性运动品牌获客效率提升，高毛利订阅服务占比扩大。",
+        "A股/港股映射与预期差：全球智能戒指、高精密光学/温度传感器及居家内分泌快检IVD供应链迎来BOM升级与ODM代工放量。"
+      ],
+      "us_market": {
+        "direction": "温和利好",
+        "score": 5,
+        "sectors": [
+          "AI智能可穿戴设备与生态巨头 (OW)",
+          "精准居家诊断与连续生物传感医疗器械 (OW)",
+          "缺乏算法与硬件壁垒的泛健康内容平台 (UW)"
+        ],
+        "tickers": [
+          "AAPL / GRMN (苹果 / 佳明) - [OW 超配 | 生态粘性强化] 依托手腕连续皮肤温度、HRV与运动表现的长期个体化AI基线校准，取代粗放式周期模板并拉动健康订阅",
+          "DXCM / ABT (德康医疗 / 雅培) - [OW 超配 | TAM扩容] 消费级连续生物传感（CGM及多代谢指标追踪）加速向女性运动营养与代谢健康消费市场渗透",
+          "LULU / NKE (Lululemon / 耐克) - [EW 标配 | 营销策略校准] 女性运动品牌需从概念化“周期同步”营销转向结合个性化体能数据的精准社群运营",
+          "WW (WW International) - [UW 低配 | 份额流失] 标准化饮食与健康打卡模式持续被基于实时生物传感器的千人千面AI健康方案替代",
+          "Pair Trade 配对交易 - [做多 GRMN / 做空 WW] 做多深耕专业女性运动员多维生理指标追踪的穿戴硬件龙头，做空缺乏个体实时生物数据底座的传统标准化健康管理服务商"
+        ],
+        "deep_logic": "①估值折现率冲击：循证科学提高行业准入门槛，加速出清缺乏临床验证的早期FemTech初创公司，资金向具备医疗级传感器认证与端侧AI能力的头部科技医疗股集中，支撑其估值溢价；②EPS盈利弹性：“因人而异”意味着必须依赖24/7连续硬件佩戴来建立个人专属生理模型，直接提升智能手表/智能戒指的复购率与年费订阅（SaaS）毛利率；③机构仓位与多空博弈：医疗与消费交叉基金正增持具备消费级医疗器械（Consumer MedTech）属性的可穿戴标的，看空纯软件概念型健身应用。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 5,
+        "sectors": [
+          "智能戒指与精密可穿戴ODM/传感器链 (OW)",
+          "居家POCT激素与慢病快检医疗器械 (OW)",
+          "本土智能穿戴与运动健康品牌 (OW)"
+        ],
+        "tickers": [
+          "歌尔股份 (002241.SZ) / 立讯精密 (002475.SZ) - [OW 超配 | 新品放量] 全球智能戒指（Smart Ring）与高端健康手环核心制造底座，受益于女性无感连续体征监测硬件爆发",
+          "万孚生物 (300482.SZ) / 九安医疗 (002432.SZ) - [OW 超配 | 盈利稳健] 居家激素定量快检（LH/孕酮/皮质醇）与数字化App联动需求上升，赋能个体精准周期校准",
+          "华米科技 / 小米集团-W (1810.HK) - [OW 超配 | 份额提升] 依托高性价比智能戒指与手环矩阵切入全球女性精细化睡眠与运动恢复追踪市场",
+          "Pair Trade 配对交易 - [做多 歌尔股份 (002241.SZ) / 做空 Keep (3650.HK)] 做多受益于全球多模态生物传感穿戴硬件升级的制造龙头，规避受制于标准化健身课程付费率瓶颈的纯内容平台"
+        ],
+        "deep_logic": "①外资与情绪传导：欧美主流消费群体对个性化生物追踪（Bio-hacking & Personalized Wellness）的狂热，正通过Oura Ring、Apple Watch等硬件升级订单直接传导至亚洲果链与传感模组厂；②国内产业政策/份额替代：中国微机电系统（MEMS）温度传感器、高精度PPG光学模组及微型电池在智能戒指形态中具备全球统治级供应链效率，单机BOM价值量较传统手环提升40%以上；③估值与基本面预期差：市场将智能可穿戴仅视为普通消费电子，低估了女性精准健康与医疗级体征监测带来的硬件形态裂变与长期换机刚需。"
+      },
+      "watch_indicators": [
+        "全球头部智能戒指（Oura等）与Apple Watch女性健康模块季度出货量及付费订阅留存率",
+        "北美FDA针对消费级可穿戴设备无创代谢与内分泌生理指标监测功能的审批进展",
+        "国内果链及可穿戴ODM厂商2026Q4至2027Q1医疗级PPG与高精度体温传感模组出货增速"
+      ]
+    },
+    {
+      "id": "d66af22b432cd4f0",
+      "guid": "79f81d61-6ecd-48b3-9728-69b17cca00bc",
+      "link": "https://www.economist.com/leaders/2026/11/12/to-triumph-in-show-business-take-a-lo-fi-or-hi-fi-approach",
+      "title": "To triumph in show business, take a lo-fi or hi-fi approach",
+      "description": "Skydance is stuck in the dangerous middle ground",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "leaders"
+      ],
+      "section_labels": [
+        "社论与纲领 (Leaders)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 62,
+      "fly_title": "",
+      "dateline": "",
+      "lead_excerpt": "URL Source: https://www.economist.com/leaders/2026/11/12/to-triumph-in-show-business-take-a-lo-fi-or-hi-fi-approach\n\nWarning: This page maybe requiring CAPTCHA, please make sure you are authorized to access this page.\n\nThis website uses a security service to protect against malicious bots. This page is displayed while the website verifies you are not a bot.",
+      "topics": [],
+      "image_url": "",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:01:02",
+      "zh_title": "娱乐传媒业的“杠铃生存法则”：低保真UGC与高保真巨制通吃，Skydance困守危险中间地带",
+      "theme_category": "消费与医疗商业",
+      "core_thesis": "全球影视娱乐产业正经历残酷的“杠铃化（Barbell）”结构性裂变：一端是依托网红创作者与AI生成、近乎零边际成本的“低保真（Lo-Fi）”社交短视频与微短剧，另一端是具备极强社交货币属性、不可替代的“高保真（Hi-Fi）”顶级体育直播、线下实景乐园与超级IP巨制；而刚完成派拉蒙整合的Skydance等传统好莱坞制片厂，却深陷高昂固定制作成本、平庸中型预算剧集与有线电视加速萎缩的“危险中间地带”；流媒体平台霸主与体验式娱乐巨头将持续虹吸行业自由现金流，传统中型影视制片商面临长期ROIC塌陷。",
+      "transmission_chain": [
+        "一阶冲击：观众注意力与付费意愿向“极低成本高频算法内容”与“极高规格顶级现场/视听事件”两极分化，中型预算电影与传统剧集票房及收视率双双溃败。",
+        "二阶传导（利率/监管/供应链/CapEx）：好莱坞激进削减3000万-8000万美元中等预算项目CapEx，资金全力抢夺NFL/NBA等顶级体育直播权并加速引入AI工具压降长尾制作成本。",
+        "美股EPS与估值映射：占据“Lo-Fi + Hi-Fi”双端生态的科技流媒体巨头自由现金流利润率持续扩张，困于传统片厂重资产模式与高杠杆并购的传媒股面临商誉减值与估值压缩。",
+        "A股/港股映射与预期差：中国AI短剧出海、潮玩实景IP与本土高黏性视频社区精准卡位杠铃两端，而依赖传统长剧集采买的影视公司持续承压。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 7,
+        "sectors": [
+          "全球流媒体霸主与UGC视频平台 (OW)",
+          "现场娱乐演艺与顶级体育IP体验 (OW)",
+          "传统好莱坞中型制片厂与有线电视网 (UW)"
+        ],
+        "tickers": [
+          "NFLX / GOOGL (奈飞 / 谷歌YouTube) - [Conviction Buy 强推 | 估值与EPS双升] YouTube垄断全球Lo-Fi创作者时长，Netflix凭规模优势通吃顶级赛事直播与全球爆款，自由现金流充沛",
+          "LYV / TKO (Live Nation / TKO集团) - [OW 超配 | 定价权扩张] 完美卡位Hi-Fi最顶端，演唱会与顶级格斗体育现场体验具备完全抗AI替代的稀缺性与票价提价权",
+          "PSKY / WBD (派拉蒙Skydance / 华纳兄弟探索) - [UW 低配 | 估值与盈利双杀] 困守高固定成本与有线电视长期衰退的中间地带，并购整合协同效应难敌中型内容ROI恶化",
+          "DIS (迪士尼) - [EW 标配 | 结构分化] 主题乐园与顶级电影IP具备Hi-Fi护城河，但传统电视网与中型流媒体剧集仍需持续剥离瘦身",
+          "Pair Trade 配对交易 - [做多 NFLX / 做空 PSKY] 做多兼具全球分发垄断与顶级事件内容采购力的流媒体赢家，做空困于好莱坞传统中等预算泥潭的派拉蒙Skydance"
+        ],
+        "deep_logic": "①估值折现率冲击：传媒板块估值逻辑已从“内容库规模”彻底切换为“ROIC与自由现金流转化率”，杠铃两端的轻资产平台与垄断型现场娱乐享有25-30x P/E，而背负并购债务的传统片厂EV/EBITDA被压制在6-8x；②EPS盈利弹性：AI视频生成技术大幅拉低Lo-Fi内容制作门槛并稀释中型影视剧价值，迫使Skydance等片厂计提存量内容库减值，而YouTube与Netflix则直接享受广告CPM与订阅提价弹性；③机构仓位与多空博弈：TMT长线基金持续将传统好莱坞制片厂作为空头资金池（Funding Short），集中加仓NFLX与现场体验经济龙头。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 6,
+        "sectors": [
+          "AI赋能微短剧出海与UGC视频社区 (OW)",
+          "高保真潮玩实景IP与线下演艺旅游 (OW)",
+          "传统中型电视剧制作与院线发行 (UW)"
+        ],
+        "tickers": [
+          "快手-W (1024.HK) / 哔哩哔哩-W (9626.HK) - [OW 超配 | 盈利弹性释放] 卡位“Lo-Fi”创作者生态与可灵（Kling）等AI视频大模型降本，短剧与高粘性UP主内容驱动广告高增",
+          "泡泡玛特 (9992.HK) / 大麦阿里影业 (1060.HK) - [OW 超配 | 估值溢价扩张] 卡位“Hi-Fi”实体潮玩情绪价值与线下演唱会票务垄断，享受年轻群体高溢价体验消费红利",
+          "中文在线 (300364.SZ) - [OW 超配 | 海外收入高增] 深度受益于北美市场对高频爽点Lo-Fi微短剧（ReelShort等）的爆发式需求，抢占好莱坞中等剧集流失时长",
+          "华策影视 (300133.SZ) / 博纳影业 (001330.SZ) - [UW 低配 | EPS承压] 困于传统长剧集采买降本与中等投资院线电影票房高败率的“危险中间地带”",
+          "Pair Trade 配对交易 - [做多 泡泡玛特 (9992.HK) / 做空 博纳影业 (001330.SZ)] 做多拥有极强实体IP重度体验与出海溢价的新消费龙头，做空受制于中型商业片票房分化的传统电影制片商"
+        ],
+        "deep_logic": "①外资与情绪传导：《经济学人》对好莱坞杠铃化格局的定调，印证了中国文娱产业率先跑通的“微短剧（极致Lo-Fi）+ 线下演艺/潮玩（极致Hi-Fi）”双极商业模式的前瞻性，提振外资对港股新消费与互联网平台的配置信心；②国内产业政策/份额替代：国产AI视频生成工具（如快手可灵、字节即梦）正大幅降低Lo-Fi出海短剧的本土化制作成本，在欧美市场直接收割传统流媒体中腰部预算剧集的用户时长；③估值与基本面预期差：市场对传统影视院线仍存周期复苏幻想，却低估了注意力杠铃化演进的不可逆性，头部AI视频平台与线下重体验IP龙头的远期现金流折现仍有上修空间。"
+      },
+      "watch_indicators": [
+        "派拉蒙Skydance合并后首份季报中的内容资本开支削减幅度、自由现金流及有线电视剪线率数据",
+        "北美感恩节与圣诞档期好莱坞中等预算影片票房表现与YouTube/Netflix全美电视屏幕时长占比差值",
+        "中国头部AI短剧出海App在欧美双端应用商店畅销榜排名及单用户获客ROI季度环比变化"
+      ]
+    },
+    {
+      "id": "7a1e4d8819998b23",
+      "guid": "887ba455-5bc3-4d6f-8ed5-b3360db2f9d6",
+      "link": "https://www.economist.com/leaders/2026/11/12/south-africans-are-giving-up-on-nelson-mandelas-party-good",
+      "title": "South Africans are giving up on Nelson Mandela’s party. Good",
+      "description": "The decline of the African National Congress shows that democracy is working",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "leaders"
+      ],
+      "section_labels": [
+        "社论与纲领 (Leaders)"
+      ],
+      "section_weights": [
+        9
+      ],
+      "relevance_score": 62,
+      "fly_title": "Leaders | Beyond race",
+      "dateline": "Nov 12th 2026|3 min read",
+      "lead_excerpt": "“T hE IMPATIENCE and dissatisfaction among ordinary people are justified,” Nelson Mandela warned his party in 1999. At the time, the African National Congress (anc) utterly dominated South Africa. A generation on, after years of corruption, stagnation and collapsing public services, South Africans have run out of patience entirely. At local elections on November 4th they handed the ruling party its worst-ever result in a nationwide ballot. Though the ANC eked out 31% of all votes, more than any rival, that was less than half of what it recorded in 2004. In the country’s most dynamic places, it did especially badly. It is no longer the largest party in any big city, including Johannesburg, the commercial capital.",
+      "topics": [],
+      "image_url": "https://www.economist.com/cdn-cgi/image/width=1424,quality=80,format=auto/content-assets/images/20261114_LDP003.jpg",
+      "enriched_attempted": true,
+      "enriched_at": "2026-11-14 08:01:05",
+      "zh_title": "告别曼德拉政党霸权：非国大选票崩盘触发南非制度红利重估与公用事业私有化浪潮",
+      "theme_category": "全球贸易与地缘",
+      "core_thesis": "11月4日南非地方大选中，执政党非国大（ANC）全国得票率暴跌至历史最低的31%（不及2004年峰值的一半），并在约翰内斯堡等所有核心商业大都市彻底丧失第一大党地位；选民超越解放运动与种族叙事、转向公共服务绩效问责，倒逼亲商的民主联盟（DA）在经济重镇主导市政联合执政，加速电力、水务与铁路港口的市场化制度修复；这一治理拐点将驱动南非主权风险溢价（ERP）收敛与兰特汇率企稳，在缓解矿业物流瓶颈的同时，打开市政基建PPP与分布式能源资本开支周期。",
+      "transmission_chain": [
+        "一阶冲击：非国大（ANC）地方大选得票率腰斩至31%并丢掉约翰内斯堡等全部大都市主导权，南非正式迈入去意识形态化、以市政交付绩效为核心的后种族竞争性民主阶段。",
+        "二阶传导（利率/监管/供应链/CapEx）：亲商政党（DA）接管核心经济圈市政预算，加速市政独立购电（IPP）、水务特许经营及Transnet港口铁路民营化准入，南非10年期国债收益率与主权CDS利差趋于下行。",
+        "美股EPS与估值映射：主权折现率（WACC）下移推动南非本地消费与金融资产P/E倍数扩张，而电力与物流修复预期将削弱铂族金属（PGMs）的供给中断溢价并抬升兰特计价矿企的美元汇率成本。",
+        "A股/港股映射与预期差：市场误将选举洗牌视为政局动荡，实则市政放权将绕开低效中央国企，直接释放工商业微电网、智能电表与市政工程招标，中资电力设备与非洲本地消费龙头迎来EPS上修。"
+      ],
+      "us_market": {
+        "direction": "中性分化",
+        "score": 5,
+        "sectors": [
+          "南非主权敞口ETF与本地金融电商 (OW)",
+          "美股上市南非铂族金属与金矿股 (UW)",
+          "全球矿山机械与分布式电力设备 (OW)"
+        ],
+        "tickers": [
+          "EZA (iShares MSCI南非ETF) - [OW 超配 | 估值扩张] 约翰内斯堡等经济核心区治理改善驱动主权风险溢价收敛，金融与内需权重股迎来P/E修复",
+          "SBSW (Sibanye Stillwater) - [UW 低配 | EPS下修] 电力与铁路瓶颈缓解削弱铂钯供给溢价，叠加兰特走强抬升南非本地美元计价开采成本",
+          "GFI / HMY (Gold Fields / Harmony Gold) - [EW 标配 | 估值中性] 市政供电稳定性改善降低自备柴油发电成本，但兰特升值对冲部分利润率弹性",
+          "Pair Trade 配对交易：做多 EZA (南非内需与金融主权Beta) / 做空 SBSW (高成本南非铂族矿商) - 博弈制度修复下的兰特升值与大宗供给正常化剪刀差"
+        ],
+        "deep_logic": "估值折现率冲击：核心城市摆脱ANC低效治理有望带动南非5年期主权CDS收窄30-50bp，无风险利率下行直接提振南非权益资产P/E估值倍数。EPS盈利弹性：市政采购透明化与电力供应改善利好本地银行信贷质量与零售周转，但兰特汇率升值将挤压以兰特付薪、以美元结算的南非矿企毛利率。机构仓位与多空博弈：全球新兴市场基金（GEM）对南非处于历史极低配状态，地方选举验证民主纠错机制后，外资配置将从资源防御转向内需Beta修复。"
+      },
+      "cn_market": {
+        "direction": "温和利好",
+        "score": 6,
+        "sectors": [
+          "户用与工商业储能及电网设备出海 (OW)",
+          "非洲本土化智能终端与移动互联 (OW)",
+          "中资在非锰铬铜金矿业龙头 (EW)"
+        ],
+        "tickers": [
+          "海兴电力 (603556.SH) / 三星医疗 (601567.SH) - [Conviction Buy 强推 | EPS与估值双升] 约翰内斯堡等市政电力改革加速智能电表、配网改造与收费系统更新招标",
+          "德业股份 (605117.SH) - [OW 超配 | EPS上修] 南非大都市放开工商业分布式光伏与微电网并网审批，打开中型工商业光储系统第二增长曲线",
+          "传音控股 (688036.SH) - [OW 超配 | 估值修复] 兰特汇率企稳与南非城市商业活力改善提振中高端机型及移动互联金融增值服务（Fintech）ARPU值",
+          "紫金矿业 (601899.SH / 02899.HK) - [EW 标配 | 盈利稳健] 南非德班与理查兹湾港口铁路私营化改革有助降低非洲南部矿产外运物流滞期费"
+        ],
+        "deep_logic": "外资与情绪传导：消除对南非滑向民粹极左联盟（EFF/MK主导大都市）的尾部风险担忧，稳定中非经贸走廊汇率结算预期。国内产业政策/份额替代：亲商市政当局推进公用事业PPP与独立发电商（IPP）分布式招标，中国电网设备与光储企业凭借高性价比直接切入市政与工商业采购链。估值与基本面预期差：内资普遍担忧南非电荒缓解后户储需求见顶，但忽视了市政财政正常化带来的智能配网改造与工商业微电网长期刚性替代空间。"
+      },
+      "watch_indicators": [
+        "约翰内斯堡、茨瓦内与埃库鲁莱尼三大都市圈联合政府组阁协议及亲商政党（DA）在市政财政/基建部门的职位占比。",
+        "南非5年期主权信用违约掉期（CDS）利差、10年期南非国债收益率及美元兑南非兰特（USD/ZAR）汇率在17.5关口的突破方向。",
+        "南非各大都市市政电力公司独立购电（IPP）招标规模及中国对南非逆变器、锂电储能与智能电表月度出口海关数据环比增速。"
+      ]
+    }
+  ],
+  "digest_articles": [
+    {
+      "id": "7754a9a3d66ce1bd",
+      "guid": "91ce3d98-f989-48eb-bb78-01094c3b0e91",
+      "link": "https://www.economist.com/united-states/2026/11/12/an-emerging-consensus-on-trans-politics",
+      "title": "An emerging consensus on trans politics",
+      "description": "Voters want neither trans kids playing girls’ sports, nor politicians obsessed with it",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "united-states"
+      ],
+      "section_labels": [
+        "美国政经 (United States)"
+      ],
+      "section_weights": [
+        8
+      ],
+      "relevance_score": 56,
+      "zh_title": "美国跨性别政治正在形成新共识",
+      "summary_zh": "美国选民在跨性别议题上的态度正趋于务实与温和：大多数人既不赞成跨性别青少年参与女子体育赛事，也反感政客过度炒作和沉迷于此类文化战争，倒逼两党调整竞选策略。",
+      "market_note": "属美国社会文化议题，反映选民对极端文化战争的厌倦，长周期有助于缓和ESG与品牌营销领域的政治极化风险。",
+      "impact_level": "低"
+    },
+    {
+      "id": "46ed94eedb7b1e93",
+      "guid": "f4f77671-b234-4e89-85a5-ee6d18f827a2",
+      "link": "https://www.economist.com/asia/2026/11/12/can-anyone-fix-the-china-japan-relationship",
+      "title": "Can anyone fix the China-Japan relationship?",
+      "description": "The two countries need a go-between. Donald Trump is not an ideal option",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "asia"
+      ],
+      "section_labels": [
+        "亚太政经 (Asia)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 56,
+      "zh_title": "谁能修复中日关系？",
+      "summary_zh": "中日关系因地缘安全与经贸摩擦持续紧绷，双方亟需可靠的外部调停者来打破僵局以防局势升级。然而行事难以预测的特朗普显然并非理想人选，地区外交斡旋面临缺失困境。",
+      "market_note": "中日地缘与经贸关系直接关乎东亚供应链稳定，对A股半导体材料设备、跨境消费旅游及日系供应链相关板块具有潜在情绪影响。",
+      "impact_level": "中"
+    },
+    {
+      "id": "5ad6b29d13fd9c99",
+      "guid": "6a33d7e4-d1c5-4e6b-9579-c73cd2161ed6",
+      "link": "https://www.economist.com/europe/2026/11/12/spains-rail-crashes-are-a-grim-backdrop-to-the-election",
+      "title": "Spain’s rail crashes are a grim backdrop to the election",
+      "description": "Once a source of national pride, high-speed rail now causes anguish",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "europe"
+      ],
+      "section_labels": [
+        "欧洲政经 (Europe)"
+      ],
+      "section_weights": [
+        6
+      ],
+      "relevance_score": 50,
+      "zh_title": "西班牙铁路事故频发为大选蒙上阴影",
+      "summary_zh": "曾作为西班牙国家骄傲的高铁网络近期频发安全事故与延误，引发公众强烈不满与焦虑。基础设施维护滞后与管理失责成为大选前的核心政治争议，严峻考验执政联盟选情。",
+      "market_note": "欧洲基建老化与公共服务痛点凸显，或促使欧洲各国加大轨交更新与维护投入，对A股及全球轨交设备出海企业具长周期参考意义。",
+      "impact_level": "低"
+    },
+    {
+      "id": "03a6fdf393ddf2c4",
+      "guid": "f57e717d-c9bf-4c49-a80f-f8fe16c192fb",
+      "link": "https://www.economist.com/the-world-this-week/2026/11/13/cover-story-newsletter-an-ai-crash-or-a-bull-in-the-bath",
+      "title": "Cover Story newsletter: An AI crash, or a bull in the bath?",
+      "description": "An exclusive look at how we designed our cover",
+      "pub_date_utc": "2026-11-13 17:22:10 UTC",
+      "pub_date_cst": "2026-11-14 01:22",
+      "pub_day": "2026-11-13",
+      "timestamp": 1794590530.0,
+      "sections": [
+        "the-world-this-week"
+      ],
+      "section_labels": [
+        "本周全球速览 (The World This Week)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 49,
+      "zh_title": "封面故事通讯：AI崩盘在即，还是牛市在泡澡休憩？",
+      "summary_zh": "独家揭秘本期《经济学人》封面设计背后的构思过程，探讨当前人工智能热潮究竟面临泡沫破裂风险，还是仅处于牛市途中的阶段性休整，借视觉隐喻折射市场对AI估值与前景的深度分歧。",
+      "market_note": "反映主流财经媒体对AI泡沫与牛市休整的思辨，可作为美股AI科技巨头及A股算力应用板块的高位情绪面与估值分歧参考。",
+      "impact_level": "中"
+    },
+    {
+      "id": "215487494fb55aa9",
+      "guid": "e68ab360-5355-4309-8a7d-2c168325a82a",
+      "link": "https://www.economist.com/international/2026/11/13/teaching-kids-to-think-for-themselves-in-the-age-of-ai",
+      "title": "Teaching kids to think for themselves in the age of AI",
+      "description": "The Economist Educational Foundation helps schoolchildren around the world make sense of the news",
+      "pub_date_utc": "2026-11-13 11:37:50 UTC",
+      "pub_date_cst": "2026-11-13 19:37",
+      "pub_day": "2026-11-13",
+      "timestamp": 1794569870.0,
+      "sections": [
+        "international"
+      ],
+      "section_labels": [
+        "国际关系 (International)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 49,
+      "zh_title": "在AI时代教导孩子独立思考",
+      "summary_zh": "介绍《经济学人》教育基金会如何帮助全球学童解读新闻资讯，探讨在生成式人工智能普及、信息真伪难辨的时代背景下，培养青少年批判性思维、媒介素养与独立思考能力的重要教育实践及社会价值。",
+      "market_note": "属公益教育与社会文化议题，对短期二级市场无直接冲击，长周期可作为美股及A股AI教育科技与素质教育赛道的演进背景参考。",
+      "impact_level": "低"
+    },
+    {
+      "id": "aa7d825d0cece573",
+      "guid": "0f46c5ac-4cab-4a9b-906f-59c5bbd71326",
+      "link": "https://www.economist.com/international/2026/11/12/despite-recent-misses-political-polling-is-more-accurate-than-ever",
+      "title": "Despite recent misses, political polling is more accurate than ever",
+      "description": "But elections in America and Brazil illustrate how hard the task is becoming",
+      "pub_date_utc": "2026-11-12 00:44:06 UTC",
+      "pub_date_cst": "2026-11-12 08:44",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794444246.0,
+      "sections": [
+        "international"
+      ],
+      "section_labels": [
+        "国际关系 (International)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 49,
+      "zh_title": "尽管近期有所偏差，政治民调实则比以往更加精准",
+      "summary_zh": "虽然公众常因个别选举预测失准而质疑民调，但长周期数据显示现代民调的整体准确度处于历史高位。不过美国与巴西大选也表明，选民结构碎片化正让抽样调查工作变得愈发艰难。",
+      "market_note": "提醒投资者在重大选举期间理性看待民调数据与预测市场波动，避免因短期民调噪音对美股及新兴市场资产做过度单边押注。",
+      "impact_level": "低"
+    },
+    {
+      "id": "dc66c3acd7dc5874",
+      "guid": "98f6f591-f1de-48fa-b44a-0c6bebef1e41",
+      "link": "https://www.economist.com/the-world-this-week/2026/11/12/business",
+      "title": "Business",
+      "description": "",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "the-world-this-week"
+      ],
+      "section_labels": [
+        "本周全球速览 (The World This Week)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 45,
+      "zh_title": "本周商业速览",
+      "summary_zh": "汇总本周全球重要商业与财经动态，涵盖跨国企业财报表现、重大并购交易进展、科技与能源行业监管动向以及全球主要经济体最新宏观商业指标变化。",
+      "market_note": "提供全球商业与大型企业高频动态概览，有助于投资者快速把握美股跨国巨头经营趋势及全球产业链景气度边际变化。",
+      "impact_level": "低"
+    },
+    {
+      "id": "419ca12a8eb2e237",
+      "guid": "63d64ccf-e4e3-43c5-a009-336e02cb1039",
+      "link": "https://www.economist.com/the-world-this-week/2026/11/12/politics",
+      "title": "Politics",
+      "description": "",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "the-world-this-week"
+      ],
+      "section_labels": [
+        "本周全球速览 (The World This Week)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 45,
+      "zh_title": "本周政治速览",
+      "summary_zh": "梳理本周全球热点地缘政治与各国内政要闻，聚焦美国中期选举后政局演变、中东及俄乌冲突最新态势、欧洲及拉美主要国家政坛动向与国际外交博弈。",
+      "market_note": "汇总全球地缘与政局周度边际变化，为评估外围宏观风险偏好、大宗商品波动及美股与A股风险情绪提供全景参考。",
+      "impact_level": "低"
+    },
+    {
+      "id": "102c941551c1407c",
+      "guid": "0e417935-909c-4c80-bbb0-2411df3a3d47",
+      "link": "https://www.economist.com/britain/2026/11/12/britains-super-position-in-quantum-technology",
+      "title": "Britain’s super position in quantum technology",
+      "description": "Some of the industry’s bets are already paying off",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 44,
+      "zh_title": "英国在量子技术领域的“叠加态”优势：部分行业押注已见成效",
+      "summary_zh": "依托顶尖高校科研积累与早期政策扶持，英国在量子计算、量子传感与量子通信等赛道占据全球前列。目前部分初创企业的商业化押注已开始兑现收益，在医疗诊断、金融建模与国防安全等领域展现出清晰的落地前景。",
+      "market_note": "量子技术商业化提速有望催化美股量子计算标的（IONQ、RGTI）及A股量子通信、精密测量与光芯片产业链的主题情绪。",
+      "impact_level": "中"
+    },
+    {
+      "id": "7b18a45d7a5a3c4b",
+      "guid": "6c33ccd6-c618-41c6-997b-d9d423b98e6b",
+      "link": "https://www.economist.com/asia/2026/11/12/the-japanese-region-where-eight-testicle-women-outdo-men",
+      "title": "The Japanese region where “eight-testicle women” outdo men",
+      "description": "It’s a matter of sake and hard work",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "asia"
+      ],
+      "section_labels": [
+        "亚太政经 (Asia)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 42,
+      "zh_title": "日本高知县的“八金女”如何胜过男性：清酒与勤勉造就的女性力量",
+      "summary_zh": "聚焦日本地方独特的“女强男弱”社会现象。在当地深厚的清酒消费文化与传统生计分工中，被称为“八金女”的女性凭借豪爽独立的性格、吃苦耐劳的韧性与出色的经营能力，在地方经济与职场中展现出远超男性的活力。",
+      "market_note": "属地域社会文化观察，长周期可作为日本女性劳动参与率提升对服务消费、酒类餐饮及老龄化社会劳动力供给支撑的背景参考。",
+      "impact_level": "低"
+    },
+    {
+      "id": "4511e324f3135278",
+      "guid": "722b958a-625a-43a6-beb6-8419020d9130",
+      "link": "https://www.economist.com/britain/2026/11/12/is-britain-ready-for-net-zero-migration",
+      "title": "Is Britain ready for net-zero migration?",
+      "description": "Getting what you want isn’t all it’s cracked up to be",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 37,
+      "zh_title": "英国准备好迎接“净零移民”了吗？心想事成未必如愿以偿",
+      "summary_zh": "随着签证政策收紧与经济吸引力下降，英国净移民人数大幅回落并逼近“净零”水平。尽管这一趋势迎合了部分选民诉求，但也迅速加剧了医疗养老、高等教育和建筑服务业的用工荒，给财政收入与潜在增长带来新隐忧。",
+      "market_note": "移民骤降或加剧英国服务业薪资通胀黏性并压制潜在增长率，边际影响英债收益率、英镑汇率及在英跨国企业用工成本。",
+      "impact_level": "中"
+    },
+    {
+      "id": "4871462e762113ea",
+      "guid": "407464b7-a066-43a3-a647-1bffbcb0aa15",
+      "link": "https://www.economist.com/britain/2026/11/12/britains-nicest-prison",
+      "title": "Britain’s nicest prison",
+      "description": "And what it can teach the rest",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 37,
+      "zh_title": "探访英国条件最好的监狱：它能为司法改革带来哪些启示",
+      "summary_zh": "在英国监狱系统普遍面临人满为患与暴力频发的困境下，个别模范监狱通过改善居住环境、强化职业技能培训与心理矫治，显著降低了囚犯再犯罪率。其管理模式为英国乃至欧美惩教体系的改革提供了可借鉴的样本。",
+      "market_note": "属公共政策与司法治理议题，对A股及美股市场无直接财务传导，仅作欧美公共部门治理效率与财政支出结构的长线背景参考。",
+      "impact_level": "低"
+    },
+    {
+      "id": "0d1867f2fc4a98f5",
+      "guid": "b3567aec-ee1d-4053-a804-5e980d297172",
+      "link": "https://www.economist.com/britain/2026/11/12/what-is-killing-britains-prisoners",
+      "title": "What is killing Britain’s prisoners?",
+      "description": "Less violence and drugs than heart disease and cancer",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 37,
+      "zh_title": "是什么导致英国囚犯死亡？心脏病与癌症已超过暴力与毒品",
+      "summary_zh": "数据显示，英国服刑人员的主要死因并非外界普遍认为的狱内暴力或毒品滥用，而是心血管疾病与癌症等慢性老年病。刑期拉长与人口老龄化叠加，使监狱系统面临严峻的老年医疗照护压力，暴露出公共医疗资源的错配。",
+      "market_note": "属社会与公共卫生议题，侧面反映发达国家全方位老龄化趋势，长周期印证慢性病管理、肿瘤早筛及老年医疗服务的刚需逻辑。",
+      "impact_level": "低"
+    },
+    {
+      "id": "32caba2d59b12246",
+      "guid": "52a84cb4-f16c-40dc-9915-40a7cd82ffe1",
+      "link": "https://www.economist.com/britain/2026/11/12/can-e-sports-boost-sunderland-and-britains-armed-forces",
+      "title": "Can e-sports boost Sunderland—and Britain’s armed forces?",
+      "description": "High hopes for the new British Arena",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 37,
+      "zh_title": "电竞能否振兴桑德兰并助力英军征兵？新国家电竞馆寄予厚望",
+      "summary_zh": "英国老工业城市桑德兰正试图借助新建大型电竞场馆推动城市经济转型，吸引年轻消费群体与数字文娱产业集聚。与此同时，英国军方也积极介入电竞赛事，希望借此选拔具备无人机操控与网络战潜质的年轻技术兵源。",
+      "market_note": "电竞与国防招募、无人装备操控加速融合，可作为美股游戏引擎、电竞硬件及A股数字文娱与无人机模拟训练领域的趋势参考。",
+      "impact_level": "低"
+    },
+    {
+      "id": "103fbcd070caed33",
+      "guid": "1c8b5e44-08bb-43f8-8f99-a98d07b658e6",
+      "link": "https://www.economist.com/britain/2026/11/12/britains-tories-want-even-more-brexit",
+      "title": "Britain’s Tories want even more Brexit",
+      "description": "By saying they will pull out of the European Convention on Human Rights, they threaten big trouble",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 37,
+      "zh_title": "英国保守党追求“更彻底的脱欧”：威胁退出《欧洲人权公约》恐酿大乱",
+      "summary_zh": "为挽回流向极右翼政党的选票，英国保守党提出退出《欧洲人权公约》以强化边境管控与非法移民遣返。然而此举不仅可能动摇北爱尔兰和平协议的法律根基，还会引发英欧贸易与安全合作框架的新一轮政治与法律震荡。",
+      "market_note": "英国右翼民粹诉求升温带来远期英欧贸易与地缘摩擦尾部风险，对英镑资产风险溢价及欧洲跨国投资情绪构成潜在长线扰动。",
+      "impact_level": "低"
+    },
+    {
+      "id": "5d31660c13ad85fc",
+      "guid": "f73af4b3-52c0-4707-ab58-48bd29cb347b",
+      "link": "https://www.economist.com/britain/2026/11/12/andy-burnham-has-ignited-the-rejoin-debate",
+      "title": "Andy Burnham has ignited the Rejoin debate",
+      "description": "But Britain’s prime minister has yet to say what he really wants",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 37,
+      "zh_title": "安迪·伯纳姆点燃“重返欧盟”辩论，但英国首相仍未亮明真实底牌",
+      "summary_zh": "大曼彻斯特市长伯纳姆公开探讨未来重返欧盟或单一市场的可能性，重新点燃英国政坛关于“重返欧盟”的讨论。但工党首相受制于选票顾虑仍态度谨慎，未能在深化对欧经贸与制度融合问题上给出清晰的长期路线图。",
+      "market_note": "英欧经贸关系修复预期有助于改善英国中长期外资流入与供应链效率，边际利好欧洲跨国企业及对欧出口业务占比较高的公司。",
+      "impact_level": "中"
+    },
+    {
+      "id": "c1eb6cd4199f6437",
+      "guid": "1b7500a8-50c2-44bd-9f67-9e1075f8cdab",
+      "link": "https://www.economist.com/europe/2026/11/12/how-navigating-red-tape-became-the-european-way-of-life",
+      "title": "How navigating red tape became the European way of life",
+      "description": "Life in the small-print continent",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "europe"
+      ],
+      "section_labels": [
+        "欧洲政经 (Europe)"
+      ],
+      "section_weights": [
+        6
+      ],
+      "relevance_score": 36,
+      "zh_title": "应对繁文缛节如何成为欧洲人的生活方式：困在“细则大陆”的日常",
+      "summary_zh": "剖析欧洲大陆无处不在的行政审批与合规细则如何渗透进居民日常与商业运营。从环保认证、数字隐私到劳工保护，层出不穷的监管条文不仅催生了庞大的合规咨询产业，也在持续拖累欧洲本土科技创新与企业经营效率。",
+      "market_note": "欧洲过度监管削弱本土创新活力，进一步强化美股科技巨头相对配置价值；同时提示A股出海欧洲的车企与新能源链需重视合规成本。",
+      "impact_level": "中"
+    },
+    {
+      "id": "ffceee7d2c27af18",
+      "guid": "e236fd00-100b-4e85-8b45-aac668a63abd",
+      "link": "https://www.economist.com/europe/2026/11/12/a-judo-champion-enters-the-presidential-race-in-france",
+      "title": "A judo champion enters the presidential race in France",
+      "description": "His rivals are watching warily",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "europe"
+      ],
+      "section_labels": [
+        "欧洲政经 (Europe)"
+      ],
+      "section_weights": [
+        6
+      ],
+      "relevance_score": 36,
+      "zh_title": "柔道冠军加入法国总统竞选：政坛对手正警惕观望",
+      "summary_zh": "法国知名柔道世界冠军跨界宣布参选总统，凭借极高的国民知名度、健康的公众形象以及超越传统左右翼阵营的吸引力，迅速引发政界关注。在法国传统政党公信力下滑的背景下，其参选或将分流选票并搅动大选格局。",
+      "market_note": "属法国政坛早期竞选动态，反映选民对传统建制派的厌倦情绪，短期对金融市场无直接影响，长周期关注法国大选前的财政政策博弈。",
+      "impact_level": "低"
+    },
+    {
+      "id": "d6448691027d3880",
+      "guid": "a66d94d4-4100-4273-87ec-810c4ccc39f2",
+      "link": "https://www.economist.com/britain/2026/11/13/the-economist-is-hiring-a-production-manager-live-insider-events",
+      "title": "The Economist is hiring a Production Manager, Live Insider Events",
+      "description": "Join our editorial video team",
+      "pub_date_utc": "2026-11-13 11:19:39 UTC",
+      "pub_date_cst": "2026-11-13 19:19",
+      "pub_day": "2026-11-13",
+      "timestamp": 1794568779.0,
+      "sections": [
+        "britain"
+      ],
+      "section_labels": [
+        "英国政经 (Britain)"
+      ],
+      "section_weights": [
+        5
+      ],
+      "relevance_score": 30,
+      "zh_title": "《经济学人》诚聘现场内部活动制作经理",
+      "summary_zh": "《经济学人》编辑视频团队发布招聘公告，诚聘现场内部活动制作经理，旨在推进其直播访谈与视频节目的高质量制作与运营，展现传统国际主流财经媒体加速向音视频及互动直播业态拓展的转型动向。",
+      "market_note": "属媒体机构内部人事招聘，无直接股市影响；长周期侧面印证全球传统财经传媒向视频化与线上直播订阅模式转型的行业趋势。",
+      "impact_level": "低"
+    },
+    {
+      "id": "65f71d8edab3bfc0",
+      "guid": "25071dc9-a1c8-428c-bcaa-dda31b0a75ed",
+      "link": "https://www.economist.com/the-world-this-week/2026/11/12/cartoon-the-misadventures-of-jensen-huang",
+      "title": "Cartoon: The misadventures of Jensen Huang",
+      "description": "A lighter take on the news",
+      "pub_date_utc": "2026-11-12 14:08:53 UTC",
+      "pub_date_cst": "2026-11-12 22:08",
+      "pub_day": "2026-11-12",
+      "timestamp": 1794492533.0,
+      "sections": [
+        "the-world-this-week"
+      ],
+      "section_labels": [
+        "本周全球速览 (The World This Week)"
+      ],
+      "section_weights": [
+        7
+      ],
+      "relevance_score": 5,
+      "zh_title": "时事漫画：黄仁勋的“奇遇与囧境”——以轻松视角看新闻",
+      "summary_zh": "《经济学人》每周时事讽刺漫画栏目，以幽默笔触描绘英伟达首席执行官黄仁勋在引领全球人工智能算力狂潮的同时，不得不周旋于地缘政治芯片出口管制、反垄断监管审查以及科技巨头自研芯片竞争之间的微妙处境。",
+      "market_note": "虽为漫画栏目，但折射出全球市场对英伟达（NVDA）贸易合规与监管风险的高度关注，情绪面映射美股AI算力链及A股国产算力替代逻辑。",
+      "impact_level": "中"
+    }
+  ]
+}
