@@ -2,6 +2,15 @@
 """Static ECharts option & overview chart builders for daily reports."""
 
 DAILY_CHARTS_JS = """
+        function escHtml(val) {
+            return String(val ?? "")
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
         function getThemeColors() {
             const isDark = (document.documentElement.getAttribute("data-theme") === "dark");
             return {
@@ -151,15 +160,16 @@ DAILY_CHARTS_JS = """
                     return `<span class="pct-pill ${cl}">${s}${v.toFixed(2)}%</span>`;
                 };
                 const ratingStr = meta.rating || (kd.chg_5d_pct >= 0 ? "超配增持" : "标配观望");
-                const jumpHtml = meta.article_idx
-                    ? `<a href="#art-${meta.article_idx}" onclick="jumpToArticle('art-${meta.article_idx}');return false;" class="jump-link">跳转关联研报卡 #${meta.article_idx} (${meta.article_title}) ↓</a>`
+                const safeArtIdx = Number.isInteger(Number(meta.article_idx)) ? Number(meta.article_idx) : 0;
+                const jumpHtml = safeArtIdx > 0
+                    ? `<a href="#art-${safeArtIdx}" onclick="jumpToArticle('art-${safeArtIdx}');return false;" class="jump-link">跳转关联研报卡 #${safeArtIdx} (${escHtml(meta.article_title)}) ↓</a>`
                     : `<span style="color:var(--text-muted);font-size:12px;">基准核心指数标的</span>`;
                 side.innerHTML = `
                     <div>
-                        <div style="font-size:12px;color:var(--text-muted);font-weight:700;">当前选中实盘标的 (${kd.latest_date})</div>
-                        <div style="font-size:20px;font-weight:800;color:var(--text-main);margin:4px 0;">${kd.name}</div>
+                        <div style="font-size:12px;color:var(--text-muted);font-weight:700;">当前选中实盘标的 (${escHtml(kd.latest_date)})</div>
+                        <div style="font-size:20px;font-weight:800;color:var(--text-main);margin:4px 0;">${escHtml(kd.name)}</div>
                         <div style="font-size:28px;font-weight:800;font-family:monospace;color:var(--gs-blue);margin-bottom:10px;">
-                            ${kd.latest_close.toFixed(2)}
+                            ${Number(kd.latest_close || 0).toFixed(2)}
                         </div>
                         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;background:var(--bg-surface);padding:10px;border-radius:6px;border:1px solid var(--border-light);margin-bottom:12px;">
                             <div><div style="font-size:11px;color:var(--text-muted);">1日涨跌</div>${fmtPct(kd.chg_1d_pct)}</div>
@@ -168,21 +178,21 @@ DAILY_CHARTS_JS = """
                         </div>
                         <div style="margin-bottom:8px;">
                             <span style="font-size:12px;font-weight:700;color:var(--text-muted);">投行评级：</span>
-                            <strong style="color:var(--gs-blue);">${ratingStr}</strong>
-                            ${meta.verdict_tag ? `<span style="margin-left:6px;font-size:11.5px;font-weight:800;color:#15803d;">(${meta.verdict_tag})</span>` : ""}
+                            <strong style="color:var(--gs-blue);">${escHtml(ratingStr)}</strong>
+                            ${meta.verdict_tag ? `<span style="margin-left:6px;font-size:11.5px;font-weight:800;color:#15803d;">(${escHtml(meta.verdict_tag)})</span>` : ""}
                         </div>
                         ${meta.support_20d ? `
                         <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:11.5px;font-family:monospace;background:var(--bg-surface);padding:8px;border-radius:6px;border:1px solid var(--border-light);margin-bottom:8px;">
-                            <div>🟢 20日支撑: <strong>${meta.support_20d}</strong> | 止损: <strong>${meta.stop_level}</strong></div>
-                            <div>🔴 20日压力: <strong>${meta.resist_20d}</strong> | 目标: <strong>${meta.target_level}</strong></div>
+                            <div>🟢 20日支撑: <strong>${escHtml(meta.support_20d)}</strong> | 止损: <strong>${escHtml(meta.stop_level)}</strong></div>
+                            <div>🔴 20日压力: <strong>${escHtml(meta.resist_20d)}</strong> | 目标: <strong>${escHtml(meta.target_level)}</strong></div>
                         </div>` : ""}
                         <div style="margin-bottom:8px;">
                             <span style="font-size:12px;font-weight:700;color:var(--text-muted);">冲击维度：</span>
-                            <span class="driver-chip">${meta.driver || "宏观流动性与估值折现"}</span>
+                            <span class="driver-chip">${escHtml(meta.driver || "宏观流动性与估值折现")}</span>
                         </div>
                         <div style="font-size:13px;color:var(--text-secondary);background:var(--bg-surface);padding:10px;border-radius:6px;border-left:3px solid var(--econ-red);">
                             <strong>《经济学人》催化逻辑：</strong><br>
-                            ${meta.thesis_short || "反映近期美国中期选举政治重构、人工智能资本开支投入回报率审视与全球关税豁免预期差。"}
+                            ${escHtml(meta.thesis_short || "反映近期美国中期选举政治重构、人工智能资本开支投入回报率审视与全球关税豁免预期差。")}
                         </div>
                     </div>
                     <div style="padding-top:8px;border-top:1px solid var(--border-light);">${jumpHtml}</div>

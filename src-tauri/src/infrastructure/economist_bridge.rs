@@ -1,3 +1,6 @@
+use crate::infrastructure::economist_embed::{
+    prepare_embedded_report_html, validate_canonical_report_id,
+};
 use crate::infrastructure::portable_paths::PortablePaths;
 use crate::infrastructure::sqlite_repo::SqliteRepository;
 
@@ -74,81 +77,6 @@ fn extract_cn_symbols_from_text(text: &str) -> Vec<String> {
         i += 1;
     }
     found
-}
-
-fn inject_embed_flag_on_html(raw: &str) -> String {
-    if raw.contains("data-embed=") {
-        return raw.to_string();
-    }
-    let lower = raw.to_ascii_lowercase();
-    if let Some(pos) = lower.find("<html") {
-        let insert_at = pos + 5;
-        let mut out = String::with_capacity(raw.len() + 16);
-        out.push_str(&raw[..insert_at]);
-        out.push_str(" data-embed=\"1\"");
-        out.push_str(&raw[insert_at..]);
-        out
-    } else {
-        raw.to_string()
-    }
-}
-
-fn inline_echarts_script_tags(html: &str, echarts_js: &str) -> String {
-    if !html.contains("echarts.min.js") {
-        return html.to_string();
-    }
-    let safe_js = echarts_js
-        .replace("</script", "<\\/script")
-        .replace("</SCRIPT", "<\\/SCRIPT");
-    let inline_tag = format!("<script data-inlined-echarts=\"1\">{}</script>", safe_js);
-
-    let mut out = String::with_capacity(html.len() + safe_js.len() + 64);
-    let mut cursor = 0usize;
-    while let Some(rel_pos) = html[cursor..].find("echarts.min.js") {
-        let hit = cursor + rel_pos;
-        let before = &html[cursor..hit];
-        let after = &html[hit..];
-        let script_open = before
-            .rfind("<script")
-            .or_else(|| before.rfind("<SCRIPT"));
-        let script_close = after
-            .find("</script>")
-            .or_else(|| after.find("</SCRIPT>"));
-        if let (Some(open_rel), Some(close_rel)) = (script_open, script_close) {
-            let open_abs = cursor + open_rel;
-            let close_end_abs = hit + close_rel + "</script>".len();
-            out.push_str(&html[cursor..open_abs]);
-            out.push_str(&inline_tag);
-            cursor = close_end_abs;
-        } else {
-            out.push_str(&html[cursor..hit + "echarts.min.js".len()]);
-            cursor = hit + "echarts.min.js".len();
-        }
-    }
-    out.push_str(&html[cursor..]);
-    out
-}
-
-fn prepare_embedded_report_html(raw: &str, echarts_js: Option<&str>) -> String {
-    let with_flag = inject_embed_flag_on_html(raw);
-    let with_echarts = match echarts_js {
-        Some(js) if !js.is_empty() => inline_echarts_script_tags(&with_flag, js),
-        _ => with_flag,
-    };
-    let embed_style = "<style data-economist-embed=\"1\">html[data-embed=\"1\"] #ackBtn,html[data-embed=\"1\"] .ack-btn{display:none!important;}</style>";
-    if with_echarts.contains("data-economist-embed=") {
-        return with_echarts;
-    }
-    let lower = with_echarts.to_ascii_lowercase();
-    if let Some(head_close) = lower.find("</head>") {
-        let mut out = String::with_capacity(with_echarts.len() + embed_style.len());
-        out.push_str(&with_echarts[..head_close]);
-        out.push_str(embed_style);
-        out.push_str(&with_echarts[head_close..]);
-        out
-    } else {
-        format!("{}{}", embed_style, with_echarts)
-    }
 }
 
 fn extract_date_token(text: &str) -> Option<String> {
@@ -465,6 +393,7 @@ impl EconomistBridge {
         report_id: &str,
         acked: bool,
     ) -> Result<EconomistSnapshot, String> {
+        let canonical_id = validate_canonical_report_id(report_id)?;
         let ack_path = self.paths.data_dir().join("ack_state.json");
         let mut root: serde_json::Value = if ack_path.is_file() {
             std::fs::read_to_string(&ack_path)
@@ -475,36 +404,57 @@ impl EconomistBridge {
             serde_json::json!({ "reports": {} })
         };
 
+        let expected_rel = format!(
+            "{}/{}/{}/economist_report_{}.html",
+            &canonical_id[0..4],
+            &canonical_id[5..7],
+            &canonical_id[8..10],
+            canonical_id
+        );
+        let html_exists = self.paths.reports_dir().join(&expected_rel).is_file();
+
         let now_str = chrono::Utc::now().format("%Y-%m-%d %H:%M:%S").to_string();
         if !root.is_object() {
             root = serde_json::json!({ "reports": {} });
         }
         let root_obj = root.as_object_mut().unwrap();
+        {
+            let reports_val = root_obj
+                .entry("reports".to_string())
+                .or_insert_with(|| serde_json::json!({}));
+            if !reports_val.is_object() {
+                *reports_val = serde_json::json!({});
+            }
+            let reports_map = reports_val.as_object_mut().unwrap();
+            if !reports_map.contains_key(&canonical_id) && !html_exists {
+                return Err(format!(
+                    "未找到已归档研报 '{}'，拒绝伪造 ACK 记录",
+                    canonical_id
+                ));
+            }
+            let entry = reports_map.entry(canonical_id.clone()).or_insert_with(|| {
+                serde_json::json!({
+                    "report_id": canonical_id,
+                    "date": canonical_id,
+                    "rel_path": expected_rel,
+                })
+            });
+            if let Some(item_obj) = entry.as_object_mut() {
+                item_obj.insert("acked".to_string(), serde_json::Value::Bool(acked));
+                item_obj.insert(
+                    "acked_at".to_string(),
+                    if acked {
+                        serde_json::Value::String(now_str.clone())
+                    } else {
+                        serde_json::Value::Null
+                    },
+                );
+            }
+        }
         root_obj.insert(
             "updated_at".to_string(),
-            serde_json::Value::String(now_str.clone()),
+            serde_json::Value::String(now_str),
         );
-        let reports_val = root_obj
-            .entry("reports".to_string())
-            .or_insert_with(|| serde_json::json!({}));
-        if !reports_val.is_object() {
-            *reports_val = serde_json::json!({});
-        }
-        let reports_map = reports_val.as_object_mut().unwrap();
-        let entry = reports_map
-            .entry(report_id.to_string())
-            .or_insert_with(|| serde_json::json!({ "report_id": report_id, "date": report_id }));
-        if let Some(item_obj) = entry.as_object_mut() {
-            item_obj.insert("acked".to_string(), serde_json::Value::Bool(acked));
-            item_obj.insert(
-                "acked_at".to_string(),
-                if acked {
-                    serde_json::Value::String(now_str)
-                } else {
-                    serde_json::Value::Null
-                },
-            );
-        }
 
         let pretty = serde_json::to_string_pretty(&root)
             .map_err(|e| format!("序列化 ack_state.json 失败: {}", e))?;

@@ -282,6 +282,18 @@ impl PluginStore {
         market_polarity: &str,
         factor_weights: &BTreeMap<String, f64>,
     ) -> Result<PluginBundle, String> {
+        for (label, val) in [
+            ("minIntradayProjectedTurnoverPct", min_intraday_projected_turnover_pct),
+            ("insiderSellVetoPct", insider_sell_veto_pct),
+            ("holderSurgeVetoPct", holder_surge_veto_pct),
+            ("mainOutflowVetoRatio", main_outflow_veto_ratio),
+            ("atrStopMult", atr_stop_mult),
+        ] {
+            if !val.is_finite() {
+                return Err(format!("策略参数 {} 非有限数值", label));
+            }
+        }
+
         let mut bundle = self.load_all()?;
         bundle.strategy.min_intraday_projected_turnover_pct =
             min_intraday_projected_turnover_pct.clamp(5.0, 25.0);
@@ -303,16 +315,35 @@ impl PluginStore {
         };
 
         if !factor_weights.is_empty() {
-            let sum: f64 = factor_weights.values().map(|v| v.max(0.0)).sum();
-            if sum > 1e-6 {
-                for (k, v) in factor_weights {
-                    let norm = ((v.max(0.0) / sum) * 1000.0).round() / 10.0;
-                    bundle.strategy.factor_weights.insert(k.clone(), norm);
+            let known_ids: std::collections::BTreeSet<&str> = bundle
+                .factors
+                .factors
+                .iter()
+                .map(|f| f.factor_id.as_str())
+                .collect();
+            let mut sum = 0.0_f64;
+            for (k, &v) in factor_weights {
+                if !known_ids.contains(k.as_str()) {
+                    return Err(format!("未知因子标识 '{}'，拒绝写入策略配置", k));
                 }
-                for f in &mut bundle.factors.factors {
-                    if let Some(&w) = bundle.strategy.factor_weights.get(&f.factor_id) {
-                        f.weight_pct = w;
-                    }
+                if !v.is_finite() || !(0.0..=100.0).contains(&v) {
+                    return Err(format!(
+                        "因子 {} 权重 {} 超出安全有限区间 [0, 100]",
+                        k, v
+                    ));
+                }
+                sum += v;
+            }
+            if !sum.is_finite() || sum <= 1e-6 {
+                return Err("因子权重总和必须大于 0 且为有限数值".to_string());
+            }
+            for (k, &v) in factor_weights {
+                let norm = ((v / sum) * 1000.0).round() / 10.0;
+                bundle.strategy.factor_weights.insert(k.clone(), norm);
+            }
+            for f in &mut bundle.factors.factors {
+                if let Some(&w) = bundle.strategy.factor_weights.get(&f.factor_id) {
+                    f.weight_pct = w;
                 }
             }
         }

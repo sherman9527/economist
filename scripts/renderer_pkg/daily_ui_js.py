@@ -140,7 +140,7 @@ DAILY_UI_JS = """
                 return;
             }
 
-            const others = (unackedReports || []).filter(r => r.report_id !== CURRENT_REPORT_ID);
+            const others = (unackedReports || []).filter(r => r && typeof r.report_id === "string" && /^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(r.report_id) && r.report_id !== CURRENT_REPORT_ID);
             if (others.length === 0) {
                 banner.classList.remove("visible");
                 listEl.innerHTML = "";
@@ -149,12 +149,13 @@ DAILY_UI_JS = """
             banner.classList.add("visible");
             const isHttp = window.location.protocol.startsWith("http");
             listEl.innerHTML = others.map(r => {
+                const rid = escHtml(r.report_id);
                 const href = isHttp
                     ? ("/reports/index.html?focus=" + encodeURIComponent(r.report_id))
                     : ("../../../index.html?focus=" + encodeURIComponent(r.report_id));
                 return `<span class="unacked-chip">
-                    <a href="${href}" onclick="return handleInPageReportNav(event, '${r.report_id}')" style="color:inherit;text-decoration:none;">📄 ${r.report_id} (页内切换)</a>
-                    <button onclick="quickAckOther('${r.report_id}')" style="cursor:pointer;background:#10b981;color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:800;">确认已阅</button>
+                    <a href="${escHtml(href)}" onclick="return handleInPageReportNav(event, '${rid}')" style="color:inherit;text-decoration:none;">📄 ${rid} (页内切换)</a>
+                    <button onclick="quickAckOther('${rid}')" style="cursor:pointer;background:#10b981;color:#fff;border:none;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:800;">确认已阅</button>
                 </span>`;
             }).join("");
         }
@@ -241,10 +242,6 @@ DAILY_UI_JS = """
                     }
                 }
             } catch (e) {
-                try {
-                    const img = new Image();
-                    img.src = `${ACK_API_BASE}/api/ack-via-get?report_id=${encodeURIComponent(reportId)}&acked=${acked ? 1 : 0}&t=${Date.now()}`;
-                } catch (err) {}
                 if (window.self !== window.top) {
                     try {
                         window.parent.postMessage({

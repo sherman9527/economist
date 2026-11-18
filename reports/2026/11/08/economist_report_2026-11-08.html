@@ -6427,10 +6427,6 @@
                     }
                 }
             } catch (e) {
-                try {
-                    const img = new Image();
-                    img.src = `${ACK_API_BASE}/api/ack-via-get?report_id=${encodeURIComponent(reportId)}&acked=${acked ? 1 : 0}&t=${Date.now()}`;
-                } catch (err) {}
                 if (window.self !== window.top) {
                     try {
                         window.parent.postMessage({

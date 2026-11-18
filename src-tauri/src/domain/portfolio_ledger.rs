@@ -116,16 +116,15 @@ impl PortfolioLedger {
     }
 
     pub fn market_value_fen(&self) -> Fen {
-        let sum: i64 = self
+        let sum = self
             .positions
             .values()
-            .map(|p| p.mark_price_fen.0 * p.total_qty)
-            .sum();
+            .fold(0_i64, |acc, p| acc.saturating_add(p.mark_price_fen.0.saturating_mul(p.total_qty)));
         Fen(sum)
     }
 
     pub fn total_equity_fen(&self) -> Fen {
-        Fen(self.cash_fen.0 + self.market_value_fen().0)
+        Fen(self.cash_fen.0.saturating_add(self.market_value_fen().0))
     }
 
     pub fn advance_trading_day(&mut self, new_trade_date: &str) {
@@ -219,16 +218,19 @@ impl PortfolioLedger {
             let existing_mv_fen = self
                 .positions
                 .get(&canonical)
-                .map(|p| cmd.quote_price_fen.0 * p.total_qty)
+                .map(|p| cmd.quote_price_fen.0.saturating_mul(p.total_qty))
                 .unwrap_or(0);
             let max_single_fen =
                 ((self.total_equity_fen().0 as f64) * (self.max_single_weight_pct / 100.0)).round()
                     as i64;
-            if existing_mv_fen + cost.total_cash_delta_fen.0 > max_single_fen {
+            let next_exposure_fen = existing_mv_fen
+                .checked_add(cost.total_cash_delta_fen.0)
+                .ok_or_else(|| "单票敞口计算溢出".to_string())?;
+            if next_exposure_fen > max_single_fen {
                 return Err(format!(
                     "{} 建仓后单票总敞口 {:.2} 元超出单票集中度上限 {:.1}% ({:.2} 元)",
                     canonical,
-                    Fen(existing_mv_fen + cost.total_cash_delta_fen.0).to_yuan(),
+                    Fen(next_exposure_fen).to_yuan(),
                     self.max_single_weight_pct,
                     Fen(max_single_fen).to_yuan()
                 ));
@@ -258,11 +260,11 @@ impl PortfolioLedger {
         );
 
         if let Some(existing) = self.positions.get_mut(&canonical) {
-            let prev_cost_notional = existing.avg_cost_fen.0 * existing.total_qty;
-            let new_total_qty = existing.total_qty + cmd.shares;
+            let prev_cost_notional = existing.avg_cost_fen.0.saturating_mul(existing.total_qty);
+            let new_total_qty = existing.total_qty.checked_add(cmd.shares).ok_or_else(|| "持仓股数溢出".to_string())?;
             let blended_cost = (prev_cost_notional
-                + cost.total_cash_delta_fen.0
-                + new_total_qty.max(1) / 2)
+                .saturating_add(cost.total_cash_delta_fen.0)
+                .saturating_add(new_total_qty.max(1) / 2))
                 / new_total_qty.max(1);
             existing.total_qty = new_total_qty;
             existing.locked_t0_qty += cmd.shares;

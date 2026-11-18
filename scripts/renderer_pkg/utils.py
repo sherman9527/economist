@@ -40,6 +40,27 @@ def _esc(val: any) -> str:
     return html.escape(str(val))
 
 
+def _safe_script_json(val: any) -> str:
+    """Serialize data to JSON safe for embedding directly inside HTML <script> tags."""
+    raw = json.dumps(val, ensure_ascii=False)
+    return (
+        raw.replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
+
+
+def _safe_http_url(url: any) -> str:
+    """Allow only http:// and https:// external URLs; block javascript:/data:/file: schemes."""
+    s = str(url or "").strip()
+    lower = s.lower()
+    if lower.startswith("https://") or lower.startswith("http://"):
+        return s
+    return "#"
+
+
 def _clean_sec_labels_zh(labels: list[str]) -> str:
     cleaned = [re.sub(r"\s*\([A-Za-z0-9 &_-]+\)", "", str(x)).strip() for x in (labels or [])]
     return " / ".join([c for c in cleaned if c])

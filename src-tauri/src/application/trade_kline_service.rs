@@ -153,8 +153,11 @@ impl TerminalService {
         };
 
         let stop_fen = match input.stop_loss_price_yuan {
-            Some(y) if y > 0.0 => Fen::from_yuan(y),
-            _ => compute_initial_hard_stop_fen_with_band(
+            Some(y) if y.is_finite() && y > 0.0 && y <= 1_000_000.0 => Fen::from_yuan(y),
+            Some(y) => {
+                return Err(format!("非法止损价格参数: {}", y));
+            }
+            None => compute_initial_hard_stop_fen_with_band(
                 quote_fen,
                 prev_low_fen_opt.unwrap_or_else(|| Fen::from_yuan(quote_fen.to_yuan() * 0.955)),
                 Fen::from_yuan(atr_yuan),
@@ -201,6 +204,13 @@ impl TerminalService {
                 sym.board.min_lot_shares()
             };
             let shares = input.lot_qty.unwrap_or(default_shares);
+            if shares <= 0 || shares > crate::domain::types::MAX_ORDER_SHARES {
+                return Err(format!(
+                    "买入委托股数 {} 非法（允许区间 1..={}）",
+                    shares,
+                    crate::domain::types::MAX_ORDER_SHARES
+                ));
+            }
 
             let order_id = format!(
                 "ORD-BUY-{}-{}",

@@ -7,6 +7,7 @@ from ack_server import load_ack_state
 from config import ACK_SERVER_HOST, ACK_SERVER_PORT, DATA_DIR, REPORTS_DIR
 from .archive_assets import ARCHIVE_CSS
 from .archive_js import ARCHIVE_JS
+from .utils import _safe_script_json
 
 def render_archive_index() -> Path:
     """
@@ -31,8 +32,8 @@ def render_archive_index() -> Path:
         except Exception:
             audit_data = None
 
-    initial_reports_json = json.dumps(reports_map, ensure_ascii=False)
-    initial_audit_json = json.dumps(audit_data, ensure_ascii=False)
+    initial_reports_json = _safe_script_json(reports_map)
+    initial_audit_json = _safe_script_json(audit_data)
 
     body_html = f"""</head>
 <body>

@@ -36,6 +36,55 @@ from config import (
 )
 
 STATE_LOCK = threading.Lock()
+REPORT_ID_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
+MAX_POST_BODY_BYTES = 65_536
+
+
+def _validate_report_id(report_id: str) -> str:
+    rid = str(report_id or "").strip()
+    if not REPORT_ID_RE.match(rid):
+        raise ValueError(f"Invalid report_id format: {rid!r}")
+    try:
+        datetime.strptime(rid, "%Y-%m-%d")
+    except ValueError as exc:
+        raise ValueError(f"Invalid calendar date in report_id: {rid!r}") from exc
+    return rid
+
+
+def _resolve_inside_reports_dir(rel_path: str) -> Path | None:
+    clean_rel = str(rel_path or "").replace("\\", "/").lstrip("/")
+    if not clean_rel:
+        return None
+    raw_candidate = REPORTS_DIR / Path(clean_rel)
+    base_resolved = REPORTS_DIR.resolve()
+    try:
+        # Reject symlinks along any path segment inside REPORTS_DIR
+        cur = REPORTS_DIR
+        for part in Path(clean_rel).parts:
+            if part in ("", ".", ".."):
+                if part == "..":
+                    return None
+                continue
+            cur = cur / part
+            if cur.exists() and cur.is_symlink():
+                return None
+        target = raw_candidate.resolve()
+    except OSError:
+        return None
+    if target == base_resolved or not target.is_relative_to(base_resolved):
+        return None
+    return target
+
+
+def _safe_inline_json(val: dict) -> str:
+    return (
+        json.dumps(val, ensure_ascii=False)
+        .replace("<", "\\u003c")
+        .replace(">", "\\u003e")
+        .replace("&", "\\u0026")
+        .replace("\u2028", "\\u2028")
+        .replace("\u2029", "\\u2029")
+    )
 
 
 def load_ack_state() -> dict:
@@ -99,17 +148,26 @@ def register_report(
 
 
 def set_report_ack(report_id: str, acked: bool = True, note: str = "") -> dict:
-    """Update ACK state for a specific report_id and patch its static HTML snapshot."""
+    """Update ACK state for a validated existing report_id and patch its static HTML snapshot."""
+    report_id = _validate_report_id(report_id)
+    safe_note = str(note or "")[:500]
     state = load_ack_state()
     now_str = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     target_entry = None
     with STATE_LOCK:
         if report_id not in state["reports"]:
+            default_rel = (
+                f"{report_id[:4]}/{report_id[5:7]}/{report_id[8:10]}/"
+                f"economist_report_{report_id}.html"
+            )
+            existing_html = _resolve_inside_reports_dir(default_rel)
+            if existing_html is None or not existing_html.is_file():
+                raise ValueError(f"Unknown report_id: {report_id}")
             state["reports"][report_id] = {
                 "report_id": report_id,
-                "date": report_id[:10],
+                "date": report_id,
                 "title": f"经济学人A股/美股深度投研总览 ({report_id})",
-                "rel_path": f"{report_id[:4]}/{report_id[5:7]}/{report_id[8:10]}/economist_report_{report_id}.html",
+                "rel_path": default_rel,
                 "generated_at": now_str,
                 "acked": False,
                 "acked_at": None,
@@ -117,37 +175,33 @@ def set_report_ack(report_id: str, acked: bool = True, note: str = "") -> dict:
         entry = state["reports"][report_id]
         entry["acked"] = bool(acked)
         entry["acked_at"] = now_str if acked else None
-        if note:
-            entry["note"] = note
+        if safe_note:
+            entry["note"] = safe_note
         entry["updated_at"] = now_str
         save_ack_state_unlocked(state)
         target_entry = dict(entry)
 
     # Also update embedded initial JSON inside the HTML file on disk so file:// viewing reflects ACK state
-    try:
-        rel_path = target_entry.get("rel_path", "")
-        if rel_path:
-            html_file = REPORTS_DIR / Path(rel_path)
-            if html_file.exists():
-                html_text = html_file.read_text(encoding="utf-8")
-                new_meta = json.dumps(
-                    {
-                        "report_id": report_id,
-                        "acked": bool(acked),
-                        "acked_at": target_entry["acked_at"],
-                    },
-                    ensure_ascii=False,
-                )
-                patched = re.sub(
-                    r"(/\*__ACK_SNAPSHOT_START__\*/).*?(/\*__ACK_SNAPSHOT_END__\*/)",
-                    rf"\1{new_meta}\2",
-                    html_text,
-                    flags=re.S,
-                )
-                if patched != html_text:
-                    html_file.write_text(patched, encoding="utf-8")
-    except Exception:
-        pass
+    rel_path = target_entry.get("rel_path", "")
+    if rel_path:
+        html_file = _resolve_inside_reports_dir(rel_path)
+        if html_file is not None and html_file.is_file():
+            html_text = html_file.read_text(encoding="utf-8")
+            new_meta = _safe_inline_json(
+                {
+                    "report_id": report_id,
+                    "acked": bool(acked),
+                    "acked_at": target_entry["acked_at"],
+                }
+            )
+            patched = re.sub(
+                r"(/\*__ACK_SNAPSHOT_START__\*/).*?(/\*__ACK_SNAPSHOT_END__\*/)",
+                lambda m: f"{m.group(1)}{new_meta}{m.group(2)}",
+                html_text,
+                flags=re.S,
+            )
+            if patched != html_text:
+                html_file.write_text(patched, encoding="utf-8")
 
     # Refresh reports/index.html archive index if renderer is available
     try:
@@ -226,18 +280,51 @@ def ensure_ack_server_running() -> str:
 
 
 class AckRequestHandler(BaseHTTPRequestHandler):
+    def _allowed_origins(self) -> set[str]:
+        port = self.server.server_port
+        return {f"http://127.0.0.1:{port}", f"http://localhost:{port}"}
+
+    def _is_valid_host(self) -> bool:
+        raw_host = (self.headers.get("Host") or "").strip().lower()
+        if not raw_host:
+            return True
+        port = self.server.server_port
+        return raw_host in {
+            "127.0.0.1",
+            "localhost",
+            f"127.0.0.1:{port}",
+            f"localhost:{port}",
+        }
+
+    def _is_trusted_origin(self, allow_missing: bool = True) -> bool:
+        origin = self.headers.get("Origin")
+        if origin is None:
+            return allow_missing
+        return origin.strip().lower() in self._allowed_origins()
+
     def _send_cors_headers(self):
-        self.send_header("Access-Control-Allow-Origin", "*")
+        origin = (self.headers.get("Origin") or "").strip()
+        if origin.lower() in self._allowed_origins():
+            self.send_header("Access-Control-Allow-Origin", origin)
+            self.send_header("Vary", "Origin")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("X-Content-Type-Options", "nosniff")
         self.send_header("Cache-Control", "no-store, no-cache, must-revalidate")
 
     def do_OPTIONS(self):
+        if not self._is_valid_host() or not self._is_trusted_origin(allow_missing=True):
+            self._respond_json(403, {"status": "error", "message": "Forbidden origin or host"})
+            return
         self.send_response(204)
         self._send_cors_headers()
         self.end_headers()
 
     def do_GET(self):
+        if not self._is_valid_host():
+            self._respond_json(403, {"status": "error", "message": "Forbidden Host header"})
+            return
+
         parsed = urlparse(self.path)
         path = unquote(parsed.path)
 
@@ -274,14 +361,7 @@ class AckRequestHandler(BaseHTTPRequestHandler):
             return
 
         if path == "/api/ack-via-get":
-            qs = parse_qs(parsed.query)
-            report_id = (qs.get("report_id") or [""])[0].strip()
-            acked_val = (qs.get("acked") or ["1"])[0].strip().lower() in ("1", "true", "yes")
-            if not report_id:
-                self._respond_json(400, {"status": "error", "message": "Missing report_id"})
-                return
-            entry = set_report_ack(report_id, acked=acked_val)
-            self._respond_json(200, {"status": "ok", "entry": entry, "unacked_reports": get_unacked_reports()})
+            self._respond_json(405, {"status": "error", "message": "State-mutating GET endpoint is disabled; use POST /api/ack"})
             return
 
         if path in ("/", "/index.html", "/reports", "/reports/"):
@@ -292,14 +372,14 @@ class AckRequestHandler(BaseHTTPRequestHandler):
             return
 
         if path.startswith("/reports/"):
-            rel = path[len("/reports/") :].lstrip("/\\")
-            target = (REPORTS_DIR / rel).resolve()
-            if not str(target).startswith(str(REPORTS_DIR.resolve())) or not target.is_file():
+            rel = path[len("/reports/") :]
+            target = _resolve_inside_reports_dir(rel)
+            if target is None or not target.is_file():
                 self.send_response(404)
                 self._send_cors_headers()
                 self.send_header("Content-Type", "text/plain; charset=utf-8")
                 self.end_headers()
-                self.wfile.write(f"Report not found: {rel}".encode("utf-8"))
+                self.wfile.write(b"Report not found")
                 return
 
             content = target.read_bytes()
@@ -325,18 +405,44 @@ class AckRequestHandler(BaseHTTPRequestHandler):
         self._respond_json(404, {"status": "error", "message": f"Unknown path: {path}"})
 
     def do_POST(self):
+        if not self._is_valid_host() or not self._is_trusted_origin(allow_missing=True):
+            self._respond_json(403, {"status": "error", "message": "Cross-origin or untrusted Host POST denied"})
+            return
+
         parsed = urlparse(self.path)
         if parsed.path not in ("/api/ack", "/api/ack-batch"):
             self._respond_json(404, {"status": "error", "message": "Not found"})
             return
 
+        ctype = (self.headers.get("Content-Type") or "").split(";")[0].strip().lower()
+        if ctype != "application/json":
+            self._respond_json(415, {"status": "error", "message": "Content-Type must be application/json"})
+            return
+
         try:
             length = int(self.headers.get("Content-Length", "0"))
+        except ValueError:
+            self._respond_json(400, {"status": "error", "message": "Invalid Content-Length"})
+            return
+        if length < 0:
+            self._respond_json(400, {"status": "error", "message": "Negative Content-Length"})
+            return
+        if length > MAX_POST_BODY_BYTES:
+            self._respond_json(413, {"status": "error", "message": "Payload exceeds 64 KiB limit"})
+            return
+
+        try:
             raw_body = self.rfile.read(length).decode("utf-8") if length > 0 else "{}"
             payload = json.loads(raw_body)
+            if not isinstance(payload, dict):
+                self._respond_json(400, {"status": "error", "message": "JSON body must be an object"})
+                return
 
             if parsed.path == "/api/ack-batch":
                 report_ids = payload.get("report_ids") or []
+                if not isinstance(report_ids, list) or len(report_ids) > 500:
+                    self._respond_json(400, {"status": "error", "message": "Invalid report_ids list"})
+                    return
                 acked = bool(payload.get("acked", True))
                 updated_entries = []
                 for rid in report_ids:
@@ -372,6 +478,8 @@ class AckRequestHandler(BaseHTTPRequestHandler):
                     "unacked_reports": get_unacked_reports(),
                 },
             )
+        except (ValueError, json.JSONDecodeError) as e:
+            self._respond_json(400, {"status": "error", "message": str(e)})
         except Exception as e:
             self._respond_json(500, {"status": "error", "message": str(e)})
 

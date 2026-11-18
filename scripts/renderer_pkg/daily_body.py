@@ -4,47 +4,53 @@
 import json
 from config import ACK_SERVER_HOST, ACK_SERVER_PORT
 from gs_ms_tables import localize_zh_text
-from .utils import _esc, _fmt_pct_badge, _short_sentence
+from .utils import _build_svg_sparkline, _esc, _fmt_pct_badge, _safe_script_json, _short_sentence
 
 def build_daily_body_and_vars(ns: dict) -> str:
-    report_date = ns['report_date']
-    window_desc = ns['window_desc']
-    generated_at = ns['generated_at']
-    kline_map = ns['kline_map']
-    core_articles = ns['core_articles']
-    digest_articles = ns['digest_articles']
-    unacked_banner_html = ns['unacked_banner_html']
-    toc_links_html = ns['toc_links_html']
-    archive_items_html = ns['archive_items_html']
-    headline_zh = ns['headline_zh']
-    us_score = ns['us_score']
-    cn_score = ns['cn_score']
-    spy_k = ns['spy_k']
-    qqq_k = ns['qqq_k']
-    sh_k = ns['sh_k']
-    cyb_k = ns['cyb_k']
-    exec_cards_html = ns['exec_cards_html']
-    kline_tabs_html = ns['kline_tabs_html']
-    backtest_summary = ns['backtest_summary']
-    bt_records = ns['bt_records']
-    bt_hit_count = ns['bt_hit_count']
-    bt_miss_count = ns['bt_miss_count']
-    backtest_rows_html = ns['backtest_rows_html']
-    sector_rows_html = ns['sector_rows_html']
-    master_stock_rows_html = ns['master_stock_rows_html']
-    pair_trade_rows_html = ns['pair_trade_rows_html']
-    article_cards_html = ns['article_cards_html']
-    digest_rows_html = ns['digest_rows_html']
-    initial_ack_snapshot = ns['initial_ack_snapshot']
-    stock_meta_by_sym = ns['stock_meta_by_sym']
-    sector_chart_categories = ns['sector_chart_categories']
-    sector_us_scores = ns['sector_us_scores']
-    sector_cn_scores = ns['sector_cn_scores']
-    sector_real_5d = ns['sector_real_5d']
-    diverging_items = ns['diverging_items']
-    scatter_points = ns['scatter_points']
-    per_article_chart_configs = ns['per_article_chart_configs']
-    bt_chart_payload = ns['bt_chart_payload']
+    report_date = ns["report_date"]
+    window_desc = ns["window_desc"]
+    generated_at = ns["generated_at"]
+    kline_map = ns["kline_map"]
+    core_articles = ns["core_articles"]
+    digest_articles = ns["digest_articles"]
+    toc_article_links_html = ns.get("toc_article_links_html") or ns.get("toc_links_html") or []
+    archive_items_html = ns["archive_items_html"]
+    spy_k = ns["spy_k"]
+    qqq_k = ns["qqq_k"]
+    sh_k = ns["sh_k"]
+    cyb_k = ns["cyb_k"]
+    exec_cards_html = ns["exec_cards_html"]
+    bm_btns_html = ns.get("bm_btns_html", "")
+    us_btns_html = ns.get("us_btns_html", "")
+    cn_btns_html = ns.get("cn_btns_html", "")
+    backtest_summary = ns["backtest_summary"]
+    bt_records = ns["bt_records"]
+    bt_hit_count = ns["bt_hit_count"]
+    bt_miss_count = ns["bt_miss_count"]
+    backtest_rows_html = ns["backtest_rows_html"]
+    sector_scorecard = ns.get("sector_scorecard", [])
+    sector_rows_html = ns["sector_rows_html"]
+    all_stock_rows = ns.get("all_stock_rows", [])
+    bull_stocks = ns.get("bull_stocks", [])
+    bear_stocks = ns.get("bear_stocks", [])
+    us_stocks = ns.get("us_stocks", [])
+    cn_stocks = ns.get("cn_stocks", [])
+    master_stock_rows_html = ns["master_stock_rows_html"]
+    chains = ns.get("chains", [])
+    pair_trade_rows_html = ns["pair_trade_rows_html"]
+    article_matrix_rows_html = ns.get("article_matrix_rows_html") or ns.get("matrix_rows_html") or []
+    deep_cards_html = ns.get("deep_cards_html") or ns.get("article_cards_html") or []
+    digest_rows_html = ns["digest_rows_html"]
+    initial_ack_snapshot = ns["initial_ack_snapshot"]
+    stock_meta_by_sym = ns["stock_meta_by_sym"]
+    sector_chart_categories = ns["sector_chart_categories"]
+    sector_us_scores = ns["sector_us_scores"]
+    sector_cn_scores = ns["sector_cn_scores"]
+    sector_real_5d = ns["sector_real_5d"]
+    diverging_items = ns["diverging_items"]
+    scatter_points = ns["scatter_points"]
+    per_article_chart_configs = ns["per_article_chart_configs"]
+    bt_chart_payload = ns["bt_chart_payload"]
     return f"""
 </head>
 <body>
@@ -490,16 +496,16 @@ def build_daily_body_and_vars(ns: dict) -> str:
     </div>
 
     <script>
-        const CURRENT_REPORT_ID = {json.dumps(report_date)};
+        const CURRENT_REPORT_ID = {_safe_script_json(report_date)};
         const ACK_API_BASE = "http://{ACK_SERVER_HOST}:{ACK_SERVER_PORT}";
         const INITIAL_ACK_SNAPSHOT = /*__ACK_SNAPSHOT_START__*/{initial_ack_snapshot}/*__ACK_SNAPSHOT_END__*/;
-        const KLINE_MAP = {json.dumps(kline_map, ensure_ascii=False)};
-        const STOCK_META = {json.dumps(stock_meta_by_sym, ensure_ascii=False)};
-        const SECTOR_CHART_DATA = {json.dumps({"categories": sector_chart_categories, "us_scores": sector_us_scores, "cn_scores": sector_cn_scores, "real_5d": sector_real_5d}, ensure_ascii=False)};
-        const DIVERGING_BAR_DATA = {json.dumps(diverging_items, ensure_ascii=False)};
-        const SCATTER_POINTS = {json.dumps(scatter_points, ensure_ascii=False)};
-        const PER_ARTICLE_CHARTS = {json.dumps(per_article_chart_configs, ensure_ascii=False)};
-        const BACKTEST_DATA = {json.dumps(bt_chart_payload, ensure_ascii=False)};
+        const KLINE_MAP = {_safe_script_json(kline_map)};
+        const STOCK_META = {_safe_script_json(stock_meta_by_sym)};
+        const SECTOR_CHART_DATA = {_safe_script_json({"categories": sector_chart_categories, "us_scores": sector_us_scores, "cn_scores": sector_cn_scores, "real_5d": sector_real_5d})};
+        const DIVERGING_BAR_DATA = {_safe_script_json(diverging_items)};
+        const SCATTER_POINTS = {_safe_script_json(scatter_points)};
+        const PER_ARTICLE_CHARTS = {_safe_script_json(per_article_chart_configs)};
+        const BACKTEST_DATA = {_safe_script_json(bt_chart_payload)};
 
         const chartInstances = {{}};
 """

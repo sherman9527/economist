@@ -295,10 +295,7 @@ ARCHIVE_JS = """        let activePageId = "";
                     broadcastAckSync();
                 }
             } catch (e) {
-                try {
-                    const img = new Image();
-                    img.src = `${ACK_API_BASE}/api/ack-via-get?report_id=${encodeURIComponent(reportId)}&acked=${acked ? 1 : 0}&t=${Date.now()}`;
-                } catch (err) {}
+                // Offline/file:// mode: ACK remains persisted in localStorage
             }
         }
 
@@ -336,12 +333,7 @@ ARCHIVE_JS = """        let activePageId = "";
                     broadcastAckSync();
                 }
             } catch (e) {
-                for (const rid of unreadIds) {
-                    try {
-                        const img = new Image();
-                        img.src = `${ACK_API_BASE}/api/ack-via-get?report_id=${encodeURIComponent(rid)}&acked=1&t=${Date.now()}`;
-                    } catch (err) {}
-                }
+                // Offline/file:// mode: batch ACK remains persisted in localStorage
             }
         }
 

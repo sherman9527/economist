@@ -1,5 +1,6 @@
 pub mod agent_supervisor;
 pub mod economist_bridge;
+mod economist_embed;
 pub mod market_eastmoney;
 pub mod market_tencent;
 pub mod plugin_store;

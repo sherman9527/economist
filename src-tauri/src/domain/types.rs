@@ -283,20 +283,35 @@ pub struct TradeCostBreakdown {
     pub total_cash_delta_fen: Fen,
 }
 
+pub const MAX_ORDER_SHARES: i64 = 10_000_000;
+pub const MAX_QUOTE_PRICE_FEN: i64 = 1_000_000_000;
+
 impl FeeSchedule {
     pub fn compute_buy(&self, quote_price: Fen, shares: i64) -> Result<TradeCostBreakdown, String> {
         if quote_price.0 <= 0 || shares <= 0 {
             return Err("买入报价与股数必须大于 0".to_string());
+        }
+        if quote_price.0 > MAX_QUOTE_PRICE_FEN || shares > MAX_ORDER_SHARES {
+            return Err(format!(
+                "买入委托超出安全上限（单笔股数上限 {} 股）",
+                MAX_ORDER_SHARES
+            ));
         }
         let slip_ratio = self.slippage_bps.max(0.0) / 10_000.0;
         let fill_fen = (((quote_price.0 as f64) * (1.0 + slip_ratio)).ceil() as i64).max(quote_price.0);
         let gross = fill_fen
             .checked_mul(shares)
             .ok_or_else(|| "买入成交金额溢出".to_string())?;
-        let slippage_fen = Fen((fill_fen - quote_price.0) * shares);
+        let slip_diff = fill_fen.saturating_sub(quote_price.0);
+        let slippage_raw = slip_diff
+            .checked_mul(shares)
+            .ok_or_else(|| "买入滑点金额溢出".to_string())?;
+        let slippage_fen = Fen(slippage_raw);
         let raw_comm = ((gross as f64) * (self.commission_bps.max(0.0) / 10_000.0)).round() as i64;
         let comm = raw_comm.max(self.min_commission_fen.0);
-        let total = gross + comm;
+        let total = gross
+            .checked_add(comm)
+            .ok_or_else(|| "买入含费总金额溢出".to_string())?;
         Ok(TradeCostBreakdown {
             fill_price_fen: Fen(fill_fen),
             gross_notional_fen: Fen(gross),
@@ -311,17 +326,32 @@ impl FeeSchedule {
         if quote_price.0 <= 0 || shares <= 0 {
             return Err("卖出报价与股数必须大于 0".to_string());
         }
+        if quote_price.0 > MAX_QUOTE_PRICE_FEN || shares > MAX_ORDER_SHARES {
+            return Err(format!(
+                "卖出委托超出安全上限（单笔股数上限 {} 股）",
+                MAX_ORDER_SHARES
+            ));
+        }
         let slip_ratio = self.slippage_bps.max(0.0) / 10_000.0;
         let fill_fen = (((quote_price.0 as f64) * (1.0 - slip_ratio)).floor() as i64)
             .clamp(1, quote_price.0);
         let gross = fill_fen
             .checked_mul(shares)
             .ok_or_else(|| "卖出成交金额溢出".to_string())?;
-        let slippage_fen = Fen((quote_price.0 - fill_fen).max(0) * shares);
+        let slippage_raw = (quote_price.0 - fill_fen)
+            .max(0)
+            .checked_mul(shares)
+            .ok_or_else(|| "卖出滑点金额溢出".to_string())?;
+        let slippage_fen = Fen(slippage_raw);
         let raw_comm = ((gross as f64) * (self.commission_bps.max(0.0) / 10_000.0)).round() as i64;
         let comm = raw_comm.max(self.min_commission_fen.0);
         let stamp = (((gross as f64) * (self.stamp_duty_sell_bps.max(0.0) / 10_000.0)).round() as i64).max(1);
-        let net_proceeds = gross - comm - stamp;
+        let fees = comm
+            .checked_add(stamp)
+            .ok_or_else(|| "卖出税费合计溢出".to_string())?;
+        let net_proceeds = gross
+            .checked_sub(fees)
+            .ok_or_else(|| "卖出净所得下溢".to_string())?;
         Ok(TradeCostBreakdown {
             fill_price_fen: Fen(fill_fen),
             gross_notional_fen: Fen(gross),

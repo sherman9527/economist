@@ -27,6 +27,8 @@ from .utils import (
     _dir_to_gs_badge,
     _esc,
     _fmt_pct_badge,
+    _safe_http_url,
+    _safe_script_json,
     _short_sentence,
 )
 
@@ -456,7 +458,7 @@ def render_daily_report(analysis_data: dict, report_date: str) -> Path:
                         <div class="note-actions-right">
                             <span class="gs-badge {us_gs_cls}">🇺🇸 美股：{_esc(us_dir)} ({us_sc}分)</span>
                             <span class="gs-badge {cn_gs_cls}">🇨🇳 A/港股：{_esc(cn_dir)} ({cn_sc}分)</span>
-                            <a href="{_esc(link)}" target="_blank" rel="noopener" class="ext-btn">经济学人原文 ↗</a>
+                            <a href="{_esc(_safe_http_url(link))}" target="_blank" rel="noopener noreferrer" class="ext-btn">经济学人原文 ↗</a>
                             <a href="#sec-article-matrix" class="ext-btn">↑ 返回矩阵</a>
                         </div>
                     </div>
@@ -597,7 +599,7 @@ def render_daily_report(analysis_data: dict, report_date: str) -> Path:
             f"""
             <tr>
                 <td class="td-center">{d_i}</td>
-                <td><a href="{_esc(d_art.get("link"))}" target="_blank" rel="noopener" style="color:var(--gs-accent);font-weight:700;text-decoration:none;">{_esc(localize_zh_text(d_art.get("zh_title") or d_art.get("title")))} ↗</a></td>
+                <td><a href="{_esc(_safe_http_url(d_art.get("link")))}" target="_blank" rel="noopener noreferrer" style="color:var(--gs-accent);font-weight:700;text-decoration:none;">{_esc(localize_zh_text(d_art.get("zh_title") or d_art.get("title")))} ↗</a></td>
                 <td><span class="cat-chip">{_esc(d_sec_zh[:16])}</span></td>
                 <td class="td-center">{_esc(d_art.get("pub_date_cst"))}</td>
                 <td>{_esc(_short_sentence(d_art.get("summary_zh") or d_art.get("description"), 55))}</td>
@@ -628,13 +630,12 @@ def render_daily_report(analysis_data: dict, report_date: str) -> Path:
             """
         )
 
-    initial_ack_snapshot = json.dumps(
+    initial_ack_snapshot = _safe_script_json(
         {
             "report_id": report_date,
             "acked": bool(entry.get("acked", False)),
             "acked_at": entry.get("acked_at"),
-        },
-        ensure_ascii=False,
+        }
     )
 
     # Concise 4-point Executive Bullets (each <= 60 chars)
