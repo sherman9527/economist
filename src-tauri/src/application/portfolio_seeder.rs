@@ -1,3 +1,4 @@
+use crate::application::dto_mapper::fee_schedule_from_strategy;
 use crate::application::scan_pipeline::ScanExecutionOutput;
 use crate::application::terminal_service::TerminalService;
 use crate::domain::factor_engine::{compute_chandelier_stop_fen, compute_initial_hard_stop_fen};
@@ -22,6 +23,29 @@ pub fn current_cst_dates() -> (String, String, String) {
 }
 
 impl TerminalService {
+    pub(crate) async fn sync_and_seed_ledger_locked(
+        &self,
+        scan: &ScanExecutionOutput,
+        bundle: &PluginBundle,
+        today_cst: &str,
+        next_cst: &str,
+        now_iso: &str,
+    ) -> Result<PortfolioLedger, String> {
+        let _guard = self.ledger_lock.lock().await;
+        let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
+        let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
+        let mut ledger = self.repo.load_ledger(init_cap, today_cst, fee_sched)?;
+        self.refresh_open_positions_and_seed_if_empty(
+            &mut ledger,
+            scan,
+            bundle,
+            today_cst,
+            next_cst,
+            now_iso,
+        )?;
+        Ok(ledger)
+    }
+
     pub(crate) fn refresh_open_positions_and_seed_if_empty(
         &self,
         ledger: &mut PortfolioLedger,
@@ -30,7 +54,7 @@ impl TerminalService {
         today_cst: &str,
         next_cst: &str,
         now_iso: &str,
-    ) {
+    ) -> Result<(), String> {
         if ledger.orders.is_empty() && ledger.positions.is_empty() {
             let mut seed_picks: Vec<&ScreenerCandidateDto> = scan
                 .candidates
@@ -146,12 +170,13 @@ impl TerminalService {
             }
         }
 
-        let _ = self.repo.save_ledger(ledger);
+        self.repo.save_ledger(ledger)?;
         if let Ok(existing_snaps) = self.repo.list_equity_snapshots() {
             if existing_snaps.len() <= 1 {
                 self.seed_baseline_equity_curve(ledger, scan);
             }
         }
+        Ok(())
     }
 
     fn seed_baseline_equity_curve(&self, ledger: &PortfolioLedger, scan: &ScanExecutionOutput) {

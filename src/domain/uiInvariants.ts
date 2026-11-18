@@ -144,9 +144,10 @@ export function validatePortfolioInvariants(portfolio: PortfolioOverviewDto): {
         `${pos.symbol} 总持仓 (${pos.totalQty}) != 可卖 (${pos.sellableQty}) + T+1锁仓 (${pos.lockedT0Qty})`
       );
     }
-    if (!(pos.stopLossPriceYuan > 0 && pos.stopLossPriceYuan < pos.avgCostYuan)) {
+    const stopCeilingYuan = Math.max(pos.avgCostYuan, pos.markPriceYuan);
+    if (!(pos.stopLossPriceYuan > 0 && pos.stopLossPriceYuan < stopCeilingYuan)) {
       violations.push(
-        `${pos.symbol} 止损价 (¥${pos.stopLossPriceYuan}) 必须严格低于建仓均价 (¥${pos.avgCostYuan})`
+        `${pos.symbol} 止损价 (¥${pos.stopLossPriceYuan}) 必须严格低于 max(建仓均价 ¥${pos.avgCostYuan}, 现价 ¥${pos.markPriceYuan})`
       );
     }
   }

@@ -4,7 +4,9 @@ use crate::application::dto_mapper::{
 use crate::application::portfolio_seeder::current_cst_dates;
 use crate::application::terminal_service::TerminalService;
 use crate::domain::factor_engine::compute_initial_hard_stop_fen;
-use crate::domain::portfolio_ledger::{BuyOrderCommand, SellOrderCommand};
+use crate::domain::portfolio_ledger::{
+    suggest_position_shares, BuyOrderCommand, SellOrderCommand,
+};
 use crate::domain::types::{Fen, Symbol};
 use crate::infrastructure::market_eastmoney::fetch_eastmoney_klines;
 use crate::infrastructure::market_tencent::{fetch_tencent_fallback_klines, SimpleBar};
@@ -17,13 +19,17 @@ impl TerminalService {
         period: &str,
     ) -> Result<StockKlinePayloadDto, String> {
         let sym = Symbol::parse(symbol)?;
-        let norm_period = if period == "30m" { "30m" } else { "1D" };
+        let norm_period = if period.eq_ignore_ascii_case("30m") {
+            "30m"
+        } else {
+            "1d"
+        };
         let bundle = self.plugins.load_all()?;
 
         let (cached_bars, candidate_opt, quote_name, circ_mv_yi) = {
             let guard = self.scan_cache.read().await;
             if let Some(st) = guard.as_ref() {
-                let bars = if norm_period == "1D" {
+                let bars = if norm_period == "1d" {
                     st.output.kline_cache_1d.get(&sym.canonical()).cloned()
                 } else {
                     None
@@ -115,18 +121,10 @@ impl TerminalService {
         let (today_cst, next_cst, now_iso) = current_cst_dates();
         let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
         let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
-        let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
 
         let (name_zh, industry_sw1, quote_fen, prev_fen, atr_yuan, is_st) = self
             .resolve_symbol_quote_context(&sym, &bundle, input.stop_loss_price_yuan)
             .await;
-
-        let default_shares = {
-            let target_yuan = (bundle.strategy.initial_capital_yuan as f64) * 0.10;
-            let raw_lots = ((target_yuan / quote_fen.to_yuan().max(1.0)) / 100.0).floor() as i64;
-            (raw_lots.max(1) * 100).max(sym.board.min_lot_shares())
-        };
-        let shares = input.lot_qty.unwrap_or(default_shares);
 
         let stop_fen = match input.stop_loss_price_yuan {
             Some(y) if y > 0.0 => Fen::from_yuan(y),
@@ -148,33 +146,54 @@ impl TerminalService {
                 )
             });
 
-        let order_id = format!(
-            "ORD-BUY-{}-{}",
-            sym.digits,
-            chrono::Utc::now().timestamp_millis() % 1_000_000
-        );
-        let filled = ledger.execute_buy(BuyOrderCommand {
-            order_id,
-            rec_id: None,
-            symbol: sym.clone(),
-            name_zh: name_zh.clone(),
-            industry_sw1,
-            quote_price_fen: quote_fen,
-            prev_close_fen: prev_fen,
-            is_st,
-            shares,
-            stop_loss_price_fen: stop_fen,
-            rationale_zh,
-            trade_date: today_cst,
-            next_trade_date: next_cst,
-            created_at_iso: now_iso,
-        })?;
-        self.repo.save_ledger(&ledger)?;
+        let (ledger, filled) = {
+            let _guard = self.ledger_lock.lock().await;
+            let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
+            let suggested = suggest_position_shares(
+                sym.board,
+                ledger.total_equity_fen(),
+                ledger.cash_fen,
+                quote_fen,
+                stop_fen,
+                bundle.strategy.max_single_weight_pct,
+                bundle.strategy.max_single_risk_pct,
+            );
+            let default_shares = if suggested >= sym.board.min_lot_shares() {
+                suggested
+            } else {
+                sym.board.min_lot_shares()
+            };
+            let shares = input.lot_qty.unwrap_or(default_shares);
+
+            let order_id = format!(
+                "ORD-BUY-{}-{}",
+                sym.digits,
+                chrono::Utc::now().timestamp_millis() % 1_000_000
+            );
+            let filled = ledger.execute_buy(BuyOrderCommand {
+                order_id,
+                rec_id: None,
+                symbol: sym.clone(),
+                name_zh: name_zh.clone(),
+                industry_sw1,
+                quote_price_fen: quote_fen,
+                prev_close_fen: prev_fen,
+                is_st,
+                shares,
+                stop_loss_price_fen: stop_fen,
+                rationale_zh,
+                trade_date: today_cst,
+                next_trade_date: next_cst,
+                created_at_iso: now_iso,
+            })?;
+            self.repo.save_ledger(&ledger)?;
+            (ledger, filled)
+        };
 
         let _ = self.cleaner.record_event(
             &self.repo,
             "INFO",
-            "PORTFOLIO",
+            "TRADING",
             "simulated_buy_filled",
             Some(2),
             true,
@@ -202,50 +221,73 @@ impl TerminalService {
         let (today_cst, _, now_iso) = current_cst_dates();
         let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
         let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
-        let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
 
-        let existing = ledger
-            .positions
-            .get(&sym.canonical())
-            .cloned()
-            .ok_or_else(|| format!("持仓席位中不存在 {}", sym.canonical()))?;
-
-        let (_, _, live_quote_fen, prev_fen, _, is_st) = self
-            .resolve_symbol_quote_context(
-                &sym,
-                &bundle,
-                Some(existing.stop_loss_price_fen.to_yuan()),
-            )
-            .await;
-        let quote_fen = if live_quote_fen.0 > 0 {
-            live_quote_fen
-        } else {
-            existing.mark_price_fen
+        let pre_stop_yuan = {
+            let _guard = self.ledger_lock.lock().await;
+            let snapshot = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
+            snapshot
+                .positions
+                .get(&sym.canonical())
+                .map(|p| p.stop_loss_price_fen.to_yuan())
+                .ok_or_else(|| format!("持仓席位中不存在 {}", sym.canonical()))?
         };
 
-        let order_id = format!(
-            "ORD-SELL-{}-{}",
-            sym.digits,
-            chrono::Utc::now().timestamp_millis() % 1_000_000
-        );
-        let filled = ledger.execute_sell(SellOrderCommand {
-            order_id,
-            symbol: sym.clone(),
-            quote_price_fen: quote_fen,
-            prev_close_fen: prev_fen,
-            is_st,
-            shares: existing.total_qty,
-            trigger_type: "MANUAL_ROTATION".to_string(),
-            rationale_zh: reason_zh.to_string(),
-            trade_date: today_cst,
-            created_at_iso: now_iso,
-        })?;
-        self.repo.save_ledger(&ledger)?;
+        let (_, _, live_quote_fen, prev_fen, _, is_st) = self
+            .resolve_symbol_quote_context(&sym, &bundle, Some(pre_stop_yuan))
+            .await;
+
+        let trigger_type = if reason_zh.contains("止损") {
+            "STOP_LOSS"
+        } else if reason_zh.contains("止盈") {
+            "TAKE_PROFIT"
+        } else {
+            "REBALANCE_EXIT"
+        }
+        .to_string();
+
+        let (ledger, filled) = {
+            let _guard = self.ledger_lock.lock().await;
+            let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
+            let existing = ledger
+                .positions
+                .get(&sym.canonical())
+                .cloned()
+                .ok_or_else(|| format!("持仓席位中不存在 {}", sym.canonical()))?;
+            let quote_fen = if live_quote_fen.0 > 0 {
+                live_quote_fen
+            } else {
+                existing.mark_price_fen
+            };
+            let shares_to_close = if existing.sellable_qty > 0 {
+                existing.sellable_qty
+            } else {
+                existing.total_qty
+            };
+            let order_id = format!(
+                "ORD-SELL-{}-{}",
+                sym.digits,
+                chrono::Utc::now().timestamp_millis() % 1_000_000
+            );
+            let filled = ledger.execute_sell(SellOrderCommand {
+                order_id,
+                symbol: sym.clone(),
+                quote_price_fen: quote_fen,
+                prev_close_fen: prev_fen,
+                is_st,
+                shares: shares_to_close,
+                trigger_type,
+                rationale_zh: reason_zh.to_string(),
+                trade_date: today_cst,
+                created_at_iso: now_iso,
+            })?;
+            self.repo.save_ledger(&ledger)?;
+            (ledger, filled)
+        };
 
         let _ = self.cleaner.record_event(
             &self.repo,
             "INFO",
-            "PORTFOLIO",
+            "TRADING",
             "simulated_position_closed",
             Some(2),
             true,

@@ -243,7 +243,7 @@ pub fn validate_lot_size(board: BoardKind, shares: i64) -> Result<(), String> {
             shares, min_shares
         ));
     }
-    if shares % 100 != 0 {
+    if board != BoardKind::Star && shares % 100 != 0 {
         return Err(format!("委托股数 {} 必须为 100 股整数倍", shares));
     }
     Ok(())
@@ -353,10 +353,12 @@ mod tests {
     }
 
     #[test]
-    fn enforces_star_200_share_minimum_and_100_step() {
+    fn enforces_star_200_share_minimum_and_1_share_step() {
         assert!(validate_lot_size(BoardKind::Main, 100).is_ok());
         assert!(validate_lot_size(BoardKind::Star, 100).is_err());
+        assert!(validate_lot_size(BoardKind::Star, 199).is_err());
         assert!(validate_lot_size(BoardKind::Star, 200).is_ok());
+        assert!(validate_lot_size(BoardKind::Star, 235).is_ok());
         assert!(validate_lot_size(BoardKind::Star, 300).is_ok());
         assert!(validate_lot_size(BoardKind::Chinext, 150).is_err());
     }

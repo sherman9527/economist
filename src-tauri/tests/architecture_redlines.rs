@@ -141,6 +141,19 @@ fn redline_3_portable_bundle_disabled_and_build_footprint_under_5gb() {
         build_bytes,
         cap_5gb
     );
+
+    // DDD Layer Purity: domain/ and application/ must never depend on tauri:: runtime types
+    let mut inner_layer_files = Vec::new();
+    collect_owned_source_files(&root.join("src-tauri").join("src").join("domain"), &mut inner_layer_files);
+    collect_owned_source_files(&root.join("src-tauri").join("src").join("application"), &mut inner_layer_files);
+    for f in inner_layer_files {
+        let src = std::fs::read_to_string(&f).unwrap();
+        assert!(
+            !src.contains("use tauri::") && !src.contains("tauri::AppHandle"),
+            "DDD inner layer {:?} must not import tauri:: framework types",
+            f.strip_prefix(&root).unwrap_or(&f)
+        );
+    }
 }
 
 #[tokio::test]
@@ -211,6 +224,18 @@ async fn redline_5_end_to_end_terminal_bootstrap_and_dto_contract() {
     assert_eq!(boot.plugin_config.factors.len(), 6);
     assert_eq!(boot.telemetry.sessions.len(), 5);
     assert!(!boot.featured_kline.bars.is_empty());
+    assert_eq!(
+        boot.featured_kline.period, "1d",
+        "IPC contract requires lowercase '1d' | '30m' period"
+    );
+    let allowed_subsystems = ["MARKET", "QUANT", "TRADING", "AGENT", "NEWS", "UI", "CLEANER"];
+    for ev in &boot.telemetry.events {
+        assert!(
+            allowed_subsystems.contains(&ev.subsystem.as_str()),
+            "Unexpected telemetry subsystem '{}' outside TypeScript union contract",
+            ev.subsystem
+        );
+    }
 
     let serialized = serde_json::to_value(&boot).unwrap();
     assert!(serialized.get("featuredKline").is_some());

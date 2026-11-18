@@ -200,7 +200,6 @@ impl PluginStore {
     }
 
     pub fn load_all(&self) -> Result<PluginBundle, String> {
-        use crate::domain::factor_engine::parse_factor_expr;
         use crate::infrastructure::portable_paths::normalize_rel_path;
 
         self.ensure_defaults_on_disk()?;
@@ -232,10 +231,7 @@ impl PluginStore {
         let factors: FactorPluginManifest = serde_json::from_str(&raw_factors_json)
             .map_err(|e| format!("解析因子插件 JSON 失败: {}", e))?;
 
-        for f in &factors.factors {
-            parse_factor_expr(&f.expr)
-                .map_err(|e| format!("因子 {} 表达式安全校验失败: {}", f.factor_id, e))?;
-        }
+        Self::validate_factor_manifest(&factors)?;
 
         Ok(PluginBundle {
             app_cfg,
@@ -243,6 +239,37 @@ impl PluginStore {
             raw_strategy_json,
             factors,
         })
+    }
+
+    pub fn validate_factor_manifest(factors: &FactorPluginManifest) -> Result<(), String> {
+        use crate::domain::factor_engine::parse_factor_expr;
+
+        if factors.factors.is_empty() {
+            return Err("因子插件清单不能为空".to_string());
+        }
+        for f in &factors.factors {
+            parse_factor_expr(&f.expr)
+                .map_err(|e| format!("因子 {} 表达式安全校验失败: {}", f.factor_id, e))?;
+            if !matches!(f.bar_freq.as_str(), "1d" | "30m") {
+                return Err(format!(
+                    "因子 {} bar_freq 非法值 '{}'（仅允许 '1d' 或 '30m'）",
+                    f.factor_id, f.bar_freq
+                ));
+            }
+            if !matches!(
+                f.evidence_tag.as_str(),
+                "[backtest]" | "[OOS]" | "[assumption]"
+            ) {
+                return Err(format!(
+                    "因子 {} evidence_tag 非法值 '{}'",
+                    f.factor_id, f.evidence_tag
+                ));
+            }
+            if !matches!(f.status.as_str(), "ACTIVE" | "CANDIDATE" | "DEPRECATED") {
+                return Err(format!("因子 {} status 非法值 '{}'", f.factor_id, f.status));
+            }
+        }
+        Ok(())
     }
 
     pub fn update_strategy_and_weights(

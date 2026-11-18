@@ -9,6 +9,9 @@ impl PortablePaths {
     pub fn resolve() -> Result<Self, String> {
         if let Ok(exe_path) = std::env::current_exe() {
             if let Some(exe_dir) = exe_path.parent() {
+                if exe_dir.join("config").join("app.toml").is_file() {
+                    return Self::from_root(exe_dir.to_path_buf());
+                }
                 let exe_str = exe_dir.to_string_lossy().to_ascii_lowercase();
                 let is_cargo_artifact = exe_str.contains("cargo-target")
                     || exe_str.contains("\\target\\")
@@ -57,7 +60,7 @@ impl PortablePaths {
             instance.temp_dir(),
         ] {
             std::fs::create_dir_all(&dir)
-                .map_err(|e| format!("创建便携目录 {:?} 失败: {}", dir, e))?;
+                .map_err(|e| format!("初始化便携运行子目录失败: {}", e))?;
         }
         Ok(instance)
     }
@@ -123,19 +126,26 @@ impl PortablePaths {
             return Err("仅允许读取 ./reports/ 目录下的 .html 研报文件".to_string());
         }
 
-        let reports_base = self
-            .reports_dir()
-            .canonicalize()
-            .map_err(|e| format!("解析 ./reports 目录失败: {}", e))?;
-        let candidate = self.reports_dir().join(stripped);
-        let resolved = candidate
-            .canonicalize()
-            .map_err(|_| format!("研报文件不存在: {}", normalized))?;
-
-        if !resolved.starts_with(&reports_base) {
-            return Err("检测到越界路径访问，已拒绝读取 ./reports 之外的文件".to_string());
+        let reports_base = self.reports_dir();
+        if let Ok(base_meta) = std::fs::symlink_metadata(&reports_base) {
+            if base_meta.file_type().is_symlink() {
+                return Err("拒绝通过符号链接访问 ./reports 目录".to_string());
+            }
         }
-        Ok(resolved)
+
+        let mut cur = reports_base;
+        for seg in stripped.split('/').filter(|s| !s.is_empty()) {
+            cur.push(seg);
+            let meta = std::fs::symlink_metadata(&cur)
+                .map_err(|_| format!("研报文件不存在: {}", normalized))?;
+            if meta.file_type().is_symlink() {
+                return Err("检测到符号链接越界风险，已拒绝读取研报文件".to_string());
+            }
+        }
+        if !cur.is_file() {
+            return Err(format!("研报文件不存在: {}", normalized));
+        }
+        Ok(cur)
     }
 }
 

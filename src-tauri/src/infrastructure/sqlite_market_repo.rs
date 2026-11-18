@@ -196,6 +196,15 @@ impl SqliteRepository {
         let mut conn = self.connect()?;
         let tx = conn.transaction().map_err(|e| e.to_string())?;
         let now_iso = chrono::Utc::now().to_rfc3339();
+        let mut stmt = tx
+            .prepare(
+                "INSERT OR REPLACE INTO economist_news_index (
+                    report_id, report_date, title_zh, rel_path, article_count,
+                    core_count, acked, acked_at, us_score, cn_score,
+                    executive_summary_zh, chains_json, updated_at
+                 ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+            )
+            .map_err(|e| e.to_string())?;
         for r in reports {
             let chains_json = serde_json::to_string(
                 &r.chains
@@ -213,30 +222,24 @@ impl SqliteRepository {
                     .collect::<Vec<_>>(),
             )
             .unwrap_or_else(|_| "[]".to_string());
-            tx.execute(
-                "INSERT OR REPLACE INTO economist_news_index (
-                    report_id, report_date, title_zh, rel_path, article_count,
-                    core_count, acked, acked_at, us_score, cn_score,
-                    executive_summary_zh, chains_json, updated_at
-                 ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
-                params![
-                    r.report_id,
-                    r.date,
-                    r.title_zh,
-                    r.rel_path,
-                    r.article_count as i64,
-                    r.core_count as i64,
-                    if r.acked { 1 } else { 0 },
-                    r.acked_at,
-                    r.us_score,
-                    r.cn_score,
-                    r.executive_summary_zh,
-                    chains_json,
-                    now_iso,
-                ],
-            )
+            stmt.execute(params![
+                r.report_id,
+                r.date,
+                r.title_zh,
+                r.rel_path,
+                r.article_count as i64,
+                r.core_count as i64,
+                if r.acked { 1 } else { 0 },
+                r.acked_at,
+                r.us_score,
+                r.cn_score,
+                r.executive_summary_zh,
+                chains_json,
+                now_iso,
+            ])
             .map_err(|e| e.to_string())?;
         }
+        drop(stmt);
         tx.commit().map_err(|e| e.to_string())
     }
 
@@ -292,10 +295,13 @@ impl SqliteRepository {
 
     pub fn prune_telemetry_older_than(&self, cutoff_epoch_secs: i64) -> Result<usize, String> {
         let conn = self.connect()?;
-        conn.execute(
-            "DELETE FROM telemetry_events WHERE epoch_secs < ?1",
-            [cutoff_epoch_secs],
-        )
-        .map_err(|e| e.to_string())
+        let deleted = conn
+            .execute(
+                "DELETE FROM telemetry_events WHERE epoch_secs < ?1",
+                [cutoff_epoch_secs],
+            )
+            .map_err(|e| e.to_string())?;
+        let _ = conn.execute_batch("PRAGMA wal_checkpoint(PASSIVE);");
+        Ok(deleted)
     }
 }

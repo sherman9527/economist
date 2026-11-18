@@ -49,13 +49,21 @@ fn extract_cn_symbols_from_text(text: &str) -> Vec<String> {
     }
     let mut i = 0;
     while i + 9 <= bytes.len() {
-        if bytes[i..i + 6].iter().all(|b| b.is_ascii_digit()) && bytes[i + 6] == b'.' {
-            let suffix = &text[i + 7..i + 9];
-            if suffix.eq_ignore_ascii_case("SZ")
-                || suffix.eq_ignore_ascii_case("SH")
-                || suffix.eq_ignore_ascii_case("BJ")
+        let prev_ok = i == 0 || !bytes[i - 1].is_ascii_alphanumeric();
+        let next_ok = i + 9 == bytes.len() || !bytes[i + 9].is_ascii_alphanumeric();
+        if prev_ok
+            && next_ok
+            && bytes[i..i + 6].iter().all(|b| b.is_ascii_digit())
+            && bytes[i + 6] == b'.'
+        {
+            let suf = &bytes[i + 7..i + 9];
+            if suf.eq_ignore_ascii_case(b"SZ")
+                || suf.eq_ignore_ascii_case(b"SH")
+                || suf.eq_ignore_ascii_case(b"BJ")
             {
-                let sym = format!("{}.{}", &text[i..i + 6], suffix.to_ascii_uppercase());
+                let digits = std::str::from_utf8(&bytes[i..i + 6]).unwrap_or("");
+                let suffix = std::str::from_utf8(suf).unwrap_or("").to_ascii_uppercase();
+                let sym = format!("{}.{}", digits, suffix);
                 if !found.contains(&sym) {
                     found.push(sym);
                 }
@@ -66,6 +74,23 @@ fn extract_cn_symbols_from_text(text: &str) -> Vec<String> {
         i += 1;
     }
     found
+}
+
+fn inject_embed_flag_on_html(raw: &str) -> String {
+    if raw.contains("data-embed=") {
+        return raw.to_string();
+    }
+    let lower = raw.to_ascii_lowercase();
+    if let Some(pos) = lower.find("<html") {
+        let insert_at = pos + 5;
+        let mut out = String::with_capacity(raw.len() + 16);
+        out.push_str(&raw[..insert_at]);
+        out.push_str(" data-embed=\"1\"");
+        out.push_str(&raw[insert_at..]);
+        out
+    } else {
+        raw.to_string()
+    }
 }
 
 fn extract_date_token(text: &str) -> Option<String> {
@@ -434,16 +459,21 @@ impl EconomistBridge {
 
         let pretty = serde_json::to_string_pretty(&root)
             .map_err(|e| format!("序列化 ack_state.json 失败: {}", e))?;
-        std::fs::write(&ack_path, pretty)
-            .map_err(|e| format!("写入 ./data/ack_state.json 失败: {}", e))?;
+        let tmp_path = self.paths.data_dir().join("ack_state.json.tmp");
+        std::fs::write(&tmp_path, &pretty)
+            .map_err(|e| format!("写入临时 ./data/ack_state.json.tmp 失败: {}", e))?;
+        std::fs::rename(&tmp_path, &ack_path)
+            .map_err(|e| format!("原子替换 ./data/ack_state.json 失败: {}", e))?;
 
         self.load_and_sync(repo)
     }
 
     pub fn read_report_html(&self, rel_path: &str) -> Result<String, String> {
-        self.paths
+        let raw = self
+            .paths
             .resolve_guarded_report_path(rel_path)
-            .and_then(|p| std::fs::read_to_string(p).map_err(|e| format!("读取研报HTML失败: {}", e)))
+            .and_then(|p| std::fs::read_to_string(p).map_err(|e| format!("读取研报HTML失败: {}", e)))?;
+        Ok(inject_embed_flag_on_html(&raw))
     }
 }
 
@@ -487,5 +517,21 @@ mod tests {
         let after_ack = bridge.set_report_ack(&repo, "2026-11-18", true).unwrap();
         assert_eq!(after_ack.unacked_count, 0);
         assert!(after_ack.reports[0].acked);
+
+        let embedded_html = bridge
+            .read_report_html("./reports/2026/11/18/economist_report_2026-11-18.html")
+            .unwrap();
+        assert!(
+            embedded_html.contains("data-embed=\"1\""),
+            "Embedded report HTML must inject data-embed=\"1\" on <html>: {}",
+            embedded_html
+        );
+    }
+
+    #[test]
+    fn extract_cn_symbols_handles_multibyte_cjk_after_six_digits_and_dot() {
+        let sample = "营收规模突破 100000.亿元，重点跟踪中际旭创 300308.SZ、金山办公 688111.sh，忽略伪造代码 123456.SZX 与 999999.中";
+        let syms = extract_cn_symbols_from_text(sample);
+        assert_eq!(syms, vec!["300308.SZ".to_string(), "688111.SH".to_string()]);
     }
 }

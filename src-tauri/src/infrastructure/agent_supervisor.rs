@@ -17,6 +17,9 @@ impl AgentSupervisor {
             "gemini-4-carbon".to_string(),
             "--reasoning-effort".to_string(),
             "high".to_string(),
+            "--no-custom-instructions".to_string(),
+            "--disable-builtin-mcps".to_string(),
+            "--disable-client-telemetry".to_string(),
             "--resume".to_string(),
             session_id.to_string(),
             "--log-dir".to_string(),
@@ -50,12 +53,14 @@ impl AgentSupervisor {
         }
 
         let cli_args = Self::build_wake_args(&current.session_id, clean_prompt);
-        let now_iso = chrono::Utc::now().to_rfc3339();
+        let now_utc = chrono::Utc::now();
+        let now_iso = now_utc.to_rfc3339();
+        let day_tag = now_utc.format("%Y-%m-%d").to_string();
 
         let log_file = self
             .paths
             .agent_logs_dir()
-            .join(format!("{}.jsonl", agent_role));
+            .join(format!("{}-{}.jsonl", agent_role, day_tag));
         let audit_line = serde_json::json!({
             "tsIso": &now_iso,
             "agentRole": agent_role,
@@ -79,8 +84,13 @@ impl AgentSupervisor {
             .map(|v| v == "1")
             .unwrap_or(false)
         {
+            let temp_dir = self.paths.temp_dir();
             let _ = tokio::process::Command::new(&self.cli_binary)
                 .current_dir(self.paths.root())
+                .env("TEMP", &temp_dir)
+                .env("TMP", &temp_dir)
+                .env("PYTHONHOME", "")
+                .env("PYTHONPATH", "")
                 .args(&cli_args)
                 .stdin(std::process::Stdio::null())
                 .stdout(std::process::Stdio::null())
@@ -108,5 +118,8 @@ mod tests {
             .windows(2)
             .any(|w| w == ["--resume", "88ace910-c427-41db-a87f-46d8ae39735b"]));
         assert!(args.windows(2).any(|w| w == ["--log-dir", "./logs/agents"]));
+        assert!(args.iter().any(|a| a == "--no-custom-instructions"));
+        assert!(args.iter().any(|a| a == "--disable-builtin-mcps"));
+        assert!(args.iter().any(|a| a == "--disable-client-telemetry"));
     }
 }

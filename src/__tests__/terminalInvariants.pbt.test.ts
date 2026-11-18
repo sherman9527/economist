@@ -93,6 +93,48 @@ describe("2. 100W Portfolio, T+1 Lock, Stop-Loss < Entry & Fee Breakdown Invaria
     );
   });
 
+  it("allows ratcheted Chandelier profit-locking stop above avgCost when strictly below markPrice", () => {
+    const overview: PortfolioOverviewDto = {
+      initialCapitalYuan: 1_000_000,
+      cashYuan: 972_000,
+      marketValueYuan: 28_000,
+      totalEquityYuan: 1_000_000,
+      cumReturnPct: 0,
+      dailyPnlYuan: 8_000,
+      dailyReturnPct: 0.8,
+      maxDrawdownPct: 0,
+      totalFeesPaidYuan: 5,
+      openSlotsCount: 1,
+      maxSlots: 10,
+      positions: [
+        {
+          positionId: "pos-1",
+          slotNo: 1,
+          symbol: "300308.SZ",
+          nameZh: "中际旭创",
+          board: "CHINEXT",
+          totalQty: 1000,
+          sellableQty: 1000,
+          lockedT0Qty: 0,
+          avgCostYuan: 20.0,
+          markPriceYuan: 28.0,
+          stopLossPriceYuan: 23.5,
+          stopDistancePct: 16.07,
+          unrealizedPnlYuan: 8000,
+          unrealizedPnlPct: 40.0,
+          entryRationaleZh: "浮盈超过8%触发吊灯止损上移锁定利润",
+          openedAtIso: "2026-11-10T02:00:00Z",
+        },
+      ],
+      recentOrders: [],
+      equityCurve: [],
+      sectorWeights: [],
+    };
+    const check = validatePortfolioInvariants(overview);
+    expect(check.valid).toBe(true);
+    expect(check.violations).toEqual([]);
+  });
+
   it("validates <=10 slots, T+1 totalQty === sellableQty + lockedT0Qty, and stopLoss < entry", () => {
     fc.assert(
       fc.property(
@@ -115,7 +157,7 @@ describe("2. 100W Portfolio, T+1 Lock, Stop-Loss < Entry & Fee Breakdown Invaria
               lockedT0Qty,
               avgCostYuan,
               markPriceYuan: 20.8,
-              stopLossPriceYuan: breakStopLoss && idx === 0 ? 20.5 : 18.4,
+              stopLossPriceYuan: breakStopLoss && idx === 0 ? 21.2 : 18.4,
               stopDistancePct: 11.5,
               unrealizedPnlYuan: 240,
               unrealizedPnlPct: 4.0,

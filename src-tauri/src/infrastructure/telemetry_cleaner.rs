@@ -14,6 +14,7 @@ pub struct HygieneAuditSummary {
     pub pruned_files_count: usize,
 }
 
+#[derive(Clone)]
 pub struct TelemetryCleaner {
     paths: PortablePaths,
     retention_days: u32,
@@ -27,13 +28,17 @@ fn dir_size_bytes(dir: &std::path::Path) -> u64 {
     };
     let mut total = 0_u64;
     for entry in entries.flatten() {
+        let Ok(ft) = entry.file_type() else {
+            continue;
+        };
+        if ft.is_symlink() {
+            continue;
+        }
         let p = entry.path();
-        if let Ok(meta) = entry.metadata() {
-            if meta.is_dir() {
-                total = total.saturating_add(dir_size_bytes(&p));
-            } else {
-                total = total.saturating_add(meta.len());
-            }
+        if ft.is_dir() {
+            total = total.saturating_add(dir_size_bytes(&p));
+        } else if let Ok(meta) = entry.metadata() {
+            total = total.saturating_add(meta.len());
         }
     }
     total
@@ -45,19 +50,37 @@ fn prune_expired_files(dir: &std::path::Path, cutoff_sys: std::time::SystemTime)
     };
     let mut deleted = 0_usize;
     for entry in entries.flatten() {
-        let p = entry.path();
-        let Ok(meta) = entry.metadata() else {
+        let Ok(ft) = entry.file_type() else {
             continue;
         };
-        if meta.is_dir() {
+        if ft.is_symlink() {
+            continue;
+        }
+        let p = entry.path();
+        if ft.is_dir() {
             deleted += prune_expired_files(&p, cutoff_sys);
-        } else if let Ok(modified) = meta.modified() {
-            if modified < cutoff_sys && std::fs::remove_file(&p).is_ok() {
-                deleted += 1;
+        } else if let Ok(meta) = entry.metadata() {
+            if let Ok(modified) = meta.modified() {
+                if modified < cutoff_sys && std::fs::remove_file(&p).is_ok() {
+                    deleted += 1;
+                }
             }
         }
     }
     deleted
+}
+
+pub fn canonical_telemetry_subsystem(raw: &str) -> &'static str {
+    match raw.trim().to_ascii_uppercase().as_str() {
+        "MARKET" => "MARKET",
+        "QUANT" | "FACTOR" => "QUANT",
+        "TRADING" | "PORTFOLIO" => "TRADING",
+        "AGENT" => "AGENT",
+        "NEWS" | "ECONOMIST" => "NEWS",
+        "UI" => "UI",
+        "CLEANER" | "SYSTEM" => "CLEANER",
+        _ => "CLEANER",
+    }
 }
 
 fn audit_source_tree_redlines(root: &std::path::Path) -> (bool, usize) {
@@ -127,12 +150,13 @@ impl TelemetryCleaner {
         message: &str,
     ) -> Option<TelemetryRow> {
         let now = chrono::Utc::now();
+        let norm_subsystem = canonical_telemetry_subsystem(subsystem);
         let mut row = TelemetryRow {
             event_id: 0,
             ts_iso: now.to_rfc3339(),
             epoch_secs: now.timestamp(),
             severity: severity.to_string(),
-            subsystem: subsystem.to_string(),
+            subsystem: norm_subsystem.to_string(),
             event_name: event_name.to_string(),
             duration_ms,
             ok,
@@ -179,18 +203,31 @@ impl TelemetryCleaner {
         let build_dir = self.paths.root().join(".build");
         let mut build_footprint_bytes = dir_size_bytes(&build_dir);
         if build_footprint_bytes > self.build_soft_cap_bytes {
-            let incr = build_dir
-                .join("cargo-target")
-                .join("x86_64-pc-windows-msvc")
-                .join("debug")
-                .join("incremental");
-            if incr.is_dir() {
-                let _ = std::fs::remove_dir_all(&incr);
+            let cargo_target = build_dir.join("cargo-target");
+            for debug_root in [
+                cargo_target.join("debug"),
+                cargo_target.join("x86_64-pc-windows-msvc").join("debug"),
+            ] {
+                let incr = debug_root.join("incremental");
+                if incr.is_dir() {
+                    let _ = std::fs::remove_dir_all(&incr);
+                }
+                if let Ok(entries) = std::fs::read_dir(debug_root.join("deps")) {
+                    for entry in entries.flatten() {
+                        let p = entry.path();
+                        if p.extension().and_then(|e| e.to_str()) == Some("pdb") {
+                            let _ = std::fs::remove_file(p);
+                        }
+                    }
+                }
             }
             if build_footprint_bytes > self.build_cap_bytes {
                 let tmp = self.paths.temp_dir();
                 if tmp.is_dir() {
-                    let _ = prune_expired_files(&tmp, std::time::SystemTime::now());
+                    let one_hour_ago = std::time::SystemTime::now()
+                        .checked_sub(std::time::Duration::from_secs(3600))
+                        .unwrap_or(std::time::SystemTime::UNIX_EPOCH);
+                    let _ = prune_expired_files(&tmp, one_hour_ago);
                 }
             }
             build_footprint_bytes = dir_size_bytes(&build_dir);
@@ -198,6 +235,21 @@ impl TelemetryCleaner {
 
         let (zero_absolute_path_verified, max_file_lines_observed) =
             audit_source_tree_redlines(self.paths.root());
+
+        let _ = self.record_event(
+            repo,
+            "INFO",
+            "CLEANER",
+            "storage_hygiene_audit",
+            Some(4),
+            zero_absolute_path_verified && build_footprint_bytes < self.build_cap_bytes,
+            &format!(
+                "存储水位巡检: .build {:.2} GB / 5.00 GB, 28d清理事件 {} 条, 过期日志 {} 个",
+                (build_footprint_bytes as f64) / 1_073_741_824.0,
+                pruned_events_count,
+                pruned_files_count
+            ),
+        );
 
         Ok(HygieneAuditSummary {
             portable_root_rel: "./".to_string(),

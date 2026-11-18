@@ -18,7 +18,7 @@ use crate::interface::dto::{
     UpdatePluginInputDto,
 };
 use std::time::{Duration, Instant};
-use tokio::sync::RwLock;
+use tokio::sync::{Mutex, RwLock};
 
 pub struct CachedScanState {
     pub output: ScanExecutionOutput,
@@ -34,6 +34,8 @@ pub struct TerminalService {
     pub supervisor: AgentSupervisor,
     pub http: reqwest::Client,
     pub scan_cache: RwLock<Option<CachedScanState>>,
+    pub scan_singleflight: Mutex<()>,
+    pub ledger_lock: Mutex<()>,
 }
 
 impl TerminalService {
@@ -65,7 +67,7 @@ impl TerminalService {
         let _ = cleaner.record_event(
             &repo,
             "INFO",
-            "SYSTEM",
+            "UI",
             "terminal_initialized",
             Some(1),
             true,
@@ -81,6 +83,8 @@ impl TerminalService {
             supervisor,
             http,
             scan_cache: RwLock::new(None),
+            scan_singleflight: Mutex::new(()),
+            ledger_lock: Mutex::new(()),
         })
     }
 
@@ -100,6 +104,16 @@ impl TerminalService {
             }
         }
 
+        let _singleflight = self.scan_singleflight.lock().await;
+        if !force_refresh {
+            let guard = self.scan_cache.read().await;
+            if let Some(cached) = guard.as_ref() {
+                if cached.captured_at.elapsed() < Duration::from_secs(25) {
+                    return Ok(cached.output.clone());
+                }
+            }
+        }
+
         let quant_sess_id = self
             .repo
             .list_agent_sessions()
@@ -109,7 +123,7 @@ impl TerminalService {
                     .find(|s| s.agent_role == "quant_researcher")
                     .map(|s| s.session_id)
             })
-            .unwrap_or_else(|| "01d5e59d-3386-45a2-b62e-4f0c0ac3630f".to_string());
+            .unwrap_or_else(|| "88ace910-c427-41db-a87f-46d8ae39735b".to_string());
 
         let (session_state, elapsed_min) = {
             use chrono::{Datelike, Timelike};
@@ -151,9 +165,15 @@ impl TerminalService {
             ),
         );
 
-        let _ = self
-            .repo
-            .cache_universe_snapshot(&scan.raw_quotes, &scan.clist_meta);
+        {
+            let repo_bg = self.repo.clone();
+            let quotes_bg = scan.raw_quotes.clone();
+            let meta_bg = scan.clist_meta.clone();
+            let _ = tokio::task::spawn_blocking(move || {
+                let _ = repo_bg.cache_universe_snapshot(&quotes_bg, &meta_bg);
+            })
+            .await;
+        }
 
         let now_iso = chrono::Utc::now().to_rfc3339();
         let buy_recs: Vec<StoredRecommendation> = scan
@@ -202,8 +222,11 @@ impl TerminalService {
         let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
         let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
 
-        let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
-        let held_syms: Vec<String> = ledger.positions.keys().cloned().collect();
+        let held_syms: Vec<String> = {
+            let _guard = self.ledger_lock.lock().await;
+            let pre_ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
+            pre_ledger.positions.keys().cloned().collect()
+        };
 
         let scan = self
             .run_or_reuse_scan(
@@ -214,14 +237,9 @@ impl TerminalService {
             )
             .await?;
 
-        self.refresh_open_positions_and_seed_if_empty(
-            &mut ledger,
-            &scan,
-            &bundle,
-            &today_cst,
-            &next_cst,
-            &now_iso,
-        );
+        let ledger = self
+            .sync_and_seed_ledger_locked(&scan, &bundle, &today_cst, &next_cst, &now_iso)
+            .await?;
 
         let featured_symbol = scan
             .candidates
@@ -232,7 +250,7 @@ impl TerminalService {
             .or_else(|| ledger.positions.keys().next().cloned())
             .unwrap_or_else(|| "300308.SZ".to_string());
 
-        let featured_kline = self.get_stock_kline(&featured_symbol, "1D").await?;
+        let featured_kline = self.get_stock_kline(&featured_symbol, "1d").await?;
         let snaps = self.repo.list_equity_snapshots()?;
         let portfolio = map_portfolio_overview_dto(&ledger, &snaps);
         let plugin_config = map_plugin_bundle_to_dto(&bundle);
@@ -259,8 +277,11 @@ impl TerminalService {
         let (today_cst, next_cst, now_iso) = current_cst_dates();
         let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
         let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
-        let mut ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
-        let held_syms: Vec<String> = ledger.positions.keys().cloned().collect();
+        let held_syms: Vec<String> = {
+            let _guard = self.ledger_lock.lock().await;
+            let pre_ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
+            pre_ledger.positions.keys().cloned().collect()
+        };
 
         let scan = self
             .run_or_reuse_scan(
@@ -270,14 +291,9 @@ impl TerminalService {
                 force_refresh,
             )
             .await?;
-        self.refresh_open_positions_and_seed_if_empty(
-            &mut ledger,
-            &scan,
-            &bundle,
-            &today_cst,
-            &next_cst,
-            &now_iso,
-        );
+        let _ = self
+            .sync_and_seed_ledger_locked(&scan, &bundle, &today_cst, &next_cst, &now_iso)
+            .await?;
 
         let top_picks: Vec<ScreenerCandidateDto> = scan
             .candidates
@@ -327,7 +343,7 @@ impl TerminalService {
         let _ = self.cleaner.record_event(
             &self.repo,
             "INFO",
-            "FACTOR",
+            "QUANT",
             "plugin_manifest_hot_reloaded",
             Some(3),
             true,
@@ -350,7 +366,7 @@ impl TerminalService {
         let _ = self.cleaner.record_event(
             &self.repo,
             "INFO",
-            "ECONOMIST",
+            "NEWS",
             "report_ack_updated",
             Some(1),
             true,
@@ -364,9 +380,16 @@ impl TerminalService {
     }
 
     pub async fn run_storage_hygiene(&self) -> Result<TelemetryDashboardDto, String> {
-        let hygiene = self.cleaner.run_hygiene(&self.repo)?;
-        let sessions = self.repo.list_agent_sessions()?;
-        let events = self.repo.list_recent_telemetry(60)?;
+        let cleaner_bg = self.cleaner.clone();
+        let repo_bg = self.repo.clone();
+        let (hygiene, sessions, events) = tokio::task::spawn_blocking(move || {
+            let h = cleaner_bg.run_hygiene(&repo_bg)?;
+            let s = repo_bg.list_agent_sessions()?;
+            let e = repo_bg.list_recent_telemetry(60)?;
+            Ok::<_, String>((h, s, e))
+        })
+        .await
+        .map_err(|e| format!("存储巡检后台任务异常: {}", e))??;
         Ok(map_telemetry_dashboard_dto(sessions, hygiene, events))
     }
 

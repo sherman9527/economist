@@ -66,3 +66,11 @@
   - 完成 OpenSpec `tauri-ashare-quant-terminal` 严格校验（`4/4` 产物通过）、Superpowers 设计与计划文档、中国镜像便携 Rust `1.100.0` (`x86_64-pc-windows-msvc`) 工具链落盘及全仓遗留脚本零绝对路径 / `< 1000` 行重构（提交 `0710865`）；
   - 并行调度 2 名 `gemini-4-carbon` (`high`) 专项实现 Agent 完成 `./config/**` + `./plugins/**` + `./src-tauri/**`（4 层 DDD + Bundled SQLite + 5,500+ 全 A 股实时扫描 + 100W/10 席位 T+1 账本 + `proptest` PBT）与 `./src/**`（React 19 + TypeScript Apple Liquid Glass 六页工作台 + `lightweight-charts` 买点/止损线 K 线 + ECharts + `vitest`/`fast-check` PBT）；
   - 当前进入便携 `x64` 独立 `.exe`（`bundle.active = false`）联调打包、构建体积 `< 5 GB` 水位巡检、**5 轮深度专家 Code Review 与缺陷清零闭环**及最终 `git push origin main` 阶段。
+
+- **Compact #3 (`2026-11-18` · Checkpoint: `Portable Tauri terminal built and Round 1 deep review`)**：
+  - 完成全栈联调、解决 Pitfall #13（直接通过 Cargo 构建便携式 `.exe` 必须显式启用 `[features] default = ["custom-protocol"]` 以内联前端 `frontendDist` 静态资产，已沉淀至 `./rule.md`），打包验证 `./portable-release/economist-quant-terminal.exe`（`14.04 MB` 独立单目录便携版，实测全市场 `5,931` 只活跃 A 股扫描、6 只达标推荐、3 只 `100W` 模拟盘持仓及 11 份《经济学人》研报落盘 `./portable-release/data/economist_quant.db`，`.build` 自动水位清理至 `3.603 GB < 5.0 GB`，提交基线 `e215caf`）；
+  - 完成第 1 轮深度专家 Code Review（DDD 四层隔离、并发账本锁与单飞扫描、UTF-8 多字节安全切片、`"1d" | "30m"` 与标准 `TelemetrySubsystem` 契约对齐、吊灯追踪止损保本上移、科创板零股规则及便携释放目录完整性），当前立即按 TDD 红绿循环落地第 1 轮全部修复，随后推进第 2–5 轮深度 Code Review 并推送至远程 `origin/main`。
+
+- **Compact #4 (`2026-11-18` · Checkpoint: `Round 1 TDD red-green fixes applied`)**：
+  - 完成第 1 轮深度 Code Review 全部 13 项修复的 TDD 红绿闭环（`42/42` Rust 单测/集成/红线/PBT 零警告全绿，`20/20` Vitest + `fast-check` PBT 全绿）；
+  - 当前立即验证前端生产编译与全仓路径/行数卫生门禁后提交第 1 轮修复，并继续推进第 2 轮（A 股量化数学模型、排雷 PIT、`T+1`/费用/`100W` 账本）、第 3 轮（Apple Liquid Glass 三层光学、`<= 8` 模糊预算、防截断排版与 K 线交互）、第 4 轮（安全审计、因子 AST、SQL/路径/子进程隔离与行情源容灾）及第 5 轮（25 条需求总验收、便携 `.exe` 重打包实测、治理文档同步与 `git push origin main`）。

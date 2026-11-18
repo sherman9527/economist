@@ -227,6 +227,17 @@ pub fn open_and_migrate_sqlite(db_path: &Path) -> Result<Connection, String> {
         .map_err(|e| format!("设置SQLite busy_timeout失败: {}", e))?;
     conn.execute_batch(MIGRATION_DDL)
         .map_err(|e| format!("执行10表领域Schema迁移失败: {}", e))?;
+    let _ = conn.execute_batch(
+        "UPDATE telemetry_events
+            SET subsystem = CASE subsystem
+                WHEN 'SYSTEM' THEN 'CLEANER'
+                WHEN 'FACTOR' THEN 'QUANT'
+                WHEN 'PORTFOLIO' THEN 'TRADING'
+                WHEN 'ECONOMIST' THEN 'NEWS'
+                ELSE subsystem
+            END
+          WHERE subsystem IN ('SYSTEM', 'FACTOR', 'PORTFOLIO', 'ECONOMIST');",
+    );
 
     let existing_cnt: i64 = conn
         .query_row("SELECT COUNT(*) FROM agent_sessions", [], |r| r.get(0))

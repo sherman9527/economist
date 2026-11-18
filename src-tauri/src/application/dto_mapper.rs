@@ -202,7 +202,8 @@ pub fn map_portfolio_overview_dto(
     for p in pos_vec {
         let avg_cost = p.avg_cost_fen.to_yuan();
         let mark = p.mark_price_fen.to_yuan();
-        let stop = p.stop_loss_price_fen.to_yuan().min((avg_cost - 0.01).max(0.01));
+        let stop_ceiling = (avg_cost.max(mark) - 0.01).max(0.01);
+        let stop = p.stop_loss_price_fen.to_yuan().clamp(0.01, stop_ceiling);
         let stop_dist = if mark > 0.0 {
             round_2(((mark - stop) / mark) * 100.0)
         } else {
@@ -441,7 +442,7 @@ pub fn build_kline_payload_dto(
                 target_price_yuan: Some(c.suggested_target_yuan),
                 conviction_score: c.conviction_score,
                 rationale_zh: c.rationale_zh.clone(),
-                agent_session_id: "01d5e59d-3386-45a2-b62e-4f0c0ac3630f".to_string(),
+                agent_session_id: "88ace910-c427-41db-a87f-46d8ae39735b".to_string(),
                 pitfalls: c.pitfalls.clone(),
                 created_at_iso: chrono::Utc::now().to_rfc3339(),
             });

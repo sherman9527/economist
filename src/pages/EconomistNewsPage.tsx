@@ -353,7 +353,7 @@ export const EconomistNewsPage: React.FC<EconomistNewsPageProps> = ({
 
           <iframe
             title={activeReport.titleZh}
-            sandbox="allow-same-origin"
+            sandbox=""
             srcDoc={embedHtml}
             style={{
               width: "100%",

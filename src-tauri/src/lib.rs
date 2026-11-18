@@ -3,7 +3,6 @@ pub mod domain;
 pub mod infrastructure;
 pub mod interface;
 
-use crate::application::rotation_scheduler::spawn_rotation_scheduler;
 use crate::application::terminal_service::TerminalService;
 use crate::infrastructure::portable_paths::PortablePaths;
 use crate::interface::commands::{
@@ -11,6 +10,7 @@ use crate::interface::commands::{
     get_stock_kline, place_simulated_buy, run_market_scan, run_storage_hygiene,
     update_plugin_config, wake_agent_session,
 };
+use crate::interface::scheduler_runner::spawn_rotation_scheduler;
 use std::sync::Arc;
 
 pub fn run() {
