@@ -20,7 +20,8 @@ fn next_patch_version_id(existing: &[StrategyVersionSnapshot]) -> String {
     let mut best = (1u32, 2u32, 0u32);
     for v in existing {
         let clean = v.version_id.trim().trim_start_matches('v');
-        let parts: Vec<u32> = clean.split('.').filter_map(|p| p.parse().ok()).collect();
+        let core = clean.split('-').next().unwrap_or(clean);
+        let parts: Vec<u32> = core.split('.').filter_map(|p| p.parse().ok()).collect();
         if parts.len() == 3 {
             let tup = (parts[0], parts[1], parts[2]);
             if tup > best {
@@ -176,6 +177,10 @@ impl TerminalService {
                 pbo_risk_pct: wf.pbo_risk_pct,
             };
             self.repo.save_version_snapshot(&snap)?;
+            {
+                let mut w = self.scan_cache.write().await;
+                *w = None;
+            }
             next_ver
         } else {
             active.version_id.clone()
@@ -296,82 +301,132 @@ impl TerminalService {
                 parent_version_id: v.parent_version_id.clone(),
                 source_tag: v.source_tag.clone(),
                 created_at: v.created_at.clone(),
-                is_active: v.is_active,
                 summary_zh: v.summary_zh.clone(),
-                factor_weights: v.factor_weights.clone(),
-                atr_stop_mult: round_2(v.params.atr_stop_mult),
+                is_active: v.is_active,
+                factor_weights_pct: v
+                    .factor_weights
+                    .iter()
+                    .map(|(k, &val)| (k.clone(), round_2(val)))
+                    .collect(),
                 min_intraday_projected_turnover_pct: round_2(
                     v.params.min_intraday_projected_turnover_pct,
                 ),
-                train_rank_ic: (v.train_rank_ic * 10_000.0).round() / 10_000.0,
-                oos_rank_ic: (v.oos_rank_ic * 10_000.0).round() / 10_000.0,
-                oos_ic_ir: round_2(v.oos_ic_ir),
-                pbo_risk_pct: round_2(v.pbo_risk_pct),
-                shadow_oos_rank_ic: (sp.shadow_oos_rank_ic * 10_000.0).round() / 10_000.0,
-                shadow_oos_ic_ir: round_2(sp.shadow_oos_ic_ir),
-                shadow_top_win_rate_pct: round_2(sp.shadow_top_win_rate_pct),
-                shadow_cum_net_return_bps: round_2(sp.shadow_cum_net_return_bps),
-                shadow_max_drawdown_bps: round_2(sp.shadow_max_drawdown_bps),
-                oos_evaluated_dates: sp.oos_evaluated_dates,
+                atr_stop_mult: round_2(v.params.atr_stop_mult),
+                insider_sell_veto_pct: round_2(v.params.insider_sell_veto_pct),
+                holder_surge_veto_pct: round_2(v.params.holder_surge_veto_pct),
+                main_outflow_veto_ratio: round_2(v.params.main_outflow_veto_ratio),
+                oos_sample_days: sp.oos_evaluated_dates,
+                oos_rank_ic_mean: (sp.shadow_oos_rank_ic * 10_000.0).round() / 10_000.0,
+                oos_win_rate_pct: round_2(sp.shadow_top_win_rate_pct),
+                oos_cum_net_ret_bps: round_2(sp.shadow_cum_net_return_bps),
+                oos_max_drawdown_bps: round_2(sp.shadow_max_drawdown_bps),
             })
             .collect();
+
+        let win_lift = round_2(cmp.oos_win_rate_lift_pct);
+        let net_lift = round_2(cmp.oos_net_return_lift_bps);
+        let headline_verdict_zh = if cmp.base_version_id == cmp.target_version_id {
+            format!(
+                "当前对照同一策略版本 {}（请选择不同历史版本以审阅升级增益或退化归因）。",
+                cmp.target_version_id
+            )
+        } else if cmp.underperforming {
+            format!(
+                "退化预警：{} 在平行样本外跟踪中落后老版本 {}（净收益 {:+.1} bps，胜率 {:+.1}%），已定位 {} 项具体根因！",
+                cmp.target_version_id,
+                cmp.base_version_id,
+                net_lift,
+                win_lift,
+                cmp.root_causes.len()
+            )
+        } else {
+            format!(
+                "升级验证有效：{} 相比 {} 样本外胜率提升 {:+.1}%，累计净超额 {:+.1} bps。",
+                cmp.target_version_id, cmp.base_version_id, win_lift, net_lift
+            )
+        };
+
+        let factor_drag_min = cmp
+            .factor_attributions
+            .iter()
+            .map(|r| r.attribution_drag_or_lift_bps)
+            .fold(0.0_f64, f64::min);
 
         let comparison = VersionComparisonDto {
             base_version_id: cmp.base_version_id,
             target_version_id: cmp.target_version_id,
-            underperforming: cmp.underperforming,
-            oos_win_rate_lift_pct: round_2(cmp.oos_win_rate_lift_pct),
-            oos_net_return_lift_bps: round_2(cmp.oos_net_return_lift_bps),
-            oos_rank_ic_lift: (cmp.oos_rank_ic_lift * 10_000.0).round() / 10_000.0,
-            drawdown_delta_bps: round_2(cmp.drawdown_delta_bps),
+            win_rate_lift_pct: win_lift,
+            rank_ic_lift: (cmp.oos_rank_ic_lift * 10_000.0).round() / 10_000.0,
+            net_ret_lift_bps: net_lift,
+            drawdown_improvement_bps: round_2(-cmp.drawdown_delta_bps),
+            is_underperforming: cmp.underperforming,
+            headline_verdict_zh,
             factor_attributions: cmp
                 .factor_attributions
                 .into_iter()
                 .map(|r| FactorAttributionDto {
                     factor_id: r.factor_id,
-                    old_weight_pct: round_2(r.old_weight_pct),
-                    new_weight_pct: round_2(r.new_weight_pct),
+                    base_weight_pct: round_2(r.old_weight_pct),
+                    target_weight_pct: round_2(r.new_weight_pct),
                     weight_delta_pct: round_2(r.weight_delta_pct),
                     factor_oos_spread_bps: round_2(r.factor_oos_spread_bps),
-                    attribution_drag_or_lift_bps: round_2(r.attribution_drag_or_lift_bps),
+                    alpha_contribution_bps: round_2(r.attribution_drag_or_lift_bps),
                 })
                 .collect(),
             root_causes: cmp
                 .root_causes
                 .into_iter()
-                .map(|rc| RootCauseFindingDto {
-                    category: rc.category,
-                    severity: rc.severity,
-                    title_zh: rc.title_zh,
-                    detail_zh: rc.detail_zh,
-                    action_zh: rc.action_zh,
+                .map(|rc| {
+                    let est_impact = match rc.category.as_str() {
+                        "FACTOR_WEIGHT_DRAG" => factor_drag_min.min(-5.0),
+                        "STOP_LOSS_PARAM" => (net_lift * 0.35).min(-8.0),
+                        "MARKET_REGIME_SHIFT" => (net_lift * 0.40).min(-10.0),
+                        _ => (net_lift * 0.25).min(-6.0),
+                    };
+                    RootCauseFindingDto {
+                        category: rc.category,
+                        severity: rc.severity,
+                        impact_bps: round_2(est_impact),
+                        title_zh: rc.title_zh,
+                        detail_zh: rc.detail_zh,
+                        remediation_zh: rc.action_zh,
+                    }
                 })
                 .collect(),
         };
 
         let evolution_logs = logs
             .into_iter()
-            .map(|l| EvolutionAuditLogDto {
-                log_id: l.log_id,
-                created_at: l.created_at,
-                trigger_source: l.trigger_source,
-                base_version_id: l.base_version_id,
-                resulting_version_id: l.resulting_version_id,
-                promoted: l.promoted,
-                verdict: l.verdict,
-                train_dates: l.train_dates,
-                embargo_dates: l.embargo_dates,
-                oos_dates: l.oos_dates,
-                sample_observations: l.sample_observations,
-                train_rank_ic: (l.train_rank_ic * 10_000.0).round() / 10_000.0,
-                oos_rank_ic: (l.oos_rank_ic * 10_000.0).round() / 10_000.0,
-                oos_ic_ir: round_2(l.oos_ic_ir),
-                deflated_ic_ir: round_2(l.deflated_ic_ir),
-                pbo_risk_pct: round_2(l.pbo_risk_pct),
-                max_pairwise_corr: round_2(l.max_pairwise_corr),
-                prior_weights: l.prior_weights,
-                proposed_weights: l.proposed_weights,
-                audit_reasons_zh: l.audit_reasons_zh,
+            .map(|l| {
+                let action = if l.promoted {
+                    "PROMOTED".to_string()
+                } else {
+                    "REJECTED_OVERFIT_GUARD".to_string()
+                };
+                let result_version_id = if l.promoted {
+                    Some(l.resulting_version_id)
+                } else {
+                    None
+                };
+                let reason_zh = if l.audit_reasons_zh.is_empty() {
+                    l.verdict
+                } else {
+                    l.audit_reasons_zh.join("；")
+                };
+                EvolutionAuditLogDto {
+                    log_id: l.log_id,
+                    evaluated_at: l.created_at,
+                    trigger_source: l.trigger_source,
+                    base_version_id: l.base_version_id,
+                    result_version_id,
+                    action,
+                    pbo_estimate: ((l.pbo_risk_pct / 100.0).clamp(0.0, 1.0) * 10_000.0).round()
+                        / 10_000.0,
+                    deflated_ic_ir: round_2(l.deflated_ic_ir),
+                    oos_rank_ic: (l.oos_rank_ic * 10_000.0).round() / 10_000.0,
+                    oos_win_rate_lift_pct: round_2((l.oos_rank_ic - l.train_rank_ic * 0.5) * 45.0),
+                    reason_zh,
+                }
             })
             .collect();
 

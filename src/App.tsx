@@ -239,16 +239,20 @@ export const App: React.FC = () => {
 
   const handleSwitchVersion = useCallback(async (versionId: string) => {
     const vc = await switchStrategyVersion(versionId);
-    const matched = vc.versions.find((v) => v.versionId === versionId);
+    const matched = vc.versions.find((v) => v.versionId === vc.activeVersionId);
     setTerminal((prev) => ({
       ...prev,
       versionControl: vc,
       pluginConfig: matched
         ? {
             ...prev.pluginConfig,
-            version: versionId.replace(/^v/, ""),
+            version: matched.versionId.replace(/^v/, ""),
             minIntradayProjectedTurnoverPct: matched.minIntradayProjectedTurnoverPct,
             atrStopMult: matched.atrStopMult,
+            insiderSellVetoPct: matched.insiderSellVetoPct ?? prev.pluginConfig.insiderSellVetoPct,
+            holderSurgeVetoPct: matched.holderSurgeVetoPct ?? prev.pluginConfig.holderSurgeVetoPct,
+            mainOutflowVetoRatio:
+              matched.mainOutflowVetoRatio ?? prev.pluginConfig.mainOutflowVetoRatio,
             factors: prev.pluginConfig.factors.map((f) => ({
               ...f,
               weightPct: matched.factorWeightsPct[f.factorId] ?? f.weightPct,
@@ -260,7 +264,27 @@ export const App: React.FC = () => {
 
   const handleRunAntiOverfit = useCallback(async () => {
     const vc = await runAntiOverfitIteration();
-    setTerminal((prev) => ({ ...prev, versionControl: vc }));
+    const matched = vc.versions.find((v) => v.versionId === vc.activeVersionId);
+    setTerminal((prev) => ({
+      ...prev,
+      versionControl: vc,
+      pluginConfig: matched
+        ? {
+            ...prev.pluginConfig,
+            version: matched.versionId.replace(/^v/, ""),
+            minIntradayProjectedTurnoverPct: matched.minIntradayProjectedTurnoverPct,
+            atrStopMult: matched.atrStopMult,
+            insiderSellVetoPct: matched.insiderSellVetoPct ?? prev.pluginConfig.insiderSellVetoPct,
+            holderSurgeVetoPct: matched.holderSurgeVetoPct ?? prev.pluginConfig.holderSurgeVetoPct,
+            mainOutflowVetoRatio:
+              matched.mainOutflowVetoRatio ?? prev.pluginConfig.mainOutflowVetoRatio,
+            factors: prev.pluginConfig.factors.map((f) => ({
+              ...f,
+              weightPct: matched.factorWeightsPct[f.factorId] ?? f.weightPct,
+            })),
+          }
+        : prev.pluginConfig,
+    }));
   }, []);
 
   const handleAckReport = useCallback(async (reportId: string, acked: boolean) => {

@@ -159,8 +159,17 @@ impl TerminalService {
             input.entry_price_yuan * 1.15
         };
 
+        let canonical = sym.canonical();
+        let existing_items = self.repo.list_watchlist_items()?;
+        if existing_items.iter().any(|x| {
+            x.symbol == canonical
+                && x.outcome == crate::domain::watchlist_tracker::WatchlistOutcome::Tracking
+        }) {
+            return self.get_watchlist_overview().await;
+        }
+
         let item = WatchlistItemState::new_tracking(
-            &sym.canonical(),
+            &canonical,
             input.name_zh.trim(),
             input.board.trim(),
             input.industry_sw1.trim(),
@@ -179,7 +188,7 @@ impl TerminalService {
             },
             input.factor_z_scores,
         );
-        self.repo.upsert_watchlist_item(&item)?;
+        self.repo.reset_or_insert_watchlist_item(&item)?;
         let _ = self.cleaner.record_event(
             &self.repo,
             "INFO",

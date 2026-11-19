@@ -81,32 +81,30 @@ pub struct VersionSnapshotDto {
     pub parent_version_id: Option<String>,
     pub source_tag: String,
     pub created_at: String,
-    pub is_active: bool,
     pub summary_zh: String,
-    pub factor_weights: BTreeMap<String, f64>,
-    pub atr_stop_mult: f64,
+    pub is_active: bool,
+    pub factor_weights_pct: BTreeMap<String, f64>,
     pub min_intraday_projected_turnover_pct: f64,
-    pub train_rank_ic: f64,
-    pub oos_rank_ic: f64,
-    pub oos_ic_ir: f64,
-    pub pbo_risk_pct: f64,
-    pub shadow_oos_rank_ic: f64,
-    pub shadow_oos_ic_ir: f64,
-    pub shadow_top_win_rate_pct: f64,
-    pub shadow_cum_net_return_bps: f64,
-    pub shadow_max_drawdown_bps: f64,
-    pub oos_evaluated_dates: usize,
+    pub atr_stop_mult: f64,
+    pub insider_sell_veto_pct: f64,
+    pub holder_surge_veto_pct: f64,
+    pub main_outflow_veto_ratio: f64,
+    pub oos_sample_days: usize,
+    pub oos_rank_ic_mean: f64,
+    pub oos_win_rate_pct: f64,
+    pub oos_cum_net_ret_bps: f64,
+    pub oos_max_drawdown_bps: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FactorAttributionDto {
     pub factor_id: String,
-    pub old_weight_pct: f64,
-    pub new_weight_pct: f64,
+    pub base_weight_pct: f64,
+    pub target_weight_pct: f64,
     pub weight_delta_pct: f64,
     pub factor_oos_spread_bps: f64,
-    pub attribution_drag_or_lift_bps: f64,
+    pub alpha_contribution_bps: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -114,9 +112,10 @@ pub struct FactorAttributionDto {
 pub struct RootCauseFindingDto {
     pub category: String,
     pub severity: String,
+    pub impact_bps: f64,
     pub title_zh: String,
     pub detail_zh: String,
-    pub action_zh: String,
+    pub remediation_zh: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
@@ -124,11 +123,12 @@ pub struct RootCauseFindingDto {
 pub struct VersionComparisonDto {
     pub base_version_id: String,
     pub target_version_id: String,
-    pub underperforming: bool,
-    pub oos_win_rate_lift_pct: f64,
-    pub oos_net_return_lift_bps: f64,
-    pub oos_rank_ic_lift: f64,
-    pub drawdown_delta_bps: f64,
+    pub win_rate_lift_pct: f64,
+    pub rank_ic_lift: f64,
+    pub net_ret_lift_bps: f64,
+    pub drawdown_improvement_bps: f64,
+    pub is_underperforming: bool,
+    pub headline_verdict_zh: String,
     pub factor_attributions: Vec<FactorAttributionDto>,
     pub root_causes: Vec<RootCauseFindingDto>,
 }
@@ -137,25 +137,16 @@ pub struct VersionComparisonDto {
 #[serde(rename_all = "camelCase")]
 pub struct EvolutionAuditLogDto {
     pub log_id: i64,
-    pub created_at: String,
+    pub evaluated_at: String,
     pub trigger_source: String,
     pub base_version_id: String,
-    pub resulting_version_id: String,
-    pub promoted: bool,
-    pub verdict: String,
-    pub train_dates: usize,
-    pub embargo_dates: usize,
-    pub oos_dates: usize,
-    pub sample_observations: usize,
-    pub train_rank_ic: f64,
-    pub oos_rank_ic: f64,
-    pub oos_ic_ir: f64,
+    pub result_version_id: Option<String>,
+    pub action: String,
+    pub pbo_estimate: f64,
     pub deflated_ic_ir: f64,
-    pub pbo_risk_pct: f64,
-    pub max_pairwise_corr: f64,
-    pub prior_weights: BTreeMap<String, f64>,
-    pub proposed_weights: BTreeMap<String, f64>,
-    pub audit_reasons_zh: Vec<String>,
+    pub oos_rank_ic: f64,
+    pub oos_win_rate_lift_pct: f64,
+    pub reason_zh: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

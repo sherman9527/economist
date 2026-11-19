@@ -91,6 +91,79 @@ impl SqliteRepository {
         Ok(())
     }
 
+    pub fn reset_or_insert_watchlist_item(&self, item: &WatchlistItemState) -> Result<(), String> {
+        let conn = self.connect()?;
+        let fz_json =
+            serde_json::to_string(&item.factor_z_scores).unwrap_or_else(|_| "{}".to_string());
+        conn.execute(
+            "INSERT INTO watchlist_items (
+                symbol, name_zh, board, industry_sw1, added_trade_date, added_at_iso,
+                entry_price_fen, stop_loss_price_fen, target_price_fen, conviction_score,
+                source_decision, version_id_at_entry, rationale_zh, factor_z_json,
+                latest_price_fen, peak_price_fen, trough_price_fen, holding_trading_days,
+                net_return_bps, mfe_bps, mae_bps, outcome, settled_trade_date, settled_price_fen
+            ) VALUES (
+                ?1, ?2, ?3, ?4, ?5, ?6,
+                ?7, ?8, ?9, ?10,
+                ?11, ?12, ?13, ?14,
+                ?15, ?16, ?17, ?18,
+                ?19, ?20, ?21, ?22, ?23, ?24
+            )
+            ON CONFLICT(symbol) DO UPDATE SET
+                name_zh = excluded.name_zh,
+                board = excluded.board,
+                industry_sw1 = excluded.industry_sw1,
+                added_trade_date = excluded.added_trade_date,
+                added_at_iso = excluded.added_at_iso,
+                entry_price_fen = excluded.entry_price_fen,
+                stop_loss_price_fen = excluded.stop_loss_price_fen,
+                target_price_fen = excluded.target_price_fen,
+                conviction_score = excluded.conviction_score,
+                source_decision = excluded.source_decision,
+                version_id_at_entry = excluded.version_id_at_entry,
+                rationale_zh = excluded.rationale_zh,
+                factor_z_json = excluded.factor_z_json,
+                latest_price_fen = excluded.latest_price_fen,
+                peak_price_fen = excluded.peak_price_fen,
+                trough_price_fen = excluded.trough_price_fen,
+                holding_trading_days = excluded.holding_trading_days,
+                net_return_bps = excluded.net_return_bps,
+                mfe_bps = excluded.mfe_bps,
+                mae_bps = excluded.mae_bps,
+                outcome = excluded.outcome,
+                settled_trade_date = excluded.settled_trade_date,
+                settled_price_fen = excluded.settled_price_fen",
+            params![
+                item.symbol,
+                item.name_zh,
+                item.board,
+                item.industry_sw1,
+                item.added_trade_date,
+                item.added_at_iso,
+                item.entry_price_fen.0,
+                item.stop_loss_price_fen.0,
+                item.target_price_fen.0,
+                item.conviction_score,
+                item.source_decision,
+                item.version_id_at_entry,
+                item.rationale_zh,
+                fz_json,
+                item.latest_price_fen.0,
+                item.peak_price_fen.0,
+                item.trough_price_fen.0,
+                item.holding_trading_days as i64,
+                item.net_return_bps,
+                item.mfe_bps,
+                item.mae_bps,
+                item.outcome.as_str(),
+                item.settled_trade_date,
+                item.settled_price_fen.map(|f| f.0),
+            ],
+        )
+        .map_err(|e| format!("重置或写入自选观察条目失败: {}", e))?;
+        Ok(())
+    }
+
     pub fn remove_watchlist_item(&self, symbol: &str) -> Result<(), String> {
         let conn = self.connect()?;
         conn.execute("DELETE FROM watchlist_items WHERE symbol = ?1", params![symbol])

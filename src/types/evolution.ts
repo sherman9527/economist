@@ -86,6 +86,9 @@ export interface VersionSnapshotDto {
   factorWeightsPct: Record<string, number>;
   minIntradayProjectedTurnoverPct: number;
   atrStopMult: number;
+  insiderSellVetoPct?: number;
+  holderSurgeVetoPct?: number;
+  mainOutflowVetoRatio?: number;
   oosSampleDays: number;
   oosRankIcMean: number;
   oosWinRatePct: number;
