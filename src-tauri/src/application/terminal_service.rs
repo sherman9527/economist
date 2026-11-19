@@ -36,6 +36,7 @@ pub struct TerminalService {
     pub scan_cache: RwLock<Option<CachedScanState>>,
     pub scan_singleflight: Mutex<()>,
     pub ledger_lock: Mutex<()>,
+    pub evolution_lock: Mutex<()>,
 }
 
 impl TerminalService {
@@ -85,6 +86,7 @@ impl TerminalService {
             scan_cache: RwLock::new(None),
             scan_singleflight: Mutex::new(()),
             ledger_lock: Mutex::new(()),
+            evolution_lock: Mutex::new(()),
         })
     }
 
@@ -332,6 +334,7 @@ impl TerminalService {
         &self,
         input: UpdatePluginInputDto,
     ) -> Result<StrategyPluginConfigDto, String> {
+        let _evo_guard = self.evolution_lock.lock().await;
         let mut updated = self.plugins.update_strategy_and_weights(
             input.min_intraday_projected_turnover_pct,
             input.insider_sell_veto_pct,
@@ -341,9 +344,8 @@ impl TerminalService {
             &input.market_polarity,
             &input.factor_weights,
         )?;
-        if let Ok(new_ver) = self.record_manual_version_snapshot_sync(&updated) {
-            updated.strategy.version = new_ver.trim_start_matches('v').to_string();
-        }
+        let new_ver = self.record_manual_version_snapshot_sync(&updated)?;
+        updated.strategy.version = new_ver.trim_start_matches('v').to_string();
         self.repo.sync_plugins_to_sqlite(&updated)?;
         {
             let mut w = self.scan_cache.write().await;

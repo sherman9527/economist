@@ -132,8 +132,47 @@ impl TerminalService {
         input: AddWatchlistInputDto,
     ) -> Result<WatchlistOverviewDto, String> {
         let sym = Symbol::parse(&input.symbol)?;
-        if !input.entry_price_yuan.is_finite() || input.entry_price_yuan <= 0.0 {
-            return Err("自选纳入基准价必须大于 0".to_string());
+        if !input.entry_price_yuan.is_finite()
+            || !(0.02..=10_000.0).contains(&input.entry_price_yuan)
+        {
+            return Err("自选纳入基准价必须处于有限安全区间 [0.02, 10000.00] 元".to_string());
+        }
+        if !input.stop_loss_price_yuan.is_finite()
+            || input.stop_loss_price_yuan < 0.0
+            || input.stop_loss_price_yuan > 10_000.0
+        {
+            return Err("自选止损价必须为有限非负数值且不超过 10000.00 元".to_string());
+        }
+        if !input.target_price_yuan.is_finite()
+            || input.target_price_yuan < 0.0
+            || input.target_price_yuan > 20_000.0
+        {
+            return Err("自选目标价必须为有限非负数值且不超过 20000.00 元".to_string());
+        }
+        if !input.conviction_score.is_finite()
+            || !(0.0..=100.0).contains(&input.conviction_score)
+        {
+            return Err("自选信念评分必须处于有限区间 [0, 100]".to_string());
+        }
+        if input.name_zh.chars().count() > 64
+            || input.board.chars().count() > 32
+            || input.industry_sw1.chars().count() > 64
+            || input.source_decision.chars().count() > 32
+            || input.rationale_zh.chars().count() > 512
+        {
+            return Err("自选文本字段长度超出安全上限".to_string());
+        }
+        if input.factor_z_scores.len() > 32 {
+            return Err("自选因子暴露映射条目数超出上限 (<=32)".to_string());
+        }
+        for (fk, &fv) in &input.factor_z_scores {
+            if fk.is_empty()
+                || fk.chars().count() > 64
+                || !fv.is_finite()
+                || !(-20.0..=20.0).contains(&fv)
+            {
+                return Err(format!("因子暴露 '{}' 数值非法或超出 [-20, 20] 安全域", fk));
+            }
         }
         let bundle = self.plugins.load_all()?;
         let (today_cst, _, now_iso) = current_cst_dates();

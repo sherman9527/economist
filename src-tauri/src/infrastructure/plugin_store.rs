@@ -321,7 +321,6 @@ impl PluginStore {
                 .iter()
                 .map(|f| f.factor_id.as_str())
                 .collect();
-            let mut sum = 0.0_f64;
             for (k, &v) in factor_weights {
                 if !known_ids.contains(k.as_str()) {
                     return Err(format!("未知因子标识 '{}'，拒绝写入策略配置", k));
@@ -332,14 +331,43 @@ impl PluginStore {
                         k, v
                     ));
                 }
-                sum += v;
             }
-            if !sum.is_finite() || sum <= 1e-6 {
+
+            let mut merged_raw: BTreeMap<String, f64> = BTreeMap::new();
+            for f in &bundle.factors.factors {
+                let raw_w = factor_weights
+                    .get(&f.factor_id)
+                    .copied()
+                    .or_else(|| bundle.strategy.factor_weights.get(&f.factor_id).copied())
+                    .unwrap_or(f.weight_pct);
+                if !raw_w.is_finite() || raw_w < 0.0 {
+                    return Err(format!("因子 {} 合并权重非法", f.factor_id));
+                }
+                merged_raw.insert(f.factor_id.clone(), raw_w);
+            }
+
+            let total_sum: f64 = merged_raw.values().sum();
+            if !total_sum.is_finite() || total_sum <= 1e-6 {
                 return Err("因子权重总和必须大于 0 且为有限数值".to_string());
             }
-            for (k, &v) in factor_weights {
-                let norm = ((v / sum) * 1000.0).round() / 10.0;
+
+            let mut rounded_sum = 0.0_f64;
+            let mut max_key: Option<String> = None;
+            let mut max_val = -1.0_f64;
+            for (k, raw_w) in &merged_raw {
+                let norm = ((raw_w / total_sum) * 1000.0).round() / 10.0;
+                rounded_sum += norm;
+                if norm > max_val {
+                    max_val = norm;
+                    max_key = Some(k.clone());
+                }
                 bundle.strategy.factor_weights.insert(k.clone(), norm);
+            }
+            if let Some(mk) = max_key {
+                let residual = ((100.0 - rounded_sum) * 10.0).round() / 10.0;
+                if let Some(entry) = bundle.strategy.factor_weights.get_mut(&mk) {
+                    *entry = ((*entry + residual) * 10.0).round() / 10.0;
+                }
             }
             for f in &mut bundle.factors.factors {
                 if let Some(&w) = bundle.strategy.factor_weights.get(&f.factor_id) {
@@ -364,9 +392,9 @@ impl PluginStore {
         let fac_json = serde_json::to_string_pretty(&bundle.factors)
             .map_err(|e| format!("序列化因子配置失败: {}", e))?;
 
-        std::fs::write(self.paths.root().join(strat_rel), &strat_json)
+        write_atomic_text(&self.paths.root().join(strat_rel), &strat_json)
             .map_err(|e| format!("落盘策略配置失败: {}", e))?;
-        std::fs::write(self.paths.root().join(fac_rel), &fac_json)
+        write_atomic_text(&self.paths.root().join(fac_rel), &fac_json)
             .map_err(|e| format!("落盘因子配置失败: {}", e))?;
 
         bundle.raw_strategy_json = strat_json;
@@ -394,13 +422,30 @@ impl PluginStore {
             .map_err(|e| format!("序列化策略版本失败: {}", e))?;
         let fac_json = serde_json::to_string_pretty(&bundle.factors)
             .map_err(|e| format!("序列化因子版本失败: {}", e))?;
-        std::fs::write(self.paths.root().join(strat_rel), &strat_json)
+        write_atomic_text(&self.paths.root().join(strat_rel), &strat_json)
             .map_err(|e| format!("写入策略版本失败: {}", e))?;
-        std::fs::write(self.paths.root().join(fac_rel), &fac_json)
+        write_atomic_text(&self.paths.root().join(fac_rel), &fac_json)
             .map_err(|e| format!("写入因子版本失败: {}", e))?;
         bundle.raw_strategy_json = strat_json;
         Ok(bundle)
     }
+}
+
+fn write_atomic_text(dest: &std::path::Path, content: &str) -> std::io::Result<()> {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static TMP_SEQ: AtomicU64 = AtomicU64::new(1);
+    let seq = TMP_SEQ.fetch_add(1, Ordering::Relaxed);
+    let file_name = dest
+        .file_name()
+        .and_then(|n| n.to_str())
+        .unwrap_or("manifest.json");
+    let tmp = dest.with_file_name(format!(".{}.{}.tmp", file_name, seq));
+    std::fs::write(&tmp, content)?;
+    if let Err(e) = std::fs::rename(&tmp, dest) {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(e);
+    }
+    Ok(())
 }
 
 #[cfg(test)]

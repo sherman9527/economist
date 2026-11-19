@@ -399,7 +399,11 @@ pub fn round_2(val: f64) -> f64 {
     if !val.is_finite() {
         return 0.0;
     }
-    (val * 100.0).round() / 100.0
+    let scaled = val * 100.0;
+    if !scaled.is_finite() {
+        return val;
+    }
+    scaled.round() / 100.0
 }
 
 #[cfg(test)]

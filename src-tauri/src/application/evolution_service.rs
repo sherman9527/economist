@@ -80,27 +80,35 @@ impl TerminalService {
         &self,
         version_id: &str,
     ) -> Result<VersionControlDashboardDto, String> {
+        let trimmed_id = version_id.trim();
+        if trimmed_id.is_empty() || trimmed_id.chars().count() > 48 {
+            return Err("目标策略版本号格式非法".to_string());
+        }
+        let _evo_guard = self.evolution_lock.lock().await;
         let bundle = self.plugins.load_all()?;
         let (_, _, now_iso) = current_cst_dates();
         self.repo.ensure_default_version_lineage(&bundle, &now_iso)?;
-        let prev_active = self
-            .repo
-            .list_version_snapshots()?
-            .into_iter()
+        let all_versions = self.repo.list_version_snapshots()?;
+        let prev_active = all_versions
+            .iter()
             .find(|v| v.is_active)
-            .map(|v| v.version_id);
+            .map(|v| v.version_id.clone());
+        let target = all_versions
+            .into_iter()
+            .find(|v| v.version_id == trimmed_id)
+            .ok_or_else(|| format!("未找到策略版本快照: {}", trimmed_id))?;
 
-        let activated = self.repo.set_active_version_id(version_id.trim())?;
         let updated = self.plugins.update_strategy_and_weights(
-            activated.params.min_intraday_projected_turnover_pct,
-            activated.params.insider_sell_veto_pct,
-            activated.params.holder_surge_veto_pct,
-            activated.params.main_outflow_veto_ratio,
-            activated.params.atr_stop_mult,
+            target.params.min_intraday_projected_turnover_pct,
+            target.params.insider_sell_veto_pct,
+            target.params.holder_surge_veto_pct,
+            target.params.main_outflow_veto_ratio,
+            target.params.atr_stop_mult,
             &bundle.strategy.market_polarity,
-            &activated.factor_weights,
+            &target.factor_weights,
         )?;
-        let _ = self.plugins.set_manifest_version(&activated.version_id)?;
+        let _ = self.plugins.set_manifest_version(&target.version_id)?;
+        let activated = self.repo.set_active_version_id(&target.version_id)?;
         self.repo.sync_plugins_to_sqlite(&updated)?;
         {
             let mut w = self.scan_cache.write().await;
@@ -118,6 +126,7 @@ impl TerminalService {
                 activated.version_id, prev_active
             ),
         );
+        drop(_evo_guard);
         self.get_version_control_dashboard(prev_active, Some(activated.version_id))
             .await
     }
@@ -126,6 +135,11 @@ impl TerminalService {
         &self,
         trigger_source: &str,
     ) -> Result<VersionControlDashboardDto, String> {
+        let clean_source = trigger_source.trim();
+        if clean_source.is_empty() || clean_source.chars().count() > 64 {
+            return Err("滚动防过拟合触发来源标识非法".to_string());
+        }
+        let _evo_guard = self.evolution_lock.lock().await;
         let bundle = self.plugins.load_all()?;
         let (_, _, now_iso) = current_cst_dates();
         self.repo.ensure_default_version_lineage(&bundle, &now_iso)?;
@@ -189,7 +203,7 @@ impl TerminalService {
         let log_row = EvolutionAuditRow {
             log_id: 0,
             created_at: now_iso,
-            trigger_source: trigger_source.to_string(),
+            trigger_source: clean_source.to_string(),
             base_version_id: active.version_id.clone(),
             resulting_version_id: resulting_ver.clone(),
             promoted: wf.promoted,
@@ -218,7 +232,7 @@ impl TerminalService {
             true,
             &format!(
                 "[{}] 滚动验证结果={} ({} -> {}) OOS_IC={:.4} PBO={:.1}%",
-                trigger_source,
+                clean_source,
                 wf.verdict,
                 active.version_id,
                 resulting_ver,
@@ -226,6 +240,7 @@ impl TerminalService {
                 wf.pbo_risk_pct
             ),
         );
+        drop(_evo_guard);
 
         self.get_version_control_dashboard(Some(active.version_id), Some(resulting_ver))
             .await

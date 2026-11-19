@@ -94,9 +94,12 @@ impl WatchlistItemState {
         rationale_zh: &str,
         factor_z_scores: BTreeMap<String, f64>,
     ) -> Self {
-        let safe_entry = Fen(entry_price_fen.0.max(1));
-        let safe_stop = Fen(stop_loss_price_fen.0.clamp(1, (safe_entry.0 - 1).max(1)));
-        let safe_target = Fen(target_price_fen.0.max(safe_entry.0 + 1));
+        let safe_entry = Fen(entry_price_fen.0.clamp(2, 1_000_000_000));
+        let safe_stop = Fen(stop_loss_price_fen.0.clamp(1, safe_entry.0 - 1));
+        let safe_target = Fen(target_price_fen
+            .0
+            .max(safe_entry.0.saturating_add(1))
+            .min(2_000_000_000));
         Self {
             symbol: symbol.to_string(),
             name_zh: name_zh.to_string(),
