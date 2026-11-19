@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { AlertTriangle, CheckCircle2, GitBranch, RotateCcw, Sparkles } from "lucide-react";
 import type {
   FactorDiagnosticDto,
@@ -31,16 +31,27 @@ export const VersionControlArenaPanel: React.FC<VersionControlArenaPanelProps> =
     comparison?.targetVersionId ?? activeVersionId
   );
 
+  useEffect(() => {
+    if (comparison?.baseVersionId) {
+      setBaseId(comparison.baseVersionId);
+    }
+    if (comparison?.targetVersionId) {
+      setTargetId(comparison.targetVersionId);
+    }
+  }, [comparison?.baseVersionId, comparison?.targetVersionId]);
+
+  const effectiveBaseId = comparison?.baseVersionId ?? baseId;
+  const effectiveTargetId = comparison?.targetVersionId ?? targetId;
   const factorNameMap = Object.fromEntries(factors.map((f) => [f.factorId, f.nameZh]));
 
   const handleSelectBase = (nextBase: string) => {
     setBaseId(nextBase);
-    void onCompareVersions(nextBase, targetId);
+    void onCompareVersions(nextBase, effectiveTargetId);
   };
 
   const handleSelectTarget = (nextTarget: string) => {
     setTargetId(nextTarget);
-    void onCompareVersions(baseId, nextTarget);
+    void onCompareVersions(effectiveBaseId, nextTarget);
   };
 
   return (
@@ -141,6 +152,45 @@ export const VersionControlArenaPanel: React.FC<VersionControlArenaPanelProps> =
             })}
           </tbody>
         </table>
+      </div>
+
+      <div className="responsive-cards-only" data-testid="version-arena-mobile-cards">
+        {versions.map((v) => {
+          const retTone = v.oosCumNetRetBps >= 0 ? "text-mkt-up" : "text-mkt-down";
+          return (
+            <div key={`card-${v.versionId}`} className="glass-optical-card tabular-nums" style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
+                <strong>
+                  {v.versionId} · 换手≥{v.minIntradayProjectedTurnoverPct.toFixed(1)}% · {v.atrStopMult.toFixed(1)}x ATR
+                </strong>
+                <span className={retTone} style={{ fontWeight: 700 }}>
+                  {v.oosCumNetRetBps >= 0 ? "+" : ""}
+                  {v.oosCumNetRetBps.toFixed(1)} bps
+                </span>
+              </div>
+              <div style={{ fontSize: "12px", color: "var(--text-secondary)" }}>{v.summaryZh}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "8px", fontSize: "12px" }}>
+                <span>
+                  OOS IC {v.oosRankIcMean >= 0 ? "+" : ""}
+                  {v.oosRankIcMean.toFixed(3)} · 胜率 {v.oosWinRatePct.toFixed(1)}%
+                </span>
+                {v.isActive ? (
+                  <span className="glass-pill pill-risk-clear">正在实盘扫描生效</span>
+                ) : (
+                  <AsyncGlassButton
+                    size="sm"
+                    variant="ghost"
+                    dataTestId={`switch-version-card-${v.versionId}`}
+                    label="切换设为当前版本"
+                    loadingLabel="切换中..."
+                    successLabel="已切换生效"
+                    onClick={() => onSwitchVersion(v.versionId)}
+                  />
+                )}
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "12px" }}>

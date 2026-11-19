@@ -91,28 +91,51 @@ fn evaluate_single_version_shadow(
         if rows.len() < 3 {
             continue;
         }
-        let mut scored: Vec<(f64, f64)> = rows
+        let all_scored: Vec<(f64, &CrossSectionalFactorObservation)> = rows
             .iter()
-            .map(|r| {
+            .map(|&r| {
                 let s: f64 = v
                     .factor_weights
                     .iter()
                     .map(|(fid, w)| (w / 100.0) * r.factor_z.get(fid).copied().unwrap_or(0.0))
                     .sum();
-                (s, r.forward_5d_net_ret_bps)
+                (s, r)
             })
             .collect();
 
-        let xs: Vec<f64> = scored.iter().map(|p| p.0).collect();
-        let ys: Vec<f64> = scored.iter().map(|p| p.1).collect();
+        let xs: Vec<f64> = all_scored.iter().map(|p| p.0).collect();
+        let ys: Vec<f64> = all_scored.iter().map(|p| p.1.forward_5d_net_ret_bps).collect();
         daily_ics.push(spearman_rank_ic(&xs, &ys));
 
-        scored.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
-        let k = (scored.len() / 3).max(1).min(3);
+        // Respect per-version `min_intraday_projected_turnover_pct` gate when turnover telemetry is present
+        let has_turnover_data = rows.iter().any(|r| r.turnover_pct > 0.0);
+        let mut eligible: Vec<(f64, &CrossSectionalFactorObservation)> = if has_turnover_data {
+            let filtered: Vec<_> = all_scored
+                .iter()
+                .copied()
+                .filter(|(_, r)| r.turnover_pct + 1e-6 >= v.params.min_intraday_projected_turnover_pct)
+                .collect();
+            if filtered.is_empty() {
+                continue;
+            }
+            filtered
+        } else {
+            all_scored
+        };
+
+        eligible.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        let k = (eligible.len() / 3).max(1).min(3);
         let mut day_sum = 0.0;
-        for &(_, mut ret_bps) in scored.iter().take(k) {
-            // Reflect tighter ATR stop whipsaw penalty in volatile small-cap regimes
-            if v.params.atr_stop_mult < 1.60 && ret_bps > -120.0 && ret_bps < 80.0 {
+        for &(_, obs) in eligible.iter().take(k) {
+            let mut ret_bps = obs.forward_5d_net_ret_bps;
+            if obs.atr_pct_bps > 0.0 {
+                // Path-dependent stop-loss physics: if T+1..T+5 adverse excursion breaches `atr_stop_mult`,
+                // trade exits at the version's stop-loss (`-atr_stop_mult * atr_pct_bps - 25 bps` friction).
+                if obs.max_adverse_atr_excursion >= v.params.atr_stop_mult {
+                    let stop_exit_bps = -(v.params.atr_stop_mult * obs.atr_pct_bps) - 25.0;
+                    ret_bps = stop_exit_bps.max(obs.forward_5d_net_ret_bps.min(stop_exit_bps));
+                }
+            } else if v.params.atr_stop_mult < 1.60 && ret_bps > -120.0 && ret_bps < 80.0 {
                 ret_bps -= (1.60 - v.params.atr_stop_mult) * 90.0;
             }
             if ret_bps > 0.0 {
@@ -301,7 +324,7 @@ pub fn compare_versions_and_attribute(
             };
             root_causes.push(RootCauseFinding {
                 category: "FACTOR_WEIGHT_DRAG".to_string(),
-                severity: "HIGH".to_string(),
+                severity: "CRITICAL".to_string(),
                 title_zh: format!("因子权重迁移拖累（单日均值 {:.1} bps）", worst.attribution_drag_or_lift_bps),
                 detail_zh: direction_zh,
                 action_zh: format!(
@@ -324,7 +347,7 @@ pub fn compare_versions_and_attribute(
         if avg_upper_shadow >= 0.34 {
             root_causes.push(RootCauseFinding {
                 category: "MARKET_REGIME_SHIFT".to_string(),
-                severity: "MEDIUM".to_string(),
+                severity: "WARN".to_string(),
                 title_zh: "市场微观结构切换：冲高回落长上影线诱多频发".to_string(),
                 detail_zh: format!(
                     "近期样本外小市值池平均上影线占比达 {:.1}%（>=34% 分化震荡阈值），高换手追涨动量出现短周期均值回归，老版本防守型权重更具韧性",
@@ -334,12 +357,46 @@ pub fn compare_versions_and_attribute(
             });
         }
 
-        // 3. Stop-Loss & Pitfall Parameter Diff Attribution
+        // 3. Turnover Gate & Pitfall Threshold Selectivity Shift Attribution
+        let turnover_delta = v_new.params.min_intraday_projected_turnover_pct
+            - v_old.params.min_intraday_projected_turnover_pct;
+        let pitfall_shifted = (v_new.params.insider_sell_veto_pct - v_old.params.insider_sell_veto_pct).abs() >= 0.3
+            || (v_new.params.holder_surge_veto_pct - v_old.params.holder_surge_veto_pct).abs() >= 3.0
+            || (v_new.params.main_outflow_veto_ratio - v_old.params.main_outflow_veto_ratio).abs() >= 0.02;
+        if turnover_delta.abs() >= 0.4 || pitfall_shifted {
+            let detail = if turnover_delta >= 0.4 {
+                format!(
+                    "新版本将换手率准入门槛从 {:.1}% 大幅抬升至 {:.1}%，误筛掉了稳健温和放量黑马、被迫集中追高换手过热见顶标的",
+                    v_old.params.min_intraday_projected_turnover_pct,
+                    v_new.params.min_intraday_projected_turnover_pct
+                )
+            } else if turnover_delta <= -0.4 {
+                format!(
+                    "新版本将换手率准入门槛从 {:.1}% 下调至 {:.1}%，混入流动性不足与跟风弱势标的拉低样本外胜率",
+                    v_old.params.min_intraday_projected_turnover_pct,
+                    v_new.params.min_intraday_projected_turnover_pct
+                )
+            } else {
+                "新版本放宽了减持/股东户数/主力流出五维排雷否决阈值，导致潜在瑕疵标的漏入候选池".to_string()
+            };
+            root_causes.push(RootCauseFinding {
+                category: "TURNOVER_PITFALL_PARAM".to_string(),
+                severity: "CRITICAL".to_string(),
+                title_zh: "换手率准入门槛或五维排雷参数偏移导致选股池劣化".to_string(),
+                detail_zh: detail,
+                action_zh: format!(
+                    "建议将预测换手率门槛与排雷阈值回退至老版本 `{}`（换手>={:.1}%）",
+                    v_old.version_id, v_old.params.min_intraday_projected_turnover_pct
+                ),
+            });
+        }
+
+        // 4. Stop-Loss Parameter Diff Attribution
         if (v_new.params.atr_stop_mult - v_old.params.atr_stop_mult).abs() >= 0.15 {
             if v_new.params.atr_stop_mult < v_old.params.atr_stop_mult {
                 root_causes.push(RootCauseFinding {
                     category: "STOP_LOSS_PARAM".to_string(),
-                    severity: "HIGH".to_string(),
+                    severity: "CRITICAL".to_string(),
                     title_zh: "ATR 动态止损倍数过紧导致盘中洗盘误止损".to_string(),
                     detail_zh: format!(
                         "新版本将 ATR 止损倍数从 {:.2}x 收紧至 {:.2}x，在 <200亿 高弹性标的正常日内波动中过早触发止损摩擦损耗",
@@ -353,7 +410,7 @@ pub fn compare_versions_and_attribute(
             } else {
                 root_causes.push(RootCauseFinding {
                     category: "STOP_LOSS_PARAM".to_string(),
-                    severity: "MEDIUM".to_string(),
+                    severity: "WARN".to_string(),
                     title_zh: "ATR 止损放宽放大单笔尾部回撤".to_string(),
                     detail_zh: format!(
                         "新版本将 ATR 止损倍数从 {:.2}x 放宽至 {:.2}x，弱势破位票止损滞后导致回撤扩大 +{:.1} bps",
@@ -364,13 +421,13 @@ pub fn compare_versions_and_attribute(
             }
         }
 
-        // 4. In-Sample Overfit Decay Check
+        // 5. In-Sample Overfit Decay Check
         if v_new.train_rank_ic > 0.04
             && target_perf.shadow_oos_rank_ic < 0.45 * v_new.train_rank_ic
         {
             root_causes.push(RootCauseFinding {
                 category: "OVERFIT_DECAY".to_string(),
-                severity: "HIGH".to_string(),
+                severity: "CRITICAL".to_string(),
                 title_zh: "样本内拟合衰减（IS → OOS RankIC 断崖回落）".to_string(),
                 detail_zh: format!(
                     "新版本训练期 RankIC 高达 {:.4}，但样本外实测回落至 {:.4}（PBO 风险 {:.1}%），属于对近期局部行情的过度调参",
@@ -386,7 +443,7 @@ pub fn compare_versions_and_attribute(
         if root_causes.is_empty() {
             root_causes.push(RootCauseFinding {
                 category: "SAMPLE_VARIANCE".to_string(),
-                severity: "LOW".to_string(),
+                severity: "INFO".to_string(),
                 title_zh: "短期样本外截面波动导致微幅落后".to_string(),
                 detail_zh: format!(
                     "新版本 `{}` 相较 `{}` 样本外净收益差 {:.1} bps、RankIC 差 {:.4}，建议继续并行影子观察至少 10 个交易日后再定夺",

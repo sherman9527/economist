@@ -47,6 +47,9 @@ pub fn build_pit_walk_forward_observations(
         raw_factors: BTreeMap<String, f64>,
         fwd_5d_net_bps: f64,
         upper_shadow_ratio: f64,
+        turnover_pct: f64,
+        max_adverse_atr_excursion: f64,
+        atr_pct_bps: f64,
     }
     let quote_lookup: HashMap<String, &RawTencentQuote> = scan_out
         .raw_quotes
@@ -101,6 +104,13 @@ pub fn build_pit_walk_forward_observations(
 
             let hist_slice = &bars[..=t];
             let (ma20, atr14, vol_ma20) = compute_ma_and_atr14(hist_slice);
+            let worst_low = bars[t + 1..=t + 5]
+                .iter()
+                .map(|b| b.low)
+                .fold(entry_open, f64::min);
+            let atr_safe = atr14.max(entry_open * 0.005);
+            let max_adverse_atr_excursion = ((entry_open - worst_low).max(0.0)) / atr_safe;
+            let atr_pct_bps = ((atr_safe / entry_open) * 10_000.0).max(40.0);
             let vol_exp = if vol_ma20 > 0.0 {
                 cur_bar.volume / vol_ma20
             } else {
@@ -156,6 +166,9 @@ pub fn build_pit_walk_forward_observations(
                 raw_factors: rf,
                 fwd_5d_net_bps,
                 upper_shadow_ratio,
+                turnover_pct: cur_bar.turnover_pct,
+                max_adverse_atr_excursion,
+                atr_pct_bps,
             });
         }
     }
@@ -188,6 +201,9 @@ pub fn build_pit_walk_forward_observations(
                 factor_z: sc.factor_z_scores,
                 forward_5d_net_ret_bps: r.fwd_5d_net_bps,
                 upper_shadow_ratio: r.upper_shadow_ratio,
+                turnover_pct: r.turnover_pct,
+                max_adverse_atr_excursion: r.max_adverse_atr_excursion,
+                atr_pct_bps: r.atr_pct_bps,
             });
         }
     }

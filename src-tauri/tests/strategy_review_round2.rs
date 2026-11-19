@@ -62,6 +62,7 @@ fn r2_01_candidate_weights_never_peek_at_oos_holdout_window() {
                     factor_z: fz,
                     forward_5d_net_ret_bps: ret,
                     upper_shadow_ratio: 0.15,
+                    ..Default::default()
                 });
             }
         }
@@ -106,6 +107,7 @@ fn r2_02_embargo_never_shrinks_below_5_trading_days_and_zero_lift_is_rejected() 
                 factor_z: fz,
                 forward_5d_net_ret_bps: z * 100.0,
                 upper_shadow_ratio: 0.1,
+                ..Default::default()
             });
         }
     }
@@ -132,6 +134,7 @@ fn r2_02_embargo_never_shrinks_below_5_trading_days_and_zero_lift_is_rejected() 
                 factor_z: fz,
                 forward_5d_net_ret_bps: z * 100.0,
                 upper_shadow_ratio: 0.1,
+                ..Default::default()
             });
         }
     }

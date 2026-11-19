@@ -270,27 +270,57 @@ pub async fn fetch_tencent_fallback_klines(
 ) -> Result<Vec<SimpleBar>, String> {
     let tc = symbol.tencent_code();
     let url = if period == "30m" {
-        format!("{}?param={},m30,,{}", mkline_url, tc, limit.clamp(20, 240))
+        let mk = mkline_url.replace("://web.ifzq.gtimg.cn/", "://ifzq.gtimg.cn/");
+        format!("{}?param={},m30,,{}", mk, tc, limit.clamp(20, 240))
     } else {
+        let fq = fqkline_url.replace("://ifzq.gtimg.cn/", "://web.ifzq.gtimg.cn/");
         format!(
             "{}?param={},day,,,{},qfq",
-            fqkline_url,
+            fq,
             tc,
             limit.clamp(30, 240)
         )
     };
 
-    let body = client
-        .get(&url)
-        .header("Referer", "https://gu.qq.com/")
-        .send()
-        .await
-        .map_err(|e| format!("请求腾讯备用K线失败: {}", e))?
-        .text()
-        .await
-        .map_err(|e| format!("读取腾讯备用K线失败: {}", e))?;
-
-    parse_tencent_fallback_kline_json(&body, symbol, period, circ_mv_yi)
+    let mut last_err = String::new();
+    for attempt in 0..3usize {
+        if attempt > 0 {
+            tokio::time::sleep(std::time::Duration::from_millis(120 * (attempt as u64))).await;
+        }
+        let resp_res = client
+            .get(&url)
+            .header("Referer", "https://gu.qq.com/")
+            .send()
+            .await;
+        let resp = match resp_res {
+            Ok(r) => r,
+            Err(e) => {
+                last_err = format!("请求腾讯备用K线失败: {}", e);
+                continue;
+            }
+        };
+        if !resp.status().is_success() {
+            last_err = format!("腾讯备用K线HTTP状态异常 {} ({})", resp.status(), tc);
+            continue;
+        }
+        let body = match resp.text().await {
+            Ok(t) => t,
+            Err(e) => {
+                last_err = format!("读取腾讯备用K线失败: {}", e);
+                continue;
+            }
+        };
+        if body.trim().is_empty() {
+            last_err = format!("腾讯备用K线返回空响应 ({})", tc);
+            continue;
+        }
+        match parse_tencent_fallback_kline_json(&body, symbol, period, circ_mv_yi) {
+            Ok(bars) if !bars.is_empty() => return Ok(bars),
+            Ok(_) => last_err = format!("腾讯备用K线返回0根K线 ({})", tc),
+            Err(e) => last_err = e,
+        }
+    }
+    Err(last_err)
 }
 
 pub fn parse_tencent_fallback_kline_json(
@@ -302,8 +332,13 @@ pub fn parse_tencent_fallback_kline_json(
     use crate::domain::types::BoardKind;
 
     let tc = symbol.tencent_code();
+    let trimmed = body.trim();
+    let json_slice = match (trimmed.find('{'), trimmed.rfind('}')) {
+        (Some(s), Some(e)) if s < e => &trimmed[s..=e],
+        _ => trimmed,
+    };
     let root: serde_json::Value =
-        serde_json::from_str(body).map_err(|e| format!("解析腾讯备用K线JSON失败: {}", e))?;
+        serde_json::from_str(json_slice).map_err(|e| format!("解析腾讯备用K线JSON失败: {}", e))?;
     let stock_obj = root
         .get("data")
         .and_then(|d| d.get(&tc))

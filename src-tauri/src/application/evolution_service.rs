@@ -379,13 +379,19 @@ impl TerminalService {
                 .map(|rc| {
                     let est_impact = match rc.category.as_str() {
                         "FACTOR_WEIGHT_DRAG" => factor_drag_min.min(-5.0),
+                        "TURNOVER_PITFALL_PARAM" => (net_lift * 0.55).min(-12.0),
                         "STOP_LOSS_PARAM" => (net_lift * 0.35).min(-8.0),
                         "MARKET_REGIME_SHIFT" => (net_lift * 0.40).min(-10.0),
                         _ => (net_lift * 0.25).min(-6.0),
                     };
+                    let norm_sev = match rc.severity.as_str() {
+                        "CRITICAL" | "HIGH" => "CRITICAL",
+                        "WARN" | "MEDIUM" => "WARN",
+                        _ => "INFO",
+                    };
                     RootCauseFindingDto {
                         category: rc.category,
-                        severity: rc.severity,
+                        severity: norm_sev.to_string(),
                         impact_bps: round_2(est_impact),
                         title_zh: rc.title_zh,
                         detail_zh: rc.detail_zh,
@@ -400,6 +406,8 @@ impl TerminalService {
             .map(|l| {
                 let action = if l.promoted {
                     "PROMOTED".to_string()
+                } else if l.verdict == "INSUFFICIENT_SAMPLE" {
+                    "INSUFFICIENT_SAMPLE".to_string()
                 } else {
                     "REJECTED_OVERFIT_GUARD".to_string()
                 };

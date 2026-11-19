@@ -76,6 +76,7 @@ export const AntiOverfitWalkForwardPanel: React.FC<AntiOverfitWalkForwardPanelPr
         <strong style={{ fontSize: "13px" }}>历史滚动迭代审计日志（保留每一次晋升与过拟合拦截证据）</strong>
         {logs.map((log) => {
           const promoted = log.action === "PROMOTED";
+          const insufficient = log.action === "INSUFFICIENT_SAMPLE";
           return (
             <div
               key={log.logId}
@@ -95,6 +96,8 @@ export const AntiOverfitWalkForwardPanel: React.FC<AntiOverfitWalkForwardPanelPr
                     <span>
                       {promoted
                         ? `通过门禁晋升 → ${log.resultVersionId ?? log.baseVersionId}`
+                        : insufficient
+                        ? "样本截面不足 (严禁缩短5日隔离带)"
                         : "防过拟合门禁拦截 (保持稳健原版)"}
                     </span>
                   </span>

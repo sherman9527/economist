@@ -21,7 +21,7 @@ build_hygiene_interval_minutes = 30
 [market_sources]
 tencent_batch_url = "https://qt.gtimg.cn/q="
 tencent_mkline_url = "https://ifzq.gtimg.cn/appstock/app/kline/mkline"
-tencent_fqkline_url = "https://ifzq.gtimg.cn/appstock/app/fqkline/get"
+tencent_fqkline_url = "https://web.ifzq.gtimg.cn/appstock/app/fqkline/get"
 eastmoney_kline_url = "https://push2his.eastmoney.com/api/qt/stock/kline/get"
 eastmoney_clist_url = "https://82.push2.eastmoney.com/api/qt/clist/get"
 eastmoney_datacenter_url = "https://datacenter-web.eastmoney.com/api/data/v1/get"

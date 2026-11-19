@@ -108,8 +108,10 @@ export interface FactorAttributionDto {
 export type RootCauseCategory =
   | "FACTOR_WEIGHT_DRAG"
   | "MARKET_REGIME_SHIFT"
+  | "TURNOVER_PITFALL_PARAM"
   | "STOP_LOSS_PARAM"
-  | "OVERFIT_DECAY";
+  | "OVERFIT_DECAY"
+  | "SAMPLE_VARIANCE";
 
 export interface RootCauseFindingDto {
   category: RootCauseCategory;
@@ -139,7 +141,7 @@ export interface EvolutionAuditLogDto {
   triggerSource: string;
   baseVersionId: string;
   resultVersionId?: string | null;
-  action: "PROMOTED" | "REJECTED_OVERFIT_GUARD" | "ROLLED_BACK";
+  action: "PROMOTED" | "REJECTED_OVERFIT_GUARD" | "INSUFFICIENT_SAMPLE" | "ROLLED_BACK";
   pboEstimate: number;
   deflatedIcIr: number;
   oosRankIc: number;

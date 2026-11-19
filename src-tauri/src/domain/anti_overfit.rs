@@ -52,13 +52,19 @@ pub fn spearman_rank_ic(xs: &[f64], ys: &[f64]) -> f64 {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, Serialize, Deserialize)]
 pub struct CrossSectionalFactorObservation {
     pub trade_date: String,
     pub symbol: String,
     pub factor_z: BTreeMap<String, f64>,
     pub forward_5d_net_ret_bps: f64,
     pub upper_shadow_ratio: f64,
+    #[serde(default)]
+    pub turnover_pct: f64,
+    #[serde(default)]
+    pub max_adverse_atr_excursion: f64,
+    #[serde(default)]
+    pub atr_pct_bps: f64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

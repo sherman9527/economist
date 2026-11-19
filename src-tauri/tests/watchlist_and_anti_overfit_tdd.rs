@@ -165,6 +165,7 @@ fn walk_forward_anti_overfit_rejects_in_sample_mirage_when_oos_sign_flips() {
                 factor_z: fz,
                 forward_5d_net_ret_bps: fwd_ret_bps,
                 upper_shadow_ratio: if day_idx >= 15 { 0.48 } else { 0.15 },
+                ..Default::default()
             });
         }
     }
@@ -261,6 +262,7 @@ fn version_comparison_pinpoints_exact_root_cause_when_new_version_underperforms_
                 factor_z: fz,
                 forward_5d_net_ret_bps: defensive_z * 140.0,
                 upper_shadow_ratio: 0.46,
+                ..Default::default()
             });
         }
     }
@@ -317,6 +319,7 @@ proptest! {
                     factor_z: fz,
                     forward_5d_net_ret_bps: z * signal_strength,
                     upper_shadow_ratio: 0.18,
+                    ..Default::default()
                 });
             }
         }

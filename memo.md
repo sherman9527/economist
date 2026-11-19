@@ -111,7 +111,11 @@
 
 - **Compact #13 (`2026-11-19` · Checkpoint: `Review Round 1 green and Round 2 quant RED`)**：
   - 完成第 1 轮深度代码与策略审查（`3bcaa19`）：对齐 Rust/TypeScript IPC JSON `camelCase` 字段契约、修复 `-exp` 预发布版本标签累加、自选复选生命周期保护及防过拟合晋升缓存同步，`66/66` Rust + `28/28` Vitest 全绿；
-  - 启动第 2 轮量化防过拟合数学审查并编写 `./src-tauri/tests/strategy_review_round2.rs` 复现红灯（样本外偷看泄露、`5` 日非重叠隔离带收缩与任意因子数 `N` 有界单纯形零增益重复晋升、跳空跌破止损真实最高价成交、`T+1` 一字涨停不可买过滤及 PIT 流通市值正交中性化）；当前立即完成第 2 轮全绿闭环，随后依次推进第 3–5 轮深度审查、重打包热重启 `./portable-release/economist-quant-terminal.exe` 并执行 `git push origin main`。
+  - 启动第 2 轮量化防过拟合数学审查并编写 `./src-tauri/tests/strategy_review_round2.rs` 复现红灯（样本外偷看泄露、`5` 日非重叠隔离带收缩与任意因子数 `N` 有界单纯形零增益重复晋升、跳空跌破止损真实最高价成交、`T+1` 一字涨停不可买过滤及 PIT 流通市值正交中性化）。
+
+- **Compact #14 (`2026-11-19` · Checkpoint: `Round 2 committed and Round 3 shadow fairness green`)**：
+  - 全绿完成第 2 轮量化防过拟合数学审查并提交（`76c2de3`，`70/70` Rust 零警告）；
+  - 完成第 3 轮多版本影子竞技场公平回放与五维归因诊断、窄屏 `<=680px` 液态玻璃版本卡片降级及腾讯日线 `fqkline` 备源域名（`web.ifzq.gtimg.cn` 防 `HTTP 501`）修复，当前立即跑通第 3 轮全量测试并提交，随后依次执行第 4 轮安全专项审查与第 5 轮 25 项需求终审、热重启 `./portable-release/economist-quant-terminal.exe` 并执行 `git push origin main`。
 
 
 
