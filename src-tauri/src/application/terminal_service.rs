@@ -44,6 +44,8 @@ impl TerminalService {
         let plugins = PluginStore::new(paths.clone());
         let bundle = plugins.load_all()?;
         let repo = SqliteRepository::new(&paths.sqlite_db_path())?;
+        let (_, _, init_iso) = current_cst_dates();
+        repo.ensure_default_version_lineage(&bundle, &init_iso)?;
         repo.sync_plugins_to_sqlite(&bundle)?;
 
         let economist = EconomistBridge::new(paths.clone());
@@ -88,6 +90,31 @@ impl TerminalService {
             ledger_lock: Mutex::new(()),
             evolution_lock: Mutex::new(()),
         })
+    }
+
+    async fn collect_tracked_symbols(
+        &self,
+        init_cap: Fen,
+        today_cst: &str,
+        fee_sched: crate::domain::types::FeeSchedule,
+    ) -> Result<Vec<String>, String> {
+        let mut syms: Vec<String> = {
+            let _guard = self.ledger_lock.lock().await;
+            let pre_ledger = self.repo.load_ledger(init_cap, today_cst, fee_sched)?;
+            pre_ledger.positions.keys().cloned().collect()
+        };
+        if let Ok(w_items) = self.repo.list_watchlist_items() {
+            for wi in w_items
+                .into_iter()
+                .filter(|x| x.outcome == crate::domain::watchlist_tracker::WatchlistOutcome::Tracking)
+                .take(24)
+            {
+                if !syms.contains(&wi.symbol) {
+                    syms.push(wi.symbol);
+                }
+            }
+        }
+        Ok(syms)
     }
 
     async fn run_or_reuse_scan(
@@ -224,11 +251,7 @@ impl TerminalService {
         let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
         let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
 
-        let held_syms: Vec<String> = {
-            let _guard = self.ledger_lock.lock().await;
-            let pre_ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
-            pre_ledger.positions.keys().cloned().collect()
-        };
+        let held_syms = self.collect_tracked_symbols(init_cap, &today_cst, fee_sched).await?;
 
         let scan = self
             .run_or_reuse_scan(
@@ -283,11 +306,7 @@ impl TerminalService {
         let (today_cst, next_cst, now_iso) = current_cst_dates();
         let fee_sched = fee_schedule_from_strategy(&bundle.strategy);
         let init_cap = Fen::from_yuan(bundle.strategy.initial_capital_yuan as f64);
-        let held_syms: Vec<String> = {
-            let _guard = self.ledger_lock.lock().await;
-            let pre_ledger = self.repo.load_ledger(init_cap, &today_cst, fee_sched)?;
-            pre_ledger.positions.keys().cloned().collect()
-        };
+        let held_syms = self.collect_tracked_symbols(init_cap, &today_cst, fee_sched).await?;
 
         let scan = self
             .run_or_reuse_scan(

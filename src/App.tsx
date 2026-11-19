@@ -20,6 +20,7 @@ import {
   runMarketScan,
   runStorageHygiene,
   subscribeRotationAlert,
+  subscribeStateSynced,
   updatePluginConfig,
   wakeAgentSession,
 } from "./services/tauriClient";
@@ -98,6 +99,7 @@ export const App: React.FC = () => {
       });
 
     let unlistenFn: (() => void) | null = null;
+    let unlistenSyncFn: (() => void) | null = null;
     void subscribeRotationAlert((payload) => {
       if (
         mounted &&
@@ -109,10 +111,20 @@ export const App: React.FC = () => {
     }).then((fn) => {
       unlistenFn = fn;
     });
+    void subscribeStateSynced(() => {
+      void bootstrapTerminal()
+        .then((dto) => {
+          if (mounted) setTerminal(dto);
+        })
+        .catch(() => {});
+    }).then((fn) => {
+      unlistenSyncFn = fn;
+    });
 
     return () => {
       mounted = false;
       unlistenFn?.();
+      unlistenSyncFn?.();
     };
   }, []);
 
@@ -198,6 +210,20 @@ export const App: React.FC = () => {
     }
   }, []);
 
+  const refreshScanSilently = useCallback(async () => {
+    try {
+      const res = await runMarketScan(true);
+      setTerminal((prev) => ({
+        ...prev,
+        funnel: res.funnel,
+        candidates: res.candidates,
+        watchlist: res.watchlist ?? prev.watchlist,
+      }));
+    } catch {
+      // keep existing scan snapshot on transient network errors
+    }
+  }, []);
+
   const handleSavePluginConfig = useCallback(async (input: UpdatePluginInputDto) => {
     const updatedCfg = await updatePluginConfig(input);
     const updatedVc = await getVersionControlDashboard();
@@ -207,7 +233,8 @@ export const App: React.FC = () => {
       pluginConfig: updatedCfg,
       versionControl: updatedVc,
     }));
-  }, []);
+    void refreshScanSilently();
+  }, [refreshScanSilently]);
 
   const handleAddWatchlist = useCallback(async (cand: ScreenerCandidateDto) => {
     setErrorBanner(null);
@@ -237,8 +264,7 @@ export const App: React.FC = () => {
     setTerminal((prev) => ({ ...prev, versionControl: vc }));
   }, []);
 
-  const handleSwitchVersion = useCallback(async (versionId: string) => {
-    const vc = await switchStrategyVersion(versionId);
+  const applySyncedVersionControl = useCallback((vc: TerminalBootstrapDto["versionControl"]) => {
     const matched = vc.versions.find((v) => v.versionId === vc.activeVersionId);
     setTerminal((prev) => ({
       ...prev,
@@ -262,30 +288,19 @@ export const App: React.FC = () => {
     }));
   }, []);
 
+  const handleSwitchVersion = useCallback(async (versionId: string) => {
+    const vc = await switchStrategyVersion(versionId);
+    applySyncedVersionControl(vc);
+    void refreshScanSilently();
+  }, [applySyncedVersionControl, refreshScanSilently]);
+
   const handleRunAntiOverfit = useCallback(async () => {
     const vc = await runAntiOverfitIteration();
-    const matched = vc.versions.find((v) => v.versionId === vc.activeVersionId);
-    setTerminal((prev) => ({
-      ...prev,
-      versionControl: vc,
-      pluginConfig: matched
-        ? {
-            ...prev.pluginConfig,
-            version: matched.versionId.replace(/^v/, ""),
-            minIntradayProjectedTurnoverPct: matched.minIntradayProjectedTurnoverPct,
-            atrStopMult: matched.atrStopMult,
-            insiderSellVetoPct: matched.insiderSellVetoPct ?? prev.pluginConfig.insiderSellVetoPct,
-            holderSurgeVetoPct: matched.holderSurgeVetoPct ?? prev.pluginConfig.holderSurgeVetoPct,
-            mainOutflowVetoRatio:
-              matched.mainOutflowVetoRatio ?? prev.pluginConfig.mainOutflowVetoRatio,
-            factors: prev.pluginConfig.factors.map((f) => ({
-              ...f,
-              weightPct: matched.factorWeightsPct[f.factorId] ?? f.weightPct,
-            })),
-          }
-        : prev.pluginConfig,
-    }));
-  }, []);
+    applySyncedVersionControl(vc);
+    if (vc.evolutionLogs[0]?.action === "PROMOTED") {
+      void refreshScanSilently();
+    }
+  }, [applySyncedVersionControl, refreshScanSilently]);
 
   const handleAckReport = useCallback(async (reportId: string, acked: boolean) => {
     const updatedEcon = await ackEconomistReport(reportId, acked);

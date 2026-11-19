@@ -39,6 +39,17 @@ pub fn cst_30m_rotation_slot_bucket(
     }
 }
 
+pub fn is_post_close_walk_forward_window_cst(
+    date: chrono::NaiveDate,
+    hour: u32,
+    minute: u32,
+) -> bool {
+    if !crate::domain::trading_calendar::is_ashare_trading_day(date) {
+        return false;
+    }
+    hour > 15 || (hour == 15 && minute >= 5)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

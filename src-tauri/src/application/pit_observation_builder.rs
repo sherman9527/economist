@@ -179,10 +179,11 @@ pub fn build_pit_walk_forward_observations(
     }
 
     let mut panel = Vec::new();
-    for (_date, rows) in by_date_raw {
+    for (_date, mut rows) in by_date_raw {
         if rows.len() < 4 {
             continue;
         }
+        rows.sort_by(|a, b| a.symbol.cmp(&b.symbol));
         let samples: Vec<CrossSectionSample> = rows
             .iter()
             .map(|r| CrossSectionSample {

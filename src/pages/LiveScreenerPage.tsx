@@ -55,7 +55,10 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
 }) => {
   const watchlistItems = watchlistOverview?.items ?? EMPTY_WATCHLIST_ITEMS;
   const watchlistSymbols = useMemo(
-    () => new Set(watchlistItems.map((i) => i.symbol)),
+    () =>
+      new Set(
+        watchlistItems.filter((i) => i.outcome === "TRACKING").map((i) => i.symbol)
+      ),
     [watchlistItems]
   );
   const [query, setQuery] = useState("");

@@ -311,7 +311,7 @@ async fn r3_02_insufficient_sample_audit_log_preserves_distinct_action_and_valid
 
     let dash2 = svc.get_version_control_dashboard(None, None).await.unwrap();
     let cmp = &dash2.comparison;
-    assert!(!cmp.root_causes.is_empty());
+    assert!(!cmp.root_causes.is_empty(), "cmp = {:?}", cmp);
     for rc in &cmp.root_causes {
         assert!(
             matches!(rc.severity.as_str(), "INFO" | "WARN" | "CRITICAL"),

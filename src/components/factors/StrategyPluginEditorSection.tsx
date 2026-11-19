@@ -183,8 +183,16 @@ export const StrategyPluginEditorSection: React.FC<StrategyPluginEditorSectionPr
                         [
                           f.factorId,
                           Math.round(((weights[f.factorId] ?? f.weightPct) / weightSum) * 100),
-                        ] as const
+                        ] as [string, number]
                     );
+                    const sumRounded = entries.reduce((acc, [, v]) => acc + v, 0);
+                    if (entries.length > 0 && sumRounded !== 100) {
+                      let maxIdx = 0;
+                      for (let i = 1; i < entries.length; i += 1) {
+                        if (entries[i][1] > entries[maxIdx][1]) maxIdx = i;
+                      }
+                      entries[maxIdx][1] += 100 - sumRounded;
+                    }
                     setWeights(Object.fromEntries(entries));
                   }}
                 >
@@ -245,7 +253,7 @@ export const StrategyPluginEditorSection: React.FC<StrategyPluginEditorSectionPr
               marketPolarity: cfgPolarity,
               factorWeights: weights,
             });
-            setStatusMsg(`已于 ${new Date().toLocaleTimeString()} 生成新策略版本快照并热加载（权重合计 ${weightSum.toFixed(0)}%）`);
+            setStatusMsg(`已于 ${new Date().toLocaleTimeString()} 生成新策略版本快照并热加载（权重已归一至 100%）`);
           }}
         />
       </div>

@@ -98,17 +98,31 @@ impl TerminalService {
                 }
                 if let Some(q) = quote_map.get(&item.symbol) {
                     if !q.is_suspended && q.latest_yuan > 0.0 {
-                        evaluate_watchlist_entry(
-                            item,
-                            today_cst,
-                            Fen::from_yuan(q.latest_yuan),
-                            Fen::from_yuan(q.high_yuan.max(q.latest_yuan)),
-                            Fen::from_yuan(if q.low_yuan > 0.0 {
-                                q.low_yuan.min(q.latest_yuan)
-                            } else {
-                                q.latest_yuan
-                            }),
-                        );
+                        let q_date =
+                            crate::application::scan_alignment::extract_quote_trade_date(&q.raw_ts)
+                                .unwrap_or_else(|| today_cst.to_string());
+                        if q_date.as_str() == item.added_trade_date.as_str() {
+                            let latest_fen = Fen::from_yuan(q.latest_yuan);
+                            evaluate_watchlist_entry(
+                                item,
+                                &q_date,
+                                latest_fen,
+                                latest_fen,
+                                latest_fen,
+                            );
+                        } else if q_date.as_str() > item.added_trade_date.as_str() {
+                            evaluate_watchlist_entry(
+                                item,
+                                &q_date,
+                                Fen::from_yuan(q.latest_yuan),
+                                Fen::from_yuan(q.high_yuan.max(q.latest_yuan)),
+                                Fen::from_yuan(if q.low_yuan > 0.0 {
+                                    q.low_yuan.min(q.latest_yuan)
+                                } else {
+                                    q.latest_yuan
+                                }),
+                            );
+                        }
                     }
                 }
                 self.repo.upsert_watchlist_item(item)?;
@@ -176,6 +190,23 @@ impl TerminalService {
         }
         let bundle = self.plugins.load_all()?;
         let (today_cst, _, now_iso) = current_cst_dates();
+        let entry_trade_date = {
+            use crate::domain::trading_calendar::effective_ashare_trade_date;
+            use chrono::Timelike;
+            let cst = chrono::FixedOffset::east_opt(8 * 3600).unwrap();
+            let now_cst = chrono::Utc::now().with_timezone(&cst);
+            let raw_date = now_cst.date_naive();
+            let pre_open = now_cst.hour() < 9 || (now_cst.hour() == 9 && now_cst.minute() < 25);
+            let anchor = if pre_open {
+                raw_date - chrono::Duration::days(1)
+            } else {
+                raw_date
+            };
+            effective_ashare_trade_date(anchor)
+                .format("%Y-%m-%d")
+                .to_string()
+        };
+        let _ = today_cst;
         self.repo.ensure_default_version_lineage(&bundle, &now_iso)?;
         let active_ver = self
             .repo
@@ -212,7 +243,7 @@ impl TerminalService {
             input.name_zh.trim(),
             input.board.trim(),
             input.industry_sw1.trim(),
-            &today_cst,
+            &entry_trade_date,
             &now_iso,
             Fen::from_yuan(input.entry_price_yuan),
             Fen::from_yuan(stop_yuan),

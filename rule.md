@@ -90,3 +90,16 @@
 - **现象**：仅用字符串前缀比较校验静态文件路径时，`/reports/..%2Freports_backup/secret.txt` 解析后仍满足同目录名前缀从而越界读取兄弟目录；将未转义的 `json.dumps(...)` 直接拼入 `<script>` 块时，若外部文章摘要含 `</script>` 会提前闭合脚本标签触发存储型 XSS。
 - **标准解法**：路径边界统一采用 `Path.resolve().is_relative_to(REPORTS_DIR.resolve())` 配合逐段符号链接拒绝；所有嵌入 `<script>` 的 JSON 统一经 `_safe_script_json()` 将 `<`、`>`、`&`、`\u2028`、`\u2029` 转义为 `\u003c` 等安全 Unicode 序列。
 
+### Pitfall #18：5 日远期收益滚动验证的标签重叠泄露（Overlapping Label Leakage）与一字涨停伪 Alpha
+- **现象**：当因子预测目标为未来 `5` 个交易日净收益（`T+1 open -> T+5 close`）时，若隔离带（Embargo）小于 `5` 个交易日，训练窗末尾样本的远期收益区间会跨入样本外验证窗；此外若不剔除 `T+1` 开盘一字涨停（`high == low` 且涨停开盘）标的，会把实盘根本买不进的涨停板计入因子超额收益。
+- **标准解法**：强制 `embargo_trading_days >= 5` 切断重叠标签泄露，候选权重仅允许由训练窗 `RankIC` 经 James-Stein 收缩生成（严禁偷看 OOS 决定调参方向），并在 PIT 观测构建层直接剔除 `T+1` 一字涨停不可成交样本。
+
+### Pitfall #19：盘前/周末陈旧快照日期（`raw_ts`）与自然日错位导致观望自选误触发 `T+1` 止损
+- **现象**：周五尾盘纳入观望自选后，周一 `09:25` 集合竞价前行情快照仍携带周五时间戳（`raw_ts = YYYYMMDD150003`）及周五早盘低点；若直接用周一自然日 `today_cst > added_trade_date` 驱动自选评估，会把周五入池前的早盘低点误判为周一 `T+1` 跌破止损。
+- **标准解法**：自选实时盯市必须从 `quote.raw_ts` 提取真实行情交易日 `q_date`；当 `q_date == added_trade_date`（`T+0` 当日）时仅以现价更新浮盈而忽略入池前日内高低极值，仅当 `q_date > added_trade_date` 时才推进 `T+1..T+5` 止盈止损结算。
+
+### Pitfall #20：`HashMap` 随机哈希顺序导致截面中性化与多版本影子排名出现浮点抖动
+- **现象**：遍历 `HashMap<String, Vec<SimpleBar>>` 构建截面样本或对同分标的 `sort_by` 时，进程级随机 SipHash 顺序会导致 IEEE-754 求和舍入与同分截断（Top-`k`）在不同运行间产生非确定性漂移。
+- **标准解法**：在截面中性化前统一按 `symbol` 字典序固定样本排列，并在影子竞技场得分排序与因子分层排序中使用 `.then_with(|| a.symbol.cmp(&b.symbol))` 进行确定性破平。
+
+

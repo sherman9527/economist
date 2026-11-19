@@ -123,7 +123,11 @@ fn evaluate_single_version_shadow(
             all_scored
         };
 
-        eligible.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+        eligible.sort_by(|a, b| {
+            b.0.partial_cmp(&a.0)
+                .unwrap_or(std::cmp::Ordering::Equal)
+                .then_with(|| a.1.symbol.cmp(&b.1.symbol))
+        });
         let k = (eligible.len() / 3).max(1).min(3);
         let mut day_sum = 0.0;
         for &(_, obs) in eligible.iter().take(k) {
@@ -261,16 +265,21 @@ pub fn compare_versions_and_attribute(
             if rows.len() < 4 {
                 continue;
             }
-            let mut pairs: Vec<(f64, f64)> = rows
+            let mut pairs: Vec<(f64, f64, &str)> = rows
                 .iter()
                 .map(|r| {
                     (
                         r.factor_z.get(fid).copied().unwrap_or(0.0),
                         r.forward_5d_net_ret_bps,
+                        r.symbol.as_str(),
                     )
                 })
                 .collect();
-            pairs.sort_by(|a, b| b.0.partial_cmp(&a.0).unwrap_or(std::cmp::Ordering::Equal));
+            pairs.sort_by(|a, b| {
+                b.0.partial_cmp(&a.0)
+                    .unwrap_or(std::cmp::Ordering::Equal)
+                    .then_with(|| a.2.cmp(b.2))
+            });
             let k = (pairs.len() / 3).max(1);
             let top_avg = pairs.iter().take(k).map(|p| p.1).sum::<f64>() / (k as f64);
             let bot_avg = pairs.iter().rev().take(k).map(|p| p.1).sum::<f64>() / (k as f64);

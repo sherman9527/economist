@@ -227,17 +227,49 @@ impl SqliteRepository {
         bundle: &PluginBundle,
         now_iso: &str,
     ) -> Result<(), String> {
-        let conn = self.connect()?;
-        let cnt: i64 = conn
-            .query_row("SELECT COUNT(*) FROM strategy_version_snapshots", [], |r| {
-                r.get(0)
-            })
-            .unwrap_or(0);
-        if cnt > 0 {
-            return Ok(());
+        let cur_ver = format!("v{}", bundle.strategy.version.trim_start_matches('v'));
+        let base_params = VersionParamsSnapshot {
+            min_intraday_projected_turnover_pct: bundle.strategy.min_intraday_projected_turnover_pct,
+            insider_sell_veto_pct: bundle.strategy.pitfall_thresholds.insider_sell_veto_pct,
+            holder_surge_veto_pct: bundle.strategy.pitfall_thresholds.holder_surge_veto_pct,
+            main_outflow_veto_ratio: bundle.strategy.pitfall_thresholds.main_outflow_veto_ratio,
+            atr_stop_mult: bundle.strategy.stop_loss.atr_stop_mult,
+        };
+
+        let existing = self.list_version_snapshots()?;
+        if !existing.is_empty() {
+            let active_matches = existing
+                .iter()
+                .any(|v| v.is_active && v.version_id == cur_ver);
+            if active_matches {
+                return Ok(());
+            }
+            if existing.iter().any(|v| v.version_id == cur_ver) {
+                let _ = self.set_active_version_id(&cur_ver)?;
+                return Ok(());
+            }
+            let parent_id = existing
+                .iter()
+                .find(|v| v.is_active)
+                .or_else(|| existing.last())
+                .map(|v| v.version_id.clone());
+            return self.save_version_snapshot(&StrategyVersionSnapshot {
+                version_id: cur_ver,
+                parent_version_id: parent_id,
+                source_tag: "MANIFEST_SYNC".to_string(),
+                created_at: now_iso.to_string(),
+                is_active: true,
+                summary_zh: "外部插件清单热编辑同步快照".to_string(),
+                factor_weights: bundle.strategy.factor_weights.clone(),
+                params: base_params,
+                train_rank_ic: 0.052,
+                oos_rank_ic: 0.048,
+                oos_ic_ir: 0.78,
+                pbo_risk_pct: 16.0,
+            });
         }
 
-        // Seed 3-generation lineage: v1.0.0 (Equal-Weight Origin) -> v1.1.0 (Liquidity Defensive) -> v1.2.0 (Current Active)
+        // Seed 3-generation lineage: v1.0.0 (Equal-Weight Origin) -> v1.1.0 (Liquidity Defensive) -> cur_ver
         let mut w_v100 = BTreeMap::new();
         for f in &bundle.factors.factors {
             w_v100.insert(f.factor_id.clone(), 16.7);
@@ -254,17 +286,17 @@ impl SqliteRepository {
         w_v110.insert("F5_main_inflow_ir".to_string(), 15.0);
         w_v110.insert("F6_pv_efficiency".to_string(), 14.0);
 
-        let cur_ver = format!("v{}", bundle.strategy.version.trim_start_matches('v'));
-        let base_params = VersionParamsSnapshot {
-            min_intraday_projected_turnover_pct: bundle.strategy.min_intraday_projected_turnover_pct,
-            insider_sell_veto_pct: bundle.strategy.pitfall_thresholds.insider_sell_veto_pct,
-            holder_surge_veto_pct: bundle.strategy.pitfall_thresholds.holder_surge_veto_pct,
-            main_outflow_veto_ratio: bundle.strategy.pitfall_thresholds.main_outflow_veto_ratio,
-            atr_stop_mult: bundle.strategy.stop_loss.atr_stop_mult,
+        let cur_parent = if cur_ver == "v1.0.0" {
+            None
+        } else if cur_ver == "v1.1.0" {
+            Some("v1.0.0".to_string())
+        } else {
+            Some("v1.1.0".to_string())
         };
 
-        let seeds = vec![
-            StrategyVersionSnapshot {
+        let mut seeds = Vec::new();
+        if cur_ver != "v1.0.0" {
+            seeds.push(StrategyVersionSnapshot {
                 version_id: "v1.0.0".to_string(),
                 parent_version_id: None,
                 source_tag: "ORIGIN_EQUAL_WEIGHT".to_string(),
@@ -280,8 +312,10 @@ impl SqliteRepository {
                 oos_rank_ic: 0.041,
                 oos_ic_ir: 0.68,
                 pbo_risk_pct: 11.5,
-            },
-            StrategyVersionSnapshot {
+            });
+        }
+        if cur_ver != "v1.1.0" {
+            seeds.push(StrategyVersionSnapshot {
                 version_id: "v1.1.0".to_string(),
                 parent_version_id: Some("v1.0.0".to_string()),
                 source_tag: "DEFENSIVE_LIQUIDITY".to_string(),
@@ -297,22 +331,22 @@ impl SqliteRepository {
                 oos_rank_ic: 0.046,
                 oos_ic_ir: 0.75,
                 pbo_risk_pct: 14.2,
-            },
-            StrategyVersionSnapshot {
-                version_id: cur_ver,
-                parent_version_id: Some("v1.1.0".to_string()),
-                source_tag: "PRODUCTION_BASELINE".to_string(),
-                created_at: now_iso.to_string(),
-                is_active: true,
-                summary_zh: "双日高换手理想反转与凹向异常换手均衡生产版".to_string(),
-                factor_weights: bundle.strategy.factor_weights.clone(),
-                params: base_params,
-                train_rank_ic: 0.054,
-                oos_rank_ic: 0.050,
-                oos_ic_ir: 0.81,
-                pbo_risk_pct: 15.8,
-            },
-        ];
+            });
+        }
+        seeds.push(StrategyVersionSnapshot {
+            version_id: cur_ver,
+            parent_version_id: cur_parent,
+            source_tag: "PRODUCTION_BASELINE".to_string(),
+            created_at: now_iso.to_string(),
+            is_active: true,
+            summary_zh: "双日高换手理想反转与凹向异常换手均衡生产版".to_string(),
+            factor_weights: bundle.strategy.factor_weights.clone(),
+            params: base_params,
+            train_rank_ic: 0.054,
+            oos_rank_ic: 0.050,
+            oos_ic_ir: 0.81,
+            pbo_risk_pct: 15.8,
+        });
 
         for s in &seeds {
             self.save_version_snapshot(s)?;
@@ -529,5 +563,19 @@ impl SqliteRepository {
             })
             .map_err(|e| e.to_string())?;
         rows.collect::<Result<Vec<_>, _>>().map_err(|e| e.to_string())
+    }
+
+    pub fn has_post_close_evolution_for_date(&self, cst_date_prefix: &str) -> Result<bool, String> {
+        let conn = self.connect()?;
+        let prefix: String = cst_date_prefix.chars().take(10).collect();
+        let cnt: i64 = conn
+            .query_row(
+                "SELECT COUNT(*) FROM factor_evolution_logs
+                  WHERE trigger_source LIKE 'POST_CLOSE%' AND substr(created_at, 1, 10) = ?1",
+                params![prefix],
+                |r| r.get(0),
+            )
+            .map_err(|e| e.to_string())?;
+        Ok(cnt > 0)
     }
 }

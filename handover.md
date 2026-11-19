@@ -42,6 +42,13 @@
   - **Round 3（Apple Liquid Glass 视觉光学与零文字穿模，`b45f552`）**：修复 `30m` K 线时间戳买点对齐、沙箱化离线内联 ECharts `srcDoc` 研报视图、`15 bps` 小盘滑点估算、多标的轮动弹窗切换与 `Escape` 无障碍交互；
   - **Round 4（全栈安全专项审计，`c9f201e`）**：落地 Tauri 主窗口与内嵌研报双层 CSP、`<script>` JSON Unicode 转义防存储型 XSS、`ack_server.py` `Origin`/`Host` 校验与移除 GET CSRF、`Path.is_relative_to` 防兄弟目录穿越、`AgentSupervisor` `--available-tools ""` + `stdin` 隔离传参、`checked_add`/`checked_mul` 防溢出；
   - **Round 5（25 项需求终审门禁、便携包重构建与远程推送）**：修复带属性 `<head ...>` 下 CSP `<meta>` 注入优先级、完善 `stage_portable_release.ps1` 全套便携脚本与静态资源组装，验证 `./portable-release/economist-quant-terminal.exe` 独立运行与 `.build < 5 GB`，推送至远程 `origin/main`。
+- [x] **Step 7 — 观望自选胜率池、防过拟合滚动进化、全版本影子控制与新 5 轮代码及量化策略深度审查**
+  - **功能闭环**：新增 SQLite `watchlist_items`（`T+1` 锁仓 + `25 bps` 摩擦成本 + Wilson 置信下界 + 盈亏比/信念校准）、`strategy_version_snapshots`（全历史版本保留、一键切换、老版本平行样本外影子追踪、五维退化归因诊断）与 `factor_evolution_logs`（`60%` 训练 + `5d` Purged Embargo + `40%` OOS + James-Stein 收缩 + PBO `< 30%` 防过拟合护栏）；
+  - **Code & Strategy Review Round 1（`3bcaa19`）**：对齐 Rust/TS IPC `camelCase` 字段、修复 `-exp` 预发布版本号自增、结案自选复选入池与版本晋升缓存同步；
+  - **Code & Strategy Review Round 2（`76c2de3`）**：根除 Walk-Forward 样本外偷看偏差、强制 `5` 交易日非重叠隔离带、修复跳空跌破止损真实成交价、剔除 `T+1` 一字涨停不可买伪收益及 PIT 流通市值缩放；
+  - **Code & Strategy Review Round 3（`bdf251c`）**：实现影子竞技场逐版本换手率门槛与路径依赖 ATR 止损物理引擎、补齐换手/排雷参数偏移五维归因、窄屏 `<=680px` 卡片响应式布局及 `web.ifzq.gtimg.cn` 日线备源升级；
+  - **Code & Strategy Review Round 4（`dbeb883`）**：完成 `security-review` 安全加固（自选输入有限域与长度校验、SQLite 止损/目标价 `CHECK` 约束、精确 `100.0%` 单纯形残差配平、未知因子注入拦截、`evolution_lock` 串行化与插件 `.tmp -> rename` 原子写）；
+  - **Code & Strategy Review Round 5（终审门禁与热重启发布）**：修复盘前陈旧行情 `raw_ts` 误触发 `T+1` 止损与早盘低点污染 `T+0` MAE、支持外部热编辑插件版本号自动同步血统、落地收盘后 `15:05 CST` SQLite 幂等防过拟合巡检与 `quant://state-synced` 事件驱动 UI 同步、固定截面股票代码排序消除浮点非确定性，全量 `78` 项 Rust + `33` 项 Vitest + `3` 项 Python 测试全绿，热重启便携版 `.exe` 并推送 `origin/main`。
 
 ---
 
@@ -51,10 +58,11 @@
 # 1. 加载便携式零系统盘 MSVC x64 + Rust 工具链环境
 . .\scripts\env_msvc.ps1
 
-# 2. 运行后端全量单元 + proptest 属性 + 架构红线 + 5轮回归测试 (56 tests)
+# 2. 运行后端全量单元 + proptest 属性 + 架构红线 + 全部代码与策略回归测试 (78 tests)
 Invoke-WithMsvcX64 "cargo test --manifest-path src-tauri/Cargo.toml"
 
-# 3. 运行前端 Vitest + fast-check 属性测试与生产构建 (25 tests)
+# 3. 运行前端 TypeScript 类型检查 + Vitest + fast-check 属性测试与生产构建 (33 tests)
+npx tsc --noEmit
 npx vitest run
 npm run build
 

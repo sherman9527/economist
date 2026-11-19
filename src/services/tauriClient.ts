@@ -305,6 +305,9 @@ export async function updatePluginConfig(
     return invoke<StrategyPluginConfigDto>("update_plugin_config", { input });
   }
   const cfg = fallbackState.pluginConfig;
+  const parts = cfg.version.replace(/^v/, "").split(/[.-]/).map(Number);
+  const nextVer = `v${parts[0] || 1}.${parts[1] || 2}.${(parts[2] || 0) + 1}`;
+  cfg.version = nextVer.slice(1);
   cfg.minIntradayProjectedTurnoverPct = input.minIntradayProjectedTurnoverPct;
   cfg.insiderSellVetoPct = input.insiderSellVetoPct;
   cfg.holderSurgeVetoPct = input.holderSurgeVetoPct;
@@ -315,6 +318,32 @@ export async function updatePluginConfig(
     ...f,
     weightPct: input.factorWeights[f.factorId] ?? f.weightPct,
   }));
+  const prevActive = fallbackState.versionControl.activeVersionId;
+  fallbackState.versionControl.versions = fallbackState.versionControl.versions.map((v) => ({
+    ...v,
+    isActive: false,
+  }));
+  const weightsMap = Object.fromEntries(cfg.factors.map((f) => [f.factorId, f.weightPct]));
+  fallbackState.versionControl.versions.push({
+    versionId: nextVer,
+    parentVersionId: prevActive,
+    sourceTag: "MANUAL_SAVE",
+    createdAt: new Date().toISOString(),
+    isActive: true,
+    summaryZh: `手动保存参数快照（预测换手>=${cfg.minIntradayProjectedTurnoverPct}%, ATR=${cfg.atrStopMult}x）`,
+    factorWeightsPct: weightsMap,
+    minIntradayProjectedTurnoverPct: cfg.minIntradayProjectedTurnoverPct,
+    atrStopMult: cfg.atrStopMult,
+    insiderSellVetoPct: cfg.insiderSellVetoPct,
+    holderSurgeVetoPct: cfg.holderSurgeVetoPct,
+    mainOutflowVetoRatio: cfg.mainOutflowVetoRatio,
+    oosSampleDays: 24,
+    oosRankIcMean: 0.048,
+    oosWinRatePct: 58.3,
+    oosCumNetRetBps: 860,
+    oosMaxDrawdownBps: -420,
+  });
+  fallbackState.versionControl.activeVersionId = nextVer;
   cfg.rawStrategyJson = JSON.stringify(
     {
       strategyId: cfg.strategyId,
@@ -334,67 +363,46 @@ export async function updatePluginConfig(
   return cloneDto(cfg);
 }
 
-export async function ackEconomistReport(
-  reportId: string,
-  acked: boolean
-): Promise<EconomistModuleDto> {
-  if (isTauriRuntime()) {
-    return invoke<EconomistModuleDto>("ack_economist_report", { reportId, acked });
-  }
+export async function ackEconomistReport(reportId: string, acked: boolean): Promise<EconomistModuleDto> {
+  if (isTauriRuntime()) return invoke<EconomistModuleDto>("ack_economist_report", { reportId, acked });
   const nowIso = new Date().toISOString();
   fallbackState.economist.reports = fallbackState.economist.reports.map((r) =>
     r.reportId === reportId ? { ...r, acked, ackedAt: acked ? nowIso : null } : r
   );
-  fallbackState.economist.unackedCount = fallbackState.economist.reports.filter(
-    (r) => !r.acked
-  ).length;
+  fallbackState.economist.unackedCount = fallbackState.economist.reports.filter((r) => !r.acked).length;
   return cloneDto(fallbackState.economist);
 }
 
 export async function getEconomistReportHtml(relPath: string): Promise<string> {
-  if (isTauriRuntime()) {
-    return invoke<string>("get_economist_report_html", { relPath });
-  }
+  if (isTauriRuntime()) return invoke<string>("get_economist_report_html", { relPath });
   const report =
-    fallbackState.economist.reports.find((r) => r.relPath === relPath) ??
-    fallbackState.economist.reports[0];
-
+    fallbackState.economist.reports.find((r) => r.relPath === relPath) ?? fallbackState.economist.reports[0];
   const chainSections = report.chains
     .map(
-      (c) => `
-      <section class="chain-card">
-        <h3>${c.chainTitle}</h3>
-        <p><strong>《经济学人》原文催化剂：</strong>${c.economistTrigger}</p>
-        <p><strong>美股映射：</strong>${c.usMapping}</p>
-        <p><strong>A股小盘轮动映射：</strong>${c.cnMapping}</p>
-        <p><strong>中美定价温差：</strong>${c.divergenceInsight}</p>
-        <p class="tickers">关联标的：${c.relatedCnSymbols.join(" · ")}</p>
-      </section>`
+      (c) =>
+        `<section class="chain-card"><h3>${c.chainTitle}</h3>` +
+        `<p><strong>《经济学人》原文催化剂：</strong>${c.economistTrigger}</p>` +
+        `<p><strong>美股映射：</strong>${c.usMapping}</p>` +
+        `<p><strong>A股小盘轮动映射：</strong>${c.cnMapping}</p>` +
+        `<p><strong>中美定价温差：</strong>${c.divergenceInsight}</p>` +
+        `<p class="tickers">关联标的：${c.relatedCnSymbols.join(" · ")}</p></section>`
     )
     .join("");
 
-  return `<!doctype html>
-<html lang="zh-CN" class="embed-liquid-reader">
-<head>
-<meta charset="UTF-8" />
-<style>
-  body { margin: 0; padding: 24px 28px; font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif; background: #0a1020; color: #eef4ff; line-height: 1.72; }
-  .meta { font-size: 12px; color: #93a7c8; margin-bottom: 8px; font-variant-numeric: tabular-nums; }
-  h1 { font-size: 20px; line-height: 1.42; margin: 0 0 14px; color: #f8fbff; }
-  .lead { padding: 14px 16px; border-radius: 14px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(148, 197, 255, 0.22); margin-bottom: 18px; }
-  .chain-card { padding: 16px 18px; border-radius: 16px; background: rgba(255, 255, 255, 0.045); border: 1px solid rgba(255, 255, 255, 0.1); margin-bottom: 14px; }
-  .chain-card h3 { margin: 0 0 10px; font-size: 16px; color: #7dd3fc; }
-  .chain-card p { margin: 6px 0; font-size: 14px; color: #d6e2f5; }
-  .tickers { color: #fbbf24 !important; font-variant-numeric: tabular-nums; font-weight: 600; }
-</style>
-</head>
-<body>
-  <div class="meta">便携相对路径：${report.relPath}?embed=1 · 日期 ${report.date} · 核心深读 ${report.coreCount}/${report.articleCount} 篇</div>
-  <h1>${report.titleZh}</h1>
-  <div class="lead">${report.executiveSummaryZh}</div>
-  ${chainSections}
-</body>
-</html>`;
+  return [
+    `<!doctype html><html lang="zh-CN" class="embed-liquid-reader"><head><meta charset="UTF-8" /><style>`,
+    `body{margin:0;padding:24px 28px;font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;background:#0a1020;color:#eef4ff;line-height:1.72;}`,
+    `.meta{font-size:12px;color:#93a7c8;margin-bottom:8px;font-variant-numeric:tabular-nums;}`,
+    `h1{font-size:20px;line-height:1.42;margin:0 0 14px;color:#f8fbff;}`,
+    `.lead{padding:14px 16px;border-radius:14px;background:rgba(56,189,248,.1);border:1px solid rgba(148,197,255,.22);margin-bottom:18px;}`,
+    `.chain-card{padding:16px 18px;border-radius:16px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.1);margin-bottom:14px;}`,
+    `.chain-card h3{margin:0 0 10px;font-size:16px;color:#7dd3fc;}`,
+    `.chain-card p{margin:6px 0;font-size:14px;color:#d6e2f5;}`,
+    `.tickers{color:#fbbf24 !important;font-variant-numeric:tabular-nums;font-weight:600;}`,
+    `</style></head><body>`,
+    `<div class="meta">便携相对路径：${report.relPath}?embed=1 · 日期 ${report.date} · 核心深读 ${report.coreCount}/${report.articleCount} 篇</div>`,
+    `<h1>${report.titleZh}</h1><div class="lead">${report.executiveSummaryZh}</div>${chainSections}</body></html>`,
+  ].join("");
 }
 
 export async function runStorageHygiene(): Promise<TelemetryDashboardDto> {
@@ -461,4 +469,11 @@ export async function subscribeRotationAlert(
   return () => {
     fallbackAlertListeners.delete(onAlert);
   };
+}
+
+export async function subscribeStateSynced(onSynced: () => void): Promise<UnlistenFn> {
+  if (isTauriRuntime()) {
+    return listen<string>("quant://state-synced", () => onSynced());
+  }
+  return () => {};
 }
