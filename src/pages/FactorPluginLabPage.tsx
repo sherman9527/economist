@@ -1,55 +1,56 @@
 import React, { useEffect, useState } from "react";
-import { Cpu, Lock, SlidersHorizontal } from "lucide-react";
+import { Cpu } from "lucide-react";
 import type {
   FactorDiagnosticDto,
   MarketPolarity,
   StrategyPluginConfigDto,
   ThemeMode,
   UpdatePluginInputDto,
+  VersionControlDashboardDto,
 } from "../types/terminal";
 import { SafeText } from "../components/common/SafeText";
-import { AsyncGlassButton } from "../components/common/AsyncGlassButton";
 import { useEChartsOption } from "../components/charts/useEChartsInstance";
+import { StrategyPluginEditorSection } from "../components/factors/StrategyPluginEditorSection";
+import { VersionControlArenaPanel } from "../components/factors/VersionControlArenaPanel";
+import { AntiOverfitWalkForwardPanel } from "../components/factors/AntiOverfitWalkForwardPanel";
+import { createMockVersionControl } from "../services/mockEvolutionFixtures";
 
 export interface FactorPluginLabPageProps {
   pluginConfig: StrategyPluginConfigDto;
+  versionControl?: VersionControlDashboardDto;
   theme: ThemeMode;
   polarity: MarketPolarity;
   isBlurActive: (slotId: string) => boolean;
   onSavePluginConfig: (input: UpdatePluginInputDto) => Promise<void>;
+  onCompareVersions?: (baseId: string, targetId: string) => Promise<void>;
+  onSwitchVersion?: (versionId: string) => Promise<void>;
+  onRunAntiOverfitIteration?: () => Promise<void>;
+  onWakeQuantDiagnosis?: (prompt: string) => Promise<void>;
 }
+
+const DEFAULT_VERSION_CONTROL = createMockVersionControl();
+const NOOP_COMPARE = async () => undefined;
+const NOOP_SWITCH = async () => undefined;
+const NOOP_ITERATE = async () => undefined;
 
 export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
   pluginConfig,
+  versionControl = DEFAULT_VERSION_CONTROL,
   theme,
   polarity,
   isBlurActive,
   onSavePluginConfig,
+  onCompareVersions = NOOP_COMPARE,
+  onSwitchVersion = NOOP_SWITCH,
+  onRunAntiOverfitIteration = NOOP_ITERATE,
+  onWakeQuantDiagnosis,
 }) => {
   const [selectedFactorId, setSelectedFactorId] = useState<string>(
     pluginConfig.factors[0]?.factorId ?? "F1_ideal_reversal"
   );
   const [diagChartMode, setDiagChartMode] = useState<"quantile" | "decay">("quantile");
 
-  const [projTurnover, setProjTurnover] = useState(pluginConfig.minIntradayProjectedTurnoverPct);
-  const [insiderVeto, setInsiderVeto] = useState(pluginConfig.insiderSellVetoPct);
-  const [holderVeto, setHolderVeto] = useState(pluginConfig.holderSurgeVetoPct);
-  const [outflowVeto, setOutflowVeto] = useState(pluginConfig.mainOutflowVetoRatio);
-  const [atrMult, setAtrMult] = useState(pluginConfig.atrStopMult);
-  const [cfgPolarity, setCfgPolarity] = useState<MarketPolarity>(pluginConfig.marketPolarity);
-  const [weights, setWeights] = useState<Record<string, number>>(() =>
-    Object.fromEntries(pluginConfig.factors.map((f) => [f.factorId, f.weightPct]))
-  );
-  const [statusMsg, setStatusMsg] = useState<string | null>(null);
-
   useEffect(() => {
-    setProjTurnover(pluginConfig.minIntradayProjectedTurnoverPct);
-    setInsiderVeto(pluginConfig.insiderSellVetoPct);
-    setHolderVeto(pluginConfig.holderSurgeVetoPct);
-    setOutflowVeto(pluginConfig.mainOutflowVetoRatio);
-    setAtrMult(pluginConfig.atrStopMult);
-    setCfgPolarity(pluginConfig.marketPolarity);
-    setWeights(Object.fromEntries(pluginConfig.factors.map((f) => [f.factorId, f.weightPct])));
     setSelectedFactorId((prev) =>
       pluginConfig.factors.some((f) => f.factorId === prev)
         ? prev
@@ -124,8 +125,6 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
     theme,
     polarity
   );
-
-  const weightSum = Object.values(weights).reduce((a, b) => a + b, 0);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px", minWidth: 0 }}>
@@ -277,208 +276,28 @@ export const FactorPluginLabPage: React.FC<FactorPluginLabPageProps> = ({
         </section>
       </div>
 
-      {/* Bottom Row: Parameterized Plugin Config Editor & Core Strategy Locks */}
-      <section
-        aria-label="参数化策略插件热加载中心"
-        data-blur-slot={isBlurActive("factor-plugin-editor") ? "active" : "optical"}
-        className="glass-tier-2 stagger-enter stagger-3"
-        style={{ display: "flex", flexDirection: "column", gap: "14px" }}
-      >
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "8px" }}>
-          <div>
-            <strong style={{ fontSize: "15px" }}>
-              参数化策略插件配置器 (`{pluginConfig.manifestRelPath}`)
-            </strong>
-            <div style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-              核心策略约束硬锁定，排雷否决阈值与截面因子权重支持免重编译热更新
-            </div>
-          </div>
+      {/* Multi-Version Shadow Arena, Version Switcher & Degradation Root-Cause Diagnosis */}
+      <VersionControlArenaPanel
+        versionControl={versionControl}
+        factors={pluginConfig.factors}
+        onCompareVersions={onCompareVersions}
+        onSwitchVersion={onSwitchVersion}
+        onWakeQuantDiagnosis={onWakeQuantDiagnosis}
+      />
 
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-            <span className="glass-pill pill-risk-stoploss tabular-nums">
-              <Lock size={11} /> 市值 &lt;{pluginConfig.maxTotalMvYi}亿
-            </span>
-            <span className="glass-pill pill-risk-stoploss tabular-nums">
-              <Lock size={11} /> 换手 &gt;{pluginConfig.minTurnoverPct}% × {pluginConfig.consecutiveDays}D
-            </span>
-            <span className="glass-pill pill-risk-stoploss tabular-nums">
-              <Lock size={11} /> 本金 100W · &le;{pluginConfig.maxPositions}只
-            </span>
-          </div>
-        </div>
+      {/* Purged Walk-Forward Anti-Overfitting Iteration Engine */}
+      <AntiOverfitWalkForwardPanel
+        activeVersionId={versionControl.activeVersionId}
+        logs={versionControl.evolutionLogs}
+        onRunIteration={onRunAntiOverfitIteration}
+      />
 
-        <div className="bento-grid-12">
-          <div className="col-span-7" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "10px" }}>
-            <label className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12.5px" }}>
-              <span>盘中预测日换手下限 (%)</span>
-              <input
-                type="number"
-                step="0.2"
-                min="5.0"
-                max="20.0"
-                value={projTurnover}
-                onChange={(e) => setProjTurnover(Number(e.target.value))}
-                className="glass-input tabular-nums"
-              />
-            </label>
-
-            <label className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12.5px" }}>
-              <span>大股东拟减持一票否决阈值 (%)</span>
-              <input
-                type="number"
-                step="0.1"
-                min="0.1"
-                max="5.0"
-                value={insiderVeto}
-                onChange={(e) => setInsiderVeto(Number(e.target.value))}
-                className="glass-input tabular-nums"
-              />
-            </label>
-
-            <label className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12.5px" }}>
-              <span>PIT股东户数单期激增否决 (%)</span>
-              <input
-                type="number"
-                step="1"
-                min="5"
-                max="60"
-                value={holderVeto}
-                onChange={(e) => setHolderVeto(Number(e.target.value))}
-                className="glass-input tabular-nums"
-              />
-            </label>
-
-            <label className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12.5px" }}>
-              <span>主力净流出占成交否决比</span>
-              <input
-                type="number"
-                step="0.01"
-                min="-0.3"
-                max="-0.01"
-                value={outflowVeto}
-                onChange={(e) => setOutflowVeto(Number(e.target.value))}
-                className="glass-input tabular-nums"
-              />
-            </label>
-
-            <label className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12.5px" }}>
-              <span>ATR(14) 动态止损乘数</span>
-              <input
-                type="number"
-                step="0.1"
-                min="1.0"
-                max="4.0"
-                value={atrMult}
-                onChange={(e) => setAtrMult(Number(e.target.value))}
-                className="glass-input tabular-nums"
-              />
-            </label>
-
-            <div className="glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "6px", fontSize: "12.5px" }}>
-              <span>默认行情色彩极性</span>
-              <div className="glass-segmented">
-                <button
-                  type="button"
-                  className="glass-seg-btn"
-                  aria-pressed={cfgPolarity === "cn-red-up"}
-                  onClick={() => setCfgPolarity("cn-red-up")}
-                >
-                  A股红涨
-                </button>
-                <button
-                  type="button"
-                  className="glass-seg-btn"
-                  aria-pressed={cfgPolarity === "intl-green-up"}
-                  onClick={() => setCfgPolarity("intl-green-up")}
-                >
-                  国际绿涨
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="col-span-5 glass-optical-card" style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            <div className="tabular-nums" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "6px", fontSize: "12.5px" }}>
-              <strong>六维因子权重配比 (%)</strong>
-              <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <span className={weightSum === 100 ? "text-risk-clear" : "text-stoploss"}>
-                  合计 {weightSum}%
-                </span>
-                {weightSum > 0 && weightSum !== 100 && (
-                  <button
-                    type="button"
-                    className="glass-btn glass-btn-ghost glass-btn-sm"
-                    style={{ minHeight: "22px", paddingInline: "6px", fontSize: "11px" }}
-                    onClick={() => {
-                      const entries = pluginConfig.factors.map((f) => [
-                        f.factorId,
-                        Math.round(((weights[f.factorId] ?? f.weightPct) / weightSum) * 100),
-                      ] as const);
-                      setWeights(Object.fromEntries(entries));
-                    }}
-                  >
-                    归一100%
-                  </button>
-                )}
-              </span>
-            </div>
-            {pluginConfig.factors.map((f) => (
-              <label
-                key={f.factorId}
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: "minmax(0, 1fr) 78px",
-                  alignItems: "center",
-                  gap: "8px",
-                  fontSize: "12px",
-                }}
-              >
-                <SafeText text={f.nameZh} />
-                <input
-                  type="number"
-                  min={0}
-                  max={100}
-                  step={5}
-                  value={weights[f.factorId] ?? f.weightPct}
-                  onChange={(e) =>
-                    setWeights((prev) => ({
-                      ...prev,
-                      [f.factorId]: Number(e.target.value) || 0,
-                    }))
-                  }
-                  className="glass-input tabular-nums"
-                  style={{ minHeight: "30px", paddingBlock: "3px" }}
-                />
-              </label>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "10px" }}>
-          <span style={{ fontSize: "12px", color: "var(--text-muted)" }}>
-            {statusMsg ?? "同步写入 SQLite strategy_configs 与 ./plugins/strategies/smallcap_turnover_ignition.json"}
-          </span>
-          <AsyncGlassButton
-            label="校验并热加载至SQLite/插件"
-            loadingLabel="校验并写入插件..."
-            successLabel="插件热加载生效"
-            disabled={weightSum <= 0}
-            icon={<SlidersHorizontal size={15} />}
-            onClick={async () => {
-              await onSavePluginConfig({
-                minIntradayProjectedTurnoverPct: projTurnover,
-                insiderSellVetoPct: insiderVeto,
-                holderSurgeVetoPct: holderVeto,
-                mainOutflowVetoRatio: outflowVeto,
-                atrStopMult: atrMult,
-                marketPolarity: cfgPolarity,
-                factorWeights: weights,
-              });
-              setStatusMsg(`已于 ${new Date().toLocaleTimeString()} 完成策略插件热加载（权重合计 ${weightSum}%）`);
-            }}
-          />
-        </div>
-      </section>
+      {/* Parameterized Plugin Config Editor & Core Strategy Locks */}
+      <StrategyPluginEditorSection
+        pluginConfig={pluginConfig}
+        blurActive={isBlurActive("factor-plugin-editor")}
+        onSavePluginConfig={onSavePluginConfig}
+      />
     </div>
   );
 };

@@ -1,6 +1,10 @@
 import React, { useState } from "react";
 import { CandlestickChart, Lock, ShieldAlert, Unlock } from "lucide-react";
-import type { PortfolioOverviewDto, PositionSlotDto } from "../types/terminal";
+import type {
+  PortfolioOverviewDto,
+  PositionSlotDto,
+  WatchlistOverviewDto,
+} from "../types/terminal";
 import {
   formatCurrencyYuan,
   formatSignedPct,
@@ -8,13 +12,20 @@ import {
 } from "../domain/uiInvariants";
 import { SafeText } from "../components/common/SafeText";
 import { AsyncGlassButton } from "../components/common/AsyncGlassButton";
+import { WatchlistWinRatePanel } from "../components/watchlist/WatchlistWinRatePanel";
+import { createMockWatchlist } from "../services/mockEvolutionFixtures";
 
 export interface OrdersLedgerPageProps {
   portfolio: PortfolioOverviewDto;
+  watchlist?: WatchlistOverviewDto;
   isBlurActive: (slotId: string) => boolean;
   onJumpToKline: (symbol: string) => void;
   onClosePosition: (symbol: string, reasonZh: string) => Promise<void>;
+  onRemoveWatchlist?: (symbol: string) => Promise<void>;
 }
+
+const DEFAULT_WATCHLIST = createMockWatchlist();
+const NOOP_REMOVE_WATCHLIST = async () => undefined;
 
 const StopDistanceGauge: React.FC<{ pos: PositionSlotDto }> = ({ pos }) => {
   const pct = Math.max(0, Math.min(20, pos.stopDistancePct));
@@ -59,18 +70,24 @@ const StopDistanceGauge: React.FC<{ pos: PositionSlotDto }> = ({ pos }) => {
 
 export const OrdersLedgerPage: React.FC<OrdersLedgerPageProps> = ({
   portfolio,
+  watchlist = DEFAULT_WATCHLIST,
   isBlurActive,
   onJumpToKline,
   onClosePosition,
+  onRemoveWatchlist = NOOP_REMOVE_WATCHLIST,
 }) => {
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [ledgerTab, setLedgerTab] = useState<"positions" | "watchlist">("positions");
 
   const riskMetrics = [
     { label: "初始本金锁定", value: formatCurrencyYuan(portfolio.initialCapitalYuan) },
     { label: "可用现金安全垫", value: formatCurrencyYuan(portfolio.cashYuan) },
     { label: "持仓总市值", value: formatCurrencyYuan(portfolio.marketValueYuan) },
     { label: "持仓席位占用", value: `${portfolio.openSlotsCount} / ${portfolio.maxSlots} 只` },
-    { label: "累计印花税与佣金", value: formatCurrencyYuan(portfolio.totalFeesPaidYuan) },
+    {
+      label: "自选观望净胜率",
+      value: `${watchlist.summary.settledWinRatePct.toFixed(1)}% (${watchlist.summary.totalCount}只)`,
+    },
   ];
 
   return (
@@ -97,9 +114,47 @@ export const OrdersLedgerPage: React.FC<OrdersLedgerPageProps> = ({
             </div>
           ))}
         </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", gap: "8px", marginTop: "10px" }}>
+          <div className="glass-segmented" role="tablist" aria-label="模拟盘与观望自选切换">
+            <button
+              type="button"
+              role="tab"
+              data-testid="ledger-tab-positions"
+              aria-selected={ledgerTab === "positions"}
+              className="glass-seg-btn"
+              aria-pressed={ledgerTab === "positions"}
+              onClick={() => setLedgerTab("positions")}
+            >
+              100W 模拟盘实盘席位 ({portfolio.openSlotsCount}/{portfolio.maxSlots})
+            </button>
+            <button
+              type="button"
+              role="tab"
+              data-testid="ledger-tab-watchlist"
+              aria-selected={ledgerTab === "watchlist"}
+              className="glass-seg-btn"
+              aria-pressed={ledgerTab === "watchlist"}
+              onClick={() => setLedgerTab("watchlist")}
+            >
+              观望自选胜率检验池 ({watchlist.summary.totalCount})
+            </button>
+          </div>
+          <span className="tabular-nums" style={{ fontSize: "11.5px", color: "var(--text-muted)" }}>
+            累计实盘印花税与佣金 {formatCurrencyYuan(portfolio.totalFeesPaidYuan)}
+          </span>
+        </div>
       </section>
 
-      {/* Active Positions Table (<= 10 Slots + T+1 Lock + Stop-Loss Gauge) */}
+      {ledgerTab === "watchlist" ? (
+        <WatchlistWinRatePanel
+          watchlist={watchlist}
+          blurActive={isBlurActive("ledger-positions")}
+          onJumpToKline={onJumpToKline}
+          onRemoveWatchlist={onRemoveWatchlist}
+        />
+      ) : (
+      /* Active Positions Table (<= 10 Slots + T+1 Lock + Stop-Loss Gauge) */
       <section
         aria-label="当前持仓席位与止损监控"
         data-blur-slot={isBlurActive("ledger-positions") ? "active" : "optical"}
@@ -249,6 +304,7 @@ export const OrdersLedgerPage: React.FC<OrdersLedgerPageProps> = ({
           })}
         </div>
       </section>
+      )}
 
       {/* SQLite Historical Simulated Orders Ledger */}
       <section

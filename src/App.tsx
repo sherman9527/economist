@@ -23,6 +23,13 @@ import {
   updatePluginConfig,
   wakeAgentSession,
 } from "./services/tauriClient";
+import {
+  addToWatchlist,
+  getVersionControlDashboard,
+  removeFromWatchlist,
+  runAntiOverfitIteration,
+  switchStrategyVersion,
+} from "./services/evolutionClient";
 import { createInitialBootstrapState } from "./services/mockTerminalFixtures";
 import { MeshBackdrop } from "./components/shell/MeshBackdrop";
 import { AppSidebar } from "./components/shell/AppSidebar";
@@ -134,6 +141,7 @@ export const App: React.FC = () => {
       ...prev,
       funnel: res.funnel,
       candidates: res.candidates,
+      watchlist: res.watchlist ?? prev.watchlist,
     }));
     if (res.alert && res.alert.topPicks.length > 0) {
       setRotationAlert(res.alert);
@@ -192,8 +200,67 @@ export const App: React.FC = () => {
 
   const handleSavePluginConfig = useCallback(async (input: UpdatePluginInputDto) => {
     const updatedCfg = await updatePluginConfig(input);
+    const updatedVc = await getVersionControlDashboard();
     setPolarity(updatedCfg.marketPolarity);
-    setTerminal((prev) => ({ ...prev, pluginConfig: updatedCfg }));
+    setTerminal((prev) => ({
+      ...prev,
+      pluginConfig: updatedCfg,
+      versionControl: updatedVc,
+    }));
+  }, []);
+
+  const handleAddWatchlist = useCallback(async (cand: ScreenerCandidateDto) => {
+    setErrorBanner(null);
+    const updatedWatchlist = await addToWatchlist({
+      symbol: cand.symbol,
+      nameZh: cand.nameZh,
+      board: cand.board,
+      industrySw1: cand.industrySw1,
+      entryPriceYuan: cand.latestPriceYuan,
+      stopLossPriceYuan: cand.suggestedStopLossYuan,
+      targetPriceYuan: cand.suggestedTargetYuan,
+      convictionScore: cand.convictionScore,
+      sourceDecision: cand.decision,
+      rationaleZh: cand.rationaleZh,
+      factorZScores: cand.factorZScores,
+    });
+    setTerminal((prev) => ({ ...prev, watchlist: updatedWatchlist }));
+  }, []);
+
+  const handleRemoveWatchlist = useCallback(async (symbol: string) => {
+    const updatedWatchlist = await removeFromWatchlist(symbol);
+    setTerminal((prev) => ({ ...prev, watchlist: updatedWatchlist }));
+  }, []);
+
+  const handleCompareVersions = useCallback(async (baseId: string, targetId: string) => {
+    const vc = await getVersionControlDashboard(baseId, targetId);
+    setTerminal((prev) => ({ ...prev, versionControl: vc }));
+  }, []);
+
+  const handleSwitchVersion = useCallback(async (versionId: string) => {
+    const vc = await switchStrategyVersion(versionId);
+    const matched = vc.versions.find((v) => v.versionId === versionId);
+    setTerminal((prev) => ({
+      ...prev,
+      versionControl: vc,
+      pluginConfig: matched
+        ? {
+            ...prev.pluginConfig,
+            version: versionId.replace(/^v/, ""),
+            minIntradayProjectedTurnoverPct: matched.minIntradayProjectedTurnoverPct,
+            atrStopMult: matched.atrStopMult,
+            factors: prev.pluginConfig.factors.map((f) => ({
+              ...f,
+              weightPct: matched.factorWeightsPct[f.factorId] ?? f.weightPct,
+            })),
+          }
+        : prev.pluginConfig,
+    }));
+  }, []);
+
+  const handleRunAntiOverfit = useCallback(async () => {
+    const vc = await runAntiOverfitIteration();
+    setTerminal((prev) => ({ ...prev, versionControl: vc }));
   }, []);
 
   const handleAckReport = useCallback(async (reportId: string, acked: boolean) => {
@@ -290,6 +357,7 @@ export const App: React.FC = () => {
                 funnel={terminal.funnel}
                 candidates={terminal.candidates}
                 portfolio={terminal.portfolio}
+                watchlistOverview={terminal.watchlist}
                 klinePayload={terminal.featuredKline}
                 inspectedSymbol={inspectedSymbol}
                 theme={theme}
@@ -300,6 +368,7 @@ export const App: React.FC = () => {
                   setInspectedSymbol(sym);
                   void handleChangeKline(sym, per);
                 }}
+                onAddWatchlist={handleAddWatchlist}
                 onPlaceBuy={(cand, lots) => handlePlaceBuy(cand, lots)}
               />
             )}
@@ -307,19 +376,28 @@ export const App: React.FC = () => {
             {activePage === "ledger" && (
               <OrdersLedgerPage
                 portfolio={terminal.portfolio}
+                watchlist={terminal.watchlist}
                 isBlurActive={isBlurActive}
                 onJumpToKline={handleJumpToKline}
                 onClosePosition={handleClosePosition}
+                onRemoveWatchlist={handleRemoveWatchlist}
               />
             )}
 
             {activePage === "factor-lab" && (
               <FactorPluginLabPage
                 pluginConfig={terminal.pluginConfig}
+                versionControl={terminal.versionControl}
                 theme={theme}
                 polarity={polarity}
                 isBlurActive={isBlurActive}
                 onSavePluginConfig={handleSavePluginConfig}
+                onCompareVersions={handleCompareVersions}
+                onSwitchVersion={handleSwitchVersion}
+                onRunAntiOverfitIteration={handleRunAntiOverfit}
+                onWakeQuantDiagnosis={(prompt) =>
+                  handleWakeSession("quant_researcher", prompt)
+                }
               />
             )}
 
@@ -359,6 +437,7 @@ export const App: React.FC = () => {
           setRotationAlert(null);
           handleJumpToKline(cand.symbol);
         }}
+        onAddWatchlist={(cand) => handleAddWatchlist(cand)}
         onSimulatedBuy={async (cand) => {
           await handlePlaceBuy(cand);
           setRotationAlert(null);

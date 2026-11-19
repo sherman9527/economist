@@ -6,8 +6,10 @@ pub mod interface;
 use crate::application::terminal_service::TerminalService;
 use crate::infrastructure::portable_paths::PortablePaths;
 use crate::interface::commands::{
-    ack_economist_report, bootstrap_terminal, close_simulated_position, get_economist_report_html,
-    get_stock_kline, place_simulated_buy, run_market_scan, run_storage_hygiene,
+    ack_economist_report, add_to_watchlist, bootstrap_terminal, close_simulated_position,
+    get_economist_report_html, get_stock_kline, get_version_control_dashboard,
+    get_watchlist_overview, place_simulated_buy, remove_from_watchlist,
+    run_anti_overfit_iteration, run_market_scan, run_storage_hygiene, switch_strategy_version,
     update_plugin_config, wake_agent_session,
 };
 use crate::interface::scheduler_runner::spawn_rotation_scheduler;
@@ -54,6 +56,12 @@ pub fn run() {
             get_economist_report_html,
             run_storage_hygiene,
             wake_agent_session,
+            get_watchlist_overview,
+            add_to_watchlist,
+            remove_from_watchlist,
+            get_version_control_dashboard,
+            switch_strategy_version,
+            run_anti_overfit_iteration,
         ])
         .run(tauri::generate_context!())
         .expect("启动 Tauri 2 便携式量化终端失败");

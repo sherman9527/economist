@@ -1,5 +1,5 @@
 import React from "react";
-import { CandlestickChart, Filter, ShoppingBag } from "lucide-react";
+import { CandlestickChart, Eye, Filter, ShoppingBag } from "lucide-react";
 import type {
   MarketPolarity,
   PortfolioOverviewDto,
@@ -36,6 +36,8 @@ export interface ScreenerInspectorPaneProps {
   onChangeCustomLots: (lots: number) => void;
   onSelectCandidate: (cand: ScreenerCandidateDto) => void;
   onSwitchKlineSymbolPeriod: (symbol: string, period: "1d" | "30m") => void;
+  watchlistSymbols: Set<string>;
+  onAddWatchlist: (cand: ScreenerCandidateDto) => Promise<void>;
   onConfirmBuy: (cand: ScreenerCandidateDto, lots: number) => Promise<void>;
 }
 
@@ -57,8 +59,13 @@ export const ScreenerInspectorPane: React.FC<ScreenerInspectorPaneProps> = ({
   onChangeCustomLots,
   onSelectCandidate,
   onSwitchKlineSymbolPeriod,
+  watchlistSymbols,
+  onAddWatchlist,
   onConfirmBuy,
 }) => {
+  const alreadyWatched = activeCandidate
+    ? watchlistSymbols.has(activeCandidate.symbol)
+    : false;
   const alreadyHeld = activeCandidate
     ? portfolio.positions.some((p) => p.symbol === activeCandidate.symbol)
     : false;
@@ -201,27 +208,39 @@ export const ScreenerInspectorPane: React.FC<ScreenerInspectorPaneProps> = ({
                 />
               </label>
 
-              <AsyncGlassButton
-                label={
-                  activeCandidate.decision === "REJECTED_BY_MINE"
-                    ? "排雷一票否决禁买"
-                    : slotsFull
-                      ? "已满 10 席上限"
-                      : exceedsSingleCap
-                        ? "超单票10%上限"
-                        : "记入100W模拟盘"
-                }
-                loadingLabel="写入SQLite..."
-                successLabel="已记入模拟盘"
-                disabled={
-                  activeCandidate.decision === "REJECTED_BY_MINE" ||
-                  slotsFull ||
-                  exceedsSingleCap ||
-                  Boolean(orderCheck && !orderCheck.valid)
-                }
-                icon={<ShoppingBag size={14} />}
-                onClick={() => onConfirmBuy(activeCandidate, customLots)}
-              />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                <AsyncGlassButton
+                  dataTestId="add-watchlist-btn"
+                  variant="ghost"
+                  icon={<Eye size={14} />}
+                  disabled={alreadyWatched}
+                  label={alreadyWatched ? "已在自选胜率池" : "加入自选观望"}
+                  loadingLabel="记入自选池..."
+                  successLabel="已在自选胜率池"
+                  onClick={() => onAddWatchlist(activeCandidate)}
+                />
+                <AsyncGlassButton
+                  label={
+                    activeCandidate.decision === "REJECTED_BY_MINE"
+                      ? "排雷一票否决禁买"
+                      : slotsFull
+                        ? "已满 10 席上限"
+                        : exceedsSingleCap
+                          ? "超单票10%上限"
+                          : "记入100W模拟盘"
+                  }
+                  loadingLabel="写入SQLite..."
+                  successLabel="已记入模拟盘"
+                  disabled={
+                    activeCandidate.decision === "REJECTED_BY_MINE" ||
+                    slotsFull ||
+                    exceedsSingleCap ||
+                    Boolean(orderCheck && !orderCheck.valid)
+                  }
+                  icon={<ShoppingBag size={14} />}
+                  onClick={() => onConfirmBuy(activeCandidate, customLots)}
+                />
+              </div>
             </div>
 
             {buyFeePreview && (

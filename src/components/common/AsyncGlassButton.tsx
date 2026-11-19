@@ -12,6 +12,7 @@ export interface AsyncGlassButtonProps {
   disabled?: boolean;
   title?: string;
   className?: string;
+  dataTestId?: string;
   onClick: () => Promise<unknown> | void;
 }
 
@@ -25,6 +26,7 @@ export const AsyncGlassButton: React.FC<AsyncGlassButtonProps> = ({
   disabled = false,
   title,
   className = "",
+  dataTestId,
   onClick,
 }) => {
   const [state, setState] = useState<AsyncActionState>("idle");
@@ -65,6 +67,7 @@ export const AsyncGlassButton: React.FC<AsyncGlassButtonProps> = ({
   return (
     <button
       type="button"
+      data-testid={dataTestId}
       data-async-state={state}
       disabled={disabled || state === "loading"}
       title={title}

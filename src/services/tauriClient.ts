@@ -13,6 +13,7 @@ import type {
   TerminalBootstrapDto,
   UniverseFunnelSummaryDto,
   UpdatePluginInputDto,
+  WatchlistOverviewDto,
 } from "../types/terminal";
 import {
   computeAShareFeeBreakdown,
@@ -27,6 +28,7 @@ export interface MarketScanResponseDto {
   funnel: UniverseFunnelSummaryDto;
   candidates: ScreenerCandidateDto[];
   alert?: RotationAlertEventDto | null;
+  watchlist?: WatchlistOverviewDto;
 }
 
 type AlertCallback = (payload: RotationAlertEventDto) => void;
@@ -42,7 +44,11 @@ export function resetFallbackStateForTests(): void {
   fallbackState = createInitialBootstrapState();
 }
 
-function cloneDto<T>(val: T): T {
+export function getMutableFallbackState(): TerminalBootstrapDto {
+  return fallbackState;
+}
+
+export function cloneDto<T>(val: T): T {
   return JSON.parse(JSON.stringify(val)) as T;
 }
 
@@ -107,6 +113,7 @@ export async function runMarketScan(forceRefresh: boolean): Promise<MarketScanRe
     funnel: fallbackState.funnel,
     candidates: fallbackState.candidates,
     alert,
+    watchlist: fallbackState.watchlist,
   });
 }
 

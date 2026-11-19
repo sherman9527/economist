@@ -8,4 +8,5 @@ pub mod portable_paths;
 pub mod sqlite_market_repo;
 pub mod sqlite_repo;
 pub mod sqlite_schema;
+pub mod sqlite_watchlist_repo;
 pub mod telemetry_cleaner;

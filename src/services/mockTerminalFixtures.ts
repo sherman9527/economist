@@ -1,6 +1,10 @@
 import type { TerminalBootstrapDto } from "../types/terminal";
 import { buildMockStockKline } from "./mockKlineFixtures";
 import {
+  createMockVersionControl,
+  createMockWatchlist,
+} from "./mockEvolutionFixtures";
+import {
   createMockCandidates,
   createMockFunnel,
   createMockPortfolio,
@@ -333,5 +337,7 @@ export function createInitialBootstrapState(): TerminalBootstrapDto {
         },
       ],
     },
+    watchlist: createMockWatchlist(),
+    versionControl: createMockVersionControl(),
   };
 }

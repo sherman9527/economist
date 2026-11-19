@@ -8,6 +8,7 @@ import type {
   StockKlinePayloadDto,
   ThemeMode,
   UniverseFunnelSummaryDto,
+  WatchlistOverviewDto,
 } from "../types/terminal";
 import {
   formatSignedPct,
@@ -22,6 +23,7 @@ export interface LiveScreenerPageProps {
   funnel: UniverseFunnelSummaryDto;
   candidates: ScreenerCandidateDto[];
   portfolio: PortfolioOverviewDto;
+  watchlistOverview?: WatchlistOverviewDto;
   klinePayload: StockKlinePayloadDto;
   inspectedSymbol?: string;
   theme: ThemeMode;
@@ -29,13 +31,18 @@ export interface LiveScreenerPageProps {
   isBlurActive: (slotId: string) => boolean;
   onPopoverOpenChange?: (open: boolean) => void;
   onChangeKline: (symbol: string, period: "1d" | "30m") => void;
+  onAddWatchlist?: (cand: ScreenerCandidateDto) => Promise<void>;
   onPlaceBuy: (cand: ScreenerCandidateDto, lotQty: number) => Promise<void>;
 }
+
+const EMPTY_WATCHLIST_ITEMS: WatchlistOverviewDto["items"] = [];
+const NOOP_ADD_WATCHLIST = async () => undefined;
 
 export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
   funnel,
   candidates,
   portfolio,
+  watchlistOverview,
   klinePayload,
   inspectedSymbol,
   theme,
@@ -43,8 +50,14 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
   isBlurActive,
   onPopoverOpenChange,
   onChangeKline,
+  onAddWatchlist = NOOP_ADD_WATCHLIST,
   onPlaceBuy,
 }) => {
+  const watchlistItems = watchlistOverview?.items ?? EMPTY_WATCHLIST_ITEMS;
+  const watchlistSymbols = useMemo(
+    () => new Set(watchlistItems.map((i) => i.symbol)),
+    [watchlistItems]
+  );
   const [query, setQuery] = useState("");
   const [boardFilter, setBoardFilter] = useState<"ALL" | BoardKind>("ALL");
   const [decisionFilter, setDecisionFilter] = useState<"ALL" | ScreenerCandidateDto["decision"]>("ALL");
@@ -342,6 +355,13 @@ export const LiveScreenerPage: React.FC<LiveScreenerPageProps> = ({
           onSwitchKlineSymbolPeriod={(sym, per) => {
             setSelectedSymbol(sym);
             onChangeKline(sym, per);
+          }}
+          watchlistSymbols={watchlistSymbols}
+          onAddWatchlist={async (cand) => {
+            await onAddWatchlist(cand);
+            setOrderNotice(
+              `已将 ${cand.nameZh} (${cand.symbol}) 纳入观望自选胜率池，按 T+1 与 25bps 真实摩擦持续检验胜率`
+            );
           }}
           onConfirmBuy={async (cand, lots) => {
             await onPlaceBuy(cand, lots);

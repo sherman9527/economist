@@ -28,6 +28,9 @@ pub fn spawn_rotation_scheduler(app_handle: AppHandle, service: Arc<TerminalServ
                             let _ = app_handle.emit("quant://rotation-alert", alert);
                         }
                     }
+                    if bucket == "15:00" {
+                        let _ = service.run_anti_overfit_iteration("POST_CLOSE_1500").await;
+                    }
                     let _ = service.run_storage_hygiene().await;
                     last_hygiene_at = Some(Instant::now());
                     continue;

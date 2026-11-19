@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { BellRing, CandlestickChart, ShoppingBag, X } from "lucide-react";
+import { BellRing, CandlestickChart, Eye, ShoppingBag, X } from "lucide-react";
 import type { RotationAlertEventDto, ScreenerCandidateDto } from "../../types/terminal";
 import { formatSignedPct, normalizeStockDisplayLabel } from "../../domain/uiInvariants";
 import { SafeText } from "../common/SafeText";
@@ -10,6 +10,7 @@ export interface RotationAlertToastProps {
   blurActive: boolean;
   onDismiss: () => void;
   onInspectKline: (candidate: ScreenerCandidateDto) => void;
+  onAddWatchlist?: (candidate: ScreenerCandidateDto) => Promise<void>;
   onSimulatedBuy: (candidate: ScreenerCandidateDto) => Promise<void>;
 }
 
@@ -18,6 +19,7 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
   blurActive,
   onDismiss,
   onInspectKline,
+  onAddWatchlist,
   onSimulatedBuy,
 }) => {
   const [selectedIdx, setSelectedIdx] = useState(0);
@@ -172,6 +174,17 @@ export const RotationAlertToast: React.FC<RotationAlertToastProps> = ({
           <CandlestickChart size={14} aria-hidden="true" />
           <span>查看K线买点</span>
         </button>
+        {onAddWatchlist && (
+          <AsyncGlassButton
+            size="sm"
+            variant="ghost"
+            label="加入自选观望"
+            loadingLabel="记入自选..."
+            successLabel="已在自选"
+            icon={<Eye size={14} aria-hidden="true" />}
+            onClick={() => onAddWatchlist(lead)}
+          />
+        )}
         <AsyncGlassButton
           size="sm"
           label="模拟买入"

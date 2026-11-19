@@ -372,6 +372,35 @@ impl PluginStore {
         bundle.raw_strategy_json = strat_json;
         Ok(bundle)
     }
+
+    pub fn set_manifest_version(&self, version_label: &str) -> Result<PluginBundle, String> {
+        let mut bundle = self.load_all()?;
+        let clean = version_label.trim().trim_start_matches('v').to_string();
+        if !clean.is_empty() {
+            bundle.strategy.version = clean.clone();
+            bundle.factors.version = clean;
+        }
+        let strat_rel = bundle
+            .app_cfg
+            .app
+            .strategy_manifest_rel
+            .trim_start_matches("./");
+        let fac_rel = bundle
+            .app_cfg
+            .app
+            .factors_manifest_rel
+            .trim_start_matches("./");
+        let strat_json = serde_json::to_string_pretty(&bundle.strategy)
+            .map_err(|e| format!("序列化策略版本失败: {}", e))?;
+        let fac_json = serde_json::to_string_pretty(&bundle.factors)
+            .map_err(|e| format!("序列化因子版本失败: {}", e))?;
+        std::fs::write(self.paths.root().join(strat_rel), &strat_json)
+            .map_err(|e| format!("写入策略版本失败: {}", e))?;
+        std::fs::write(self.paths.root().join(fac_rel), &fac_json)
+            .map_err(|e| format!("写入因子版本失败: {}", e))?;
+        bundle.raw_strategy_json = strat_json;
+        Ok(bundle)
+    }
 }
 
 #[cfg(test)]

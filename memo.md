@@ -96,3 +96,18 @@
 - **Compact #9 (`2026-11-19` · Checkpoint: `Round 4 security TDD fixes verified green & Round 5 final release`)**：
   - 完成第 4 轮安全加固提交（`c9f201e`）后，完成第 5 轮 25 项需求终审门禁（`round5_release_gate_regressions.rs`）：修复带属性 `<head ...>` 下离线研报 CSP `<meta>` 先于内联 `<script>` 注入顺序、完善 Windows WebView2 Tauri v2 `tauri.localhost` / `worker-src 'self' blob:` CSP 策略、补齐 `./scripts/stage_portable_release.ps1` 全套《经济学人》Python 渲染包与离线 ECharts 资源打包；
   - 全量通过 `56/56` Rust 单测/PBT/架构红线/五轮回归测试、`25/25` Vitest + `fast-check` 属性测试、`3/3` Python 安全回归测试、OpenSpec `--strict` 校验与全仓零绝对路径 / `< 1000` 行卫生门禁，完成便携 `x64` `./portable-release/economist-quant-terminal.exe` 终版重打包、实机冒烟验证与 `git push origin main`。
+
+- **Compact #10 (`2026-11-19` · Checkpoint: `Round 5 pushed; starting watchlist and anti-overfit iteration`)**：
+  - 实机启动 `./portable-release/economist-quant-terminal.exe` 并验证 `11:00 CST` 30 分钟盘中自动轮动扫描（`5,931` 只全 A -> `4,532` 只 `<200亿` -> `21` 只双日换手 `>5%` 放量 -> `10` 只排雷绿灯，`8` 只 `BUY` 信号）与 `100W` 模拟盘 `T+1` 实时盯市；
+  - 响应用户新增需求「观望可加入自选检验策略真实胜率 + 持续迭代策略与因子且严禁过拟合」，按 Superpowers 设计门禁 + 4 层 DDD 模块化隔离（保持全仓每个源码文件严格 `< 500` / `<= 600` 行）+ TDD 红绿循环 + `proptest`/`fast-check` 属性测试推进实施、重打包并热重启便携终端。
+
+- **Compact #11 (`2026-11-19` · Checkpoint: `Watchlist, anti-overfit, and version control DDD core`)**：
+  - 完成用户补充需求整合（「观望加入自选胜率池 + 严禁过拟合滚动迭代 + 全版本快照与老版本并行影子追踪 + 版本一键切换与升级前后提升对比 + 新版本不及老版本四维归因诊断 + 完成后执行五轮深度 Code & 策略 Review 并推送远程」），落盘设计规格 `./docs/superpowers/specs/2026-11-19-watchlist-winrate-and-anti-overfit-design.md`；
+  - 按严格 TDD 红绿循环与 `proptest` 属性测试落地 Rust 4 层 DDD 核心（`./src-tauri/src/domain/{watchlist_tracker,anti_overfit,version_control}.rs`、`./src-tauri/src/infrastructure/{sqlite_schema,sqlite_watchlist_repo}.rs`、`./src-tauri/src/application/{pit_observation_builder,watchlist_service,evolution_service}.rs` 及 6 个新增 Tauri IPC 命令），当前立即跑通全量 Rust 测试、推进 React 19 Apple Liquid Glass 前端 TDD 联调、执行 **5 轮深度代码与量化策略审查**，最后重打包热重启 `./portable-release/economist-quant-terminal.exe` 并执行 `git push origin main`。
+
+- **Compact #12 (`2026-11-19` · Checkpoint: `Liquid Glass watchlist and version control UI`)**：
+  - 全量通过 `62/62` Rust 单测/PBT/架构红线（零警告），完成 React 19 Apple Liquid Glass 自选胜率计分卡（`./src/components/watchlist/WatchlistWinRatePanel.tsx`）、全版本影子竞技场与四维退化归因面板（`./src/components/factors/VersionControlArenaPanel.tsx`）及 5 日隔离带防过拟合滚动验证面板（`./src/components/factors/AntiOverfitWalkForwardPanel.tsx`）拆分与全链路联调；
+  - 修复前端 `fast-check` 属性测试捕获的极端稀疏权重有界单纯形定向注水投影边界（`[0,0,0,0,1e-9,0]`）并跑通全量 Vitest + `npm run build`；当前立即启动 **5 轮深度代码与量化策略审查**（DDD 与版本切换一致性 -> 量化防过拟合数学严谨性 -> 历史版本公平影子回放与四维归因 -> 安全审计 -> 25 项门禁重打包热重启便携 `.exe` 并 `git push origin main`）。
+
+
+

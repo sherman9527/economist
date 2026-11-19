@@ -4,6 +4,12 @@
  * Strictly relative paths only; zero hardcoded absolute paths.
  */
 
+export * from "./evolution";
+import type {
+  VersionControlDashboardDto,
+  WatchlistOverviewDto,
+} from "./evolution";
+
 export type ExchangeCode = "SH" | "SZ" | "BJ";
 export type BoardKind = "MAIN" | "CHINEXT" | "STAR" | "BSE";
 export type MarketPolarity = "cn-red-up" | "intl-green-up";
@@ -283,6 +289,8 @@ export interface TerminalBootstrapDto {
   pluginConfig: StrategyPluginConfigDto;
   economist: EconomistModuleDto;
   telemetry: TelemetryDashboardDto;
+  watchlist: WatchlistOverviewDto;
+  versionControl: VersionControlDashboardDto;
 }
 
 export interface PlaceOrderInputDto {

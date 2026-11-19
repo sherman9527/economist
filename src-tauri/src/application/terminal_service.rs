@@ -256,6 +256,8 @@ impl TerminalService {
         let plugin_config = map_plugin_bundle_to_dto(&bundle);
         let economist = map_economist_snapshot_to_dto(econ_snap);
         let telemetry = self.run_storage_hygiene().await?;
+        let watchlist = self.sync_watchlist_with_scan(&scan, &today_cst)?;
+        let version_control = self.get_version_control_dashboard(None, None).await?;
 
         Ok(TerminalBootstrapDto {
             funnel: scan.funnel,
@@ -265,6 +267,8 @@ impl TerminalService {
             plugin_config,
             economist,
             telemetry,
+            watchlist,
+            version_control,
         })
     }
 
@@ -294,6 +298,7 @@ impl TerminalService {
         let _ = self
             .sync_and_seed_ledger_locked(&scan, &bundle, &today_cst, &next_cst, &now_iso)
             .await?;
+        let watchlist = self.sync_watchlist_with_scan(&scan, &today_cst)?;
 
         let top_picks: Vec<ScreenerCandidateDto> = scan
             .candidates
@@ -319,6 +324,7 @@ impl TerminalService {
             funnel: scan.funnel,
             candidates: scan.candidates,
             alert,
+            watchlist,
         })
     }
 
@@ -326,7 +332,7 @@ impl TerminalService {
         &self,
         input: UpdatePluginInputDto,
     ) -> Result<StrategyPluginConfigDto, String> {
-        let updated = self.plugins.update_strategy_and_weights(
+        let mut updated = self.plugins.update_strategy_and_weights(
             input.min_intraday_projected_turnover_pct,
             input.insider_sell_veto_pct,
             input.holder_surge_veto_pct,
@@ -335,6 +341,9 @@ impl TerminalService {
             &input.market_polarity,
             &input.factor_weights,
         )?;
+        if let Ok(new_ver) = self.record_manual_version_snapshot_sync(&updated) {
+            updated.strategy.version = new_ver.trim_start_matches('v').to_string();
+        }
         self.repo.sync_plugins_to_sqlite(&updated)?;
         {
             let mut w = self.scan_cache.write().await;

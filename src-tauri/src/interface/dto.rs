@@ -345,12 +345,19 @@ pub struct RotationAlertEventDto {
     pub top_picks: Vec<ScreenerCandidateDto>,
 }
 
+pub use crate::interface::evolution_dto::{
+    AddWatchlistInputDto, EvolutionAuditLogDto, FactorAttributionDto, RootCauseFindingDto,
+    VersionComparisonDto, VersionControlDashboardDto, VersionSnapshotDto, WatchlistItemDto,
+    WatchlistOverviewDto, WatchlistSummaryDto,
+};
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MarketScanResponseDto {
     pub funnel: UniverseFunnelSummaryDto,
     pub candidates: Vec<ScreenerCandidateDto>,
     pub alert: Option<RotationAlertEventDto>,
+    pub watchlist: WatchlistOverviewDto,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -363,6 +370,8 @@ pub struct TerminalBootstrapDto {
     pub plugin_config: StrategyPluginConfigDto,
     pub economist: EconomistModuleDto,
     pub telemetry: TelemetryDashboardDto,
+    pub watchlist: WatchlistOverviewDto,
+    pub version_control: VersionControlDashboardDto,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

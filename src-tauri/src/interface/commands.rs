@@ -1,8 +1,9 @@
 use crate::application::terminal_service::TerminalService;
 use crate::interface::dto::{
-    AgentSessionDto, EconomistModuleDto, MarketScanResponseDto, PlaceOrderInputDto,
-    PortfolioOverviewDto, StockKlinePayloadDto, StrategyPluginConfigDto, TelemetryDashboardDto,
-    TerminalBootstrapDto, UpdatePluginInputDto,
+    AddWatchlistInputDto, AgentSessionDto, EconomistModuleDto, MarketScanResponseDto,
+    PlaceOrderInputDto, PortfolioOverviewDto, StockKlinePayloadDto, StrategyPluginConfigDto,
+    TelemetryDashboardDto, TerminalBootstrapDto, UpdatePluginInputDto, VersionControlDashboardDto,
+    WatchlistOverviewDto,
 };
 use std::sync::Arc;
 use tauri::{AppHandle, Emitter, State};
@@ -92,4 +93,52 @@ pub async fn wake_agent_session(
     svc: State<'_, Arc<TerminalService>>,
 ) -> Result<AgentSessionDto, String> {
     svc.wake_agent_session(&agent_role, &prompt).await
+}
+
+#[tauri::command]
+pub async fn get_watchlist_overview(
+    svc: State<'_, Arc<TerminalService>>,
+) -> Result<WatchlistOverviewDto, String> {
+    svc.get_watchlist_overview().await
+}
+
+#[tauri::command]
+pub async fn add_to_watchlist(
+    input: AddWatchlistInputDto,
+    svc: State<'_, Arc<TerminalService>>,
+) -> Result<WatchlistOverviewDto, String> {
+    svc.add_to_watchlist(input).await
+}
+
+#[tauri::command]
+pub async fn remove_from_watchlist(
+    symbol: String,
+    svc: State<'_, Arc<TerminalService>>,
+) -> Result<WatchlistOverviewDto, String> {
+    svc.remove_from_watchlist(&symbol).await
+}
+
+#[tauri::command]
+pub async fn get_version_control_dashboard(
+    base_version_id: Option<String>,
+    target_version_id: Option<String>,
+    svc: State<'_, Arc<TerminalService>>,
+) -> Result<VersionControlDashboardDto, String> {
+    svc.get_version_control_dashboard(base_version_id, target_version_id)
+        .await
+}
+
+#[tauri::command]
+pub async fn switch_strategy_version(
+    version_id: String,
+    svc: State<'_, Arc<TerminalService>>,
+) -> Result<VersionControlDashboardDto, String> {
+    svc.switch_strategy_version(&version_id).await
+}
+
+#[tauri::command]
+pub async fn run_anti_overfit_iteration(
+    svc: State<'_, Arc<TerminalService>>,
+) -> Result<VersionControlDashboardDto, String> {
+    svc.run_anti_overfit_iteration("MANUAL_UI").await
 }

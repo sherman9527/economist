@@ -214,6 +214,74 @@ CREATE TABLE IF NOT EXISTS telemetry_events (
 CREATE INDEX IF NOT EXISTS idx_recommendations_symbol ON recommendations(symbol, bar_time);
 CREATE INDEX IF NOT EXISTS idx_orders_created_at ON simulated_orders(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_telemetry_epoch ON telemetry_events(epoch_secs DESC);
+
+CREATE TABLE IF NOT EXISTS watchlist_items (
+    symbol                   TEXT PRIMARY KEY,
+    name_zh                  TEXT NOT NULL,
+    board                    TEXT NOT NULL,
+    industry_sw1             TEXT NOT NULL DEFAULT '',
+    added_trade_date         TEXT NOT NULL,
+    added_at_iso             TEXT NOT NULL,
+    entry_price_fen          INTEGER NOT NULL CHECK (entry_price_fen > 0),
+    stop_loss_price_fen      INTEGER NOT NULL CHECK (stop_loss_price_fen > 0),
+    target_price_fen         INTEGER NOT NULL CHECK (target_price_fen > 0),
+    conviction_score         REAL NOT NULL,
+    source_decision          TEXT NOT NULL,
+    version_id_at_entry      TEXT NOT NULL DEFAULT 'v1.2.0',
+    rationale_zh             TEXT NOT NULL,
+    factor_z_json            TEXT NOT NULL DEFAULT '{}',
+    latest_price_fen         INTEGER NOT NULL CHECK (latest_price_fen > 0),
+    peak_price_fen           INTEGER NOT NULL CHECK (peak_price_fen > 0),
+    trough_price_fen         INTEGER NOT NULL CHECK (trough_price_fen > 0),
+    holding_trading_days     INTEGER NOT NULL DEFAULT 0,
+    net_return_bps           REAL NOT NULL DEFAULT -25.0,
+    mfe_bps                  REAL NOT NULL DEFAULT 0.0,
+    mae_bps                  REAL NOT NULL DEFAULT 0.0,
+    outcome                  TEXT NOT NULL DEFAULT 'TRACKING',
+    settled_trade_date       TEXT,
+    settled_price_fen        INTEGER
+);
+
+CREATE TABLE IF NOT EXISTS strategy_version_snapshots (
+    version_id               TEXT PRIMARY KEY,
+    parent_version_id        TEXT,
+    source_tag               TEXT NOT NULL,
+    created_at               TEXT NOT NULL,
+    is_active                INTEGER NOT NULL DEFAULT 0 CHECK (is_active IN (0, 1)),
+    summary_zh               TEXT NOT NULL,
+    factor_weights_json      TEXT NOT NULL,
+    params_json              TEXT NOT NULL,
+    train_rank_ic            REAL NOT NULL DEFAULT 0.0,
+    oos_rank_ic              REAL NOT NULL DEFAULT 0.0,
+    oos_ic_ir                REAL NOT NULL DEFAULT 0.0,
+    pbo_risk_pct             REAL NOT NULL DEFAULT 0.0
+);
+
+CREATE TABLE IF NOT EXISTS factor_evolution_logs (
+    log_id                   INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at               TEXT NOT NULL,
+    trigger_source           TEXT NOT NULL,
+    base_version_id          TEXT NOT NULL,
+    resulting_version_id     TEXT NOT NULL,
+    promoted                 INTEGER NOT NULL CHECK (promoted IN (0, 1)),
+    verdict                  TEXT NOT NULL,
+    train_dates              INTEGER NOT NULL,
+    embargo_dates            INTEGER NOT NULL,
+    oos_dates                INTEGER NOT NULL,
+    sample_observations      INTEGER NOT NULL,
+    train_rank_ic            REAL NOT NULL,
+    oos_rank_ic              REAL NOT NULL,
+    oos_ic_ir                REAL NOT NULL,
+    deflated_ic_ir           REAL NOT NULL,
+    pbo_risk_pct             REAL NOT NULL,
+    max_pairwise_corr        REAL NOT NULL,
+    prior_weights_json       TEXT NOT NULL,
+    proposed_weights_json    TEXT NOT NULL,
+    audit_reasons_json       TEXT NOT NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_watchlist_added ON watchlist_items(added_at_iso DESC);
+CREATE INDEX IF NOT EXISTS idx_evolution_logs_ts ON factor_evolution_logs(log_id DESC);
 "#;
 
 pub fn open_and_migrate_sqlite(db_path: &Path) -> Result<Connection, String> {
