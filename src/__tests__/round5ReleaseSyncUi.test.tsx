@@ -2,6 +2,7 @@ import { act } from "react";
 import { createRoot } from "react-dom/client";
 import { describe, expect, it, vi } from "vitest";
 import { LiveScreenerPage } from "../pages/LiveScreenerPage";
+import { TelemetrySessionsPage } from "../pages/TelemetrySessionsPage";
 import { StrategyPluginEditorSection } from "../components/factors/StrategyPluginEditorSection";
 import { bootstrapTerminal } from "../services/tauriClient";
 
@@ -115,6 +116,44 @@ describe("Round 5 Final Release Gate UI Regressions", () => {
 
     expect(host.textContent).toContain("合计 100%");
     expect(host.textContent).not.toContain("合计 102%");
+
+    await act(async () => {
+      root.unmount();
+    });
+    host.remove();
+  });
+
+  it("renders a single unified model badge in TelemetrySessionsPage header and 1+4 hierarchical expert layout without repeating model per card", async () => {
+    const boot = await bootstrapTerminal();
+    const host = document.createElement("div");
+    document.body.appendChild(host);
+    const root = createRoot(host);
+
+    await act(async () => {
+      root.render(
+        <TelemetrySessionsPage
+          telemetry={boot.telemetry}
+          isBlurActive={() => false}
+          onRunHygiene={async () => {}}
+          onWakeSession={async () => {}}
+        />
+      );
+    });
+
+    const unifiedBadges = host.querySelectorAll("[data-unified-model-badge]");
+    expect(unifiedBadges.length).toBe(1);
+    expect(unifiedBadges[0]?.textContent).toContain("gemini-4-carbon");
+
+    const supervisorBanners = host.querySelectorAll("[data-supervisor-banner]");
+    const specialistCards = host.querySelectorAll("[data-specialist-card]");
+    expect(supervisorBanners.length).toBe(1);
+    expect(specialistCards.length).toBe(4);
+
+    const allAgentCards = host.querySelectorAll("[data-agent-card]");
+    expect(allAgentCards.length).toBe(5);
+    allAgentCards.forEach((card) => {
+      expect(card.textContent).not.toContain("gemini-4-carbon");
+    });
 
     await act(async () => {
       root.unmount();

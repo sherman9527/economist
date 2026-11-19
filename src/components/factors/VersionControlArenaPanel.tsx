@@ -352,7 +352,7 @@ export const VersionControlArenaPanel: React.FC<VersionControlArenaPanelProps> =
                         variant="ghost"
                         icon={<Sparkles size={13} />}
                         label="唤醒量化专家Agent深度复盘"
-                        loadingLabel="唤醒 gemini-4-carbon..."
+                        loadingLabel="正在唤醒专家复盘..."
                         successLabel="已提交复盘"
                         onClick={() =>
                           onWakeQuantDiagnosis(

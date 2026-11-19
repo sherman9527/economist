@@ -61,7 +61,7 @@
   font-size: 12px;
 }
 
-/* Pills & Semantic Chips (min-height + padding-block ONLY) */
+/* Pills & Semantic Chips (min-height + padding-block ONLY, single-line non-squish) */
 .glass-pill {
   display: inline-flex;
   align-items: center;
@@ -73,6 +73,10 @@
   font-size: 12px;
   font-weight: 500;
   line-height: 1.45;
+  white-space: nowrap;
+  flex-shrink: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
   font-variant-numeric: tabular-nums;
   border: 1px solid var(--glass-rim-subtle);
   background: var(--optical-card-bg);
