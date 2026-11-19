@@ -211,11 +211,15 @@ fn project_bounded_simplex(
     max_w: f64,
     max_step: f64,
 ) -> BTreeMap<String, f64> {
+    let n = prior.len().max(1) as f64;
+    let eff_min_w = min_w.min(100.0 / n);
+    let eff_max_w = max_w.max((100.0 - (n - 1.0) * eff_min_w).min(100.0 / n + 15.0));
+
     let mut cur = BTreeMap::new();
     let mut bounds = BTreeMap::new();
     for (k, &p) in prior {
-        let lo = (p - max_step).max(min_w);
-        let hi = (p + max_step).min(max_w).max(lo);
+        let lo = (p - max_step).max(eff_min_w);
+        let hi = (p + max_step).min(eff_max_w).max(lo);
         let v = raw.get(k).copied().unwrap_or(p).clamp(lo, hi);
         cur.insert(k.clone(), v);
         bounds.insert(k.clone(), (lo, hi));
@@ -267,13 +271,15 @@ pub fn evaluate_walk_forward_iteration(
     let all_dates: Vec<String> = by_date.keys().cloned().collect();
     let total_dates = all_dates.len();
 
-    if total_dates < 10 || prior_weights.is_empty() {
+    let embargo = cfg.embargo_trading_days.max(1);
+    let min_required_dates = embargo + 9; // >= 5 Train + embargo + >= 4 OOS
+    if total_dates < min_required_dates || prior_weights.is_empty() {
         return WalkForwardIterationReport {
             promoted: false,
             verdict: "INSUFFICIENT_SAMPLE".to_string(),
             total_dates,
             train_dates: 0,
-            embargo_dates: 0,
+            embargo_dates: embargo,
             oos_dates: 0,
             sample_observations: observations.len(),
             train_composite_rank_ic: 0.0,
@@ -285,18 +291,17 @@ pub fn evaluate_walk_forward_iteration(
             proposed_weights: prior_weights.clone(),
             factor_metrics: Vec::new(),
             audit_reasons_zh: vec![format!(
-                "有效交易截面仅 {} 日（低于防过拟合最低 10 日门槛），保持原权重不变",
-                total_dates
+                "有效交易截面仅 {} 日（低于 {} 日非重叠隔离带所需最低 {} 日门槛），严禁缩短隔离带偷看未来收益",
+                total_dates, embargo, min_required_dates
             )],
         };
     }
 
-    let embargo = cfg.embargo_trading_days.min(total_dates / 4).max(1);
     let usable = total_dates.saturating_sub(embargo);
     let train_len = ((usable as f64 * cfg.train_ratio).round() as usize)
-        .max(4)
-        .min(usable.saturating_sub(3));
-    let oos_start = (train_len + embargo).min(total_dates.saturating_sub(2));
+        .max(5)
+        .min(usable.saturating_sub(4));
+    let oos_start = train_len + embargo;
 
     let train_dates = &all_dates[..train_len];
     let oos_dates = &all_dates[oos_start..];
@@ -335,14 +340,15 @@ pub fn evaluate_walk_forward_iteration(
         collinearity_penalties.insert(fid_a.clone(), 1.0 / (1.0 + 1.5 * excess_sum));
     }
 
-    // Score each factor on Train vs Purged OOS
+    // Score each factor: candidate target weights MUST be fitted 100% strictly on `train_dates`
+    // (zero OOS snooping!). `oos_dates` is held out purely for validation & veto guards below.
     let mut raw_signal_scores: BTreeMap<String, f64> = BTreeMap::new();
     let mut metrics_draft = Vec::with_capacity(factor_ids.len());
 
     for fid in &factor_ids {
         let tr_ics = daily_factor_ics(&by_date, train_dates, fid);
         let oos_ics = daily_factor_ics(&by_date, oos_dates, fid);
-        let (tr_mean, _) = mean_and_ir(&tr_ics);
+        let (tr_mean, tr_ir) = mean_and_ir(&tr_ics);
         let (oos_mean, oos_ir) = mean_and_ir(&oos_ics);
         let sign_consistent = tr_mean > 0.0 && oos_mean > 0.0;
         let col_pen = collinearity_penalties.get(fid).copied().unwrap_or(1.0);
@@ -353,12 +359,13 @@ pub fn evaluate_walk_forward_iteration(
             1.0 / (1.0 + 0.08 * ((ast_ops - 8) as f64))
         };
 
-        let positive_edge = if sign_consistent && oos_mean >= 0.005 {
-            (oos_ir.max(0.05) + oos_mean * 6.0) * col_pen * comp_pen
+        // Strictly Train-only edge estimation (NO oos_mean / oos_ir allowed here!)
+        let train_only_edge = if tr_mean >= 0.005 && tr_ir > 0.0 {
+            (tr_ir.max(0.05) + tr_mean * 6.0) * col_pen * comp_pen
         } else {
             0.05 * col_pen * comp_pen
         };
-        raw_signal_scores.insert(fid.clone(), positive_edge);
+        raw_signal_scores.insert(fid.clone(), train_only_edge);
         metrics_draft.push((
             fid.clone(),
             tr_mean,
@@ -437,7 +444,14 @@ pub fn evaluate_walk_forward_iteration(
             pbo_risk_pct, cfg.max_pbo_risk_pct
         ));
     }
-    if oos_comp_ic + 1e-6 < prior_oos_ic {
+    let max_weight_shift = candidate_weights
+        .iter()
+        .map(|(k, &w)| (w - prior_weights.get(k).copied().unwrap_or(w)).abs())
+        .fold(0.0_f64, f64::max);
+    if max_weight_shift < 0.05 {
+        vetoed = true;
+        reasons.push("候选权重与现行版本几乎一致（最大权重偏移 < 0.05%），无需派生冗余新版本".to_string());
+    } else if oos_comp_ic + 1e-6 < prior_oos_ic {
         vetoed = true;
         reasons.push(format!(
             "候选权重样本外 RankIC ({:.4}) 未优于现行基线 ({:.4})，坚守原版本",

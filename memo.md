@@ -109,5 +109,9 @@
   - 全量通过 `62/62` Rust 单测/PBT/架构红线（零警告），完成 React 19 Apple Liquid Glass 自选胜率计分卡（`./src/components/watchlist/WatchlistWinRatePanel.tsx`）、全版本影子竞技场与四维退化归因面板（`./src/components/factors/VersionControlArenaPanel.tsx`）及 5 日隔离带防过拟合滚动验证面板（`./src/components/factors/AntiOverfitWalkForwardPanel.tsx`）拆分与全链路联调；
   - 修复前端 `fast-check` 属性测试捕获的极端稀疏权重有界单纯形定向注水投影边界（`[0,0,0,0,1e-9,0]`）并跑通全量 Vitest + `npm run build`；当前立即启动 **5 轮深度代码与量化策略审查**（DDD 与版本切换一致性 -> 量化防过拟合数学严谨性 -> 历史版本公平影子回放与四维归因 -> 安全审计 -> 25 项门禁重打包热重启便携 `.exe` 并 `git push origin main`）。
 
+- **Compact #13 (`2026-11-19` · Checkpoint: `Review Round 1 green and Round 2 quant RED`)**：
+  - 完成第 1 轮深度代码与策略审查（`3bcaa19`）：对齐 Rust/TypeScript IPC JSON `camelCase` 字段契约、修复 `-exp` 预发布版本标签累加、自选复选生命周期保护及防过拟合晋升缓存同步，`66/66` Rust + `28/28` Vitest 全绿；
+  - 启动第 2 轮量化防过拟合数学审查并编写 `./src-tauri/tests/strategy_review_round2.rs` 复现红灯（样本外偷看泄露、`5` 日非重叠隔离带收缩与任意因子数 `N` 有界单纯形零增益重复晋升、跳空跌破止损真实最高价成交、`T+1` 一字涨停不可买过滤及 PIT 流通市值正交中性化）；当前立即完成第 2 轮全绿闭环，随后依次推进第 3–5 轮深度审查、重打包热重启 `./portable-release/economist-quant-terminal.exe` 并执行 `git push origin main`。
+
 
 

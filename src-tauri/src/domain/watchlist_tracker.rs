@@ -215,15 +215,16 @@ pub fn evaluate_watchlist_entry(
         return;
     }
 
-    // Conservative execution order on daily/30m bar: check stop-loss BEFORE target!
+    // Conservative execution order on daily/30m bar: check stop-loss BEFORE target,
+    // and account for overnight gap-downs (fill <= valid_high) / gap-ups (fill >= valid_low)!
     if valid_low.0 <= item.stop_loss_price_fen.0 {
-        let fill = item.stop_loss_price_fen;
+        let fill = Fen(item.stop_loss_price_fen.0.min(valid_high.0).max(1));
         item.outcome = WatchlistOutcome::HitStop;
         item.settled_price_fen = Some(fill);
         item.settled_trade_date = Some(bar_trade_date.chars().take(10).collect());
         item.net_return_bps = compute_net_return_bps(item.entry_price_fen, fill);
     } else if valid_high.0 >= item.target_price_fen.0 {
-        let fill = item.target_price_fen;
+        let fill = Fen(item.target_price_fen.0.max(valid_low.0));
         item.outcome = WatchlistOutcome::HitTarget;
         item.settled_price_fen = Some(fill);
         item.settled_trade_date = Some(bar_trade_date.chars().take(10).collect());
