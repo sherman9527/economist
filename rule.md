@@ -74,3 +74,19 @@
 - **现象**：为满足便携免安装（`bundle.active = false`）并规避外部打包器二进制下载，直接运行 `cargo build --release` 生成独立 `x64` `.exe` 时，若 `tauri` 依赖未开启 `custom-protocol` 特性，`tauri::generate_context!()` 会默认处于开发模式（尝试连接 `devUrl: http://localhost:1420`），导致独立便携 `.exe` 白屏且无法触发前端 IPC 初始化。
 - **标准解法**：先执行 `npm run build` 生成 `./dist/`，并在 `./src-tauri/Cargo.toml` 中显式声明 `[features] default = ["custom-protocol"]` 与 `custom-protocol = ["tauri/custom-protocol"]`，使 `tauri-codegen` 将全部前端静态资源静态内嵌至独立便携 `x64` `.exe` 中并通过 `http://tauri.localhost` 协议离线加载。
 
+### Pitfall #14：A股跨周末/法定节假日 `T+1` 锁仓、科创/北交零股步长与腾讯备源单位不一致
+- **现象**：简单按自然日判断 `T+1` 会错误允许周五买入持仓在周六/周日显示可卖；科创板（`688xxx`）与北交所（`8xxxxx`/`920xxx`）超过最低门槛后按 `1` 股递增，若强制 `100` 股取整会导致零股（如 `250` 股）永久无法平仓；腾讯备用 K 线接口对科创/北交所返回“股”而主板返回“手”，混算会导致量比与 ATR 量纲失真 `100` 倍。
+- **标准解法**：引入沪深北交易日历推进器（`next_ashare_trading_day`），按板别精确执行最小申报股数与递增步长（买入整手、卖出允许全额清空零股），并在腾讯备源解析层统一将科创/北交成交量除以 `100.0` 归一为“手”。
+
+### Pitfall #15：`lightweight-charts` 混合 `30m` Unix 时间戳与 `YYYY-MM-DD` 日期买点标记导致前端崩溃
+- **现象**：K 线主图切换至 `30m` 分钟线时，K 线横轴为数值型 Unix 秒时间戳，而历史推荐买点存储的是日级字符串（`YYYY-MM-DD`）；直接调用 `setMarkers` 混排两种时间类型会触发 `lightweight-charts` 运行时异常。
+- **标准解法**：在 `./src/components/charts/klineTimeAlign.ts` 中将买点日期对齐映射到当前 K 线序列同交易日对应的精确 `bar.time`，并按时间戳升序去重排序后再挂载标记。
+
+### Pitfall #16：沙箱化离线研报 `srcDoc` 相对外链脚本失效与 `<head ...>` CSP 注入顺序陷阱
+- **现象**：在 `<iframe sandbox="allow-scripts" srcDoc={...}>` 中渲染离线《经济学人》HTML 研报时，原有的相对路径 `<script src="../../../assets/echarts.min.js">` 因无宿主基准路径无法加载；且若研报 `<head lang="zh-CN">` 带有属性，简单匹配 `<head>` 会回退到 `</head>` 前注入 CSP `<meta>`，导致其排在内联 `<script>` 之后而失去 CSP 约束力。
+- **标准解法**：由后端 `EconomistBridge::read_report_html` 读取 `./reports/assets/echarts.min.js` 进行离线安全内联（转义 `</script`），并解析任意 `<head...>` 起始标签闭合 `>` 位置，将 `connect-src 'none'` 离线 CSP `<meta>` 作为 `<head>` 首个子节点注入。
+
+### Pitfall #17：本地 HTTP 服务 `startswith` 同前缀兄弟目录穿越与内联 JSON `</script>` 注入
+- **现象**：仅用字符串前缀比较校验静态文件路径时，`/reports/..%2Freports_backup/secret.txt` 解析后仍满足同目录名前缀从而越界读取兄弟目录；将未转义的 `json.dumps(...)` 直接拼入 `<script>` 块时，若外部文章摘要含 `</script>` 会提前闭合脚本标签触发存储型 XSS。
+- **标准解法**：路径边界统一采用 `Path.resolve().is_relative_to(REPORTS_DIR.resolve())` 配合逐段符号链接拒绝；所有嵌入 `<script>` 的 JSON 统一经 `_safe_script_json()` 将 `<`、`>`、`&`、`\u2028`、`\u2029` 转义为 `\u003c` 等安全 Unicode 序列。
+

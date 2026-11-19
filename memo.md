@@ -91,4 +91,8 @@
 - **Compact #8 (`2026-11-18` · Checkpoint: `Round 3 committed; Round 4 security audit verified`)**：
   - 完成第 3 轮 Apple Liquid Glass 视觉光学、视口模糊预算（`<= 8`）、沙箱化离线内联 ECharts `srcDoc` 研报视图与单文件 `< 500` 行组件拆分修复，通过 `49/49` Rust 单测/架构红线、`25/25` Vitest、`npm run build` 及仓库卫生检查并提交基线（`b45f552`）；
   - 完成第 4 轮安全专项深度审计（`security-review` · `gemini-4-carbon` · `high`）并逐行复核确认全部 6 项发现（`<script>` 内联 JSON/链接存储型 XSS 与 `report_id` 严格校验、`127.0.0.1:4288` ACK 服务 `Origin`/`Host`/POST 负载与移除 `GET /api/ack-via-get` CSRF、`Path.is_relative_to` 目录穿越与 `re.sub` 反向引用防护、Tauri 主窗口 CSP 与内嵌研报离线 CSP、`AgentSupervisor` `--available-tools ""` / `stdin` 传参与安全二进制解析、账本 `checked_add`/`checked_mul` 防溢出及插件因子权重有限域校验）；
-  - 当前立即按严格 TDD 红绿循环落地第 4 轮安全回归测试与最小精确修复并提交，随后执行第 5 轮 25 项需求终审、重新构建便携 `x64` `./portable-release/economist-quant-terminal.exe` 并冒烟验证，同步治理文档后执行 `git push origin main`。
+  - 按严格 TDD 红绿循环落地第 4 轮安全回归测试并提交基线（`c9f201e`）。
+
+- **Compact #9 (`2026-11-19` · Checkpoint: `Round 4 security TDD fixes verified green & Round 5 final release`)**：
+  - 完成第 4 轮安全加固提交（`c9f201e`）后，完成第 5 轮 25 项需求终审门禁（`round5_release_gate_regressions.rs`）：修复带属性 `<head ...>` 下离线研报 CSP `<meta>` 先于内联 `<script>` 注入顺序、完善 Windows WebView2 Tauri v2 `tauri.localhost` / `worker-src 'self' blob:` CSP 策略、补齐 `./scripts/stage_portable_release.ps1` 全套《经济学人》Python 渲染包与离线 ECharts 资源打包；
+  - 全量通过 `56/56` Rust 单测/PBT/架构红线/五轮回归测试、`25/25` Vitest + `fast-check` 属性测试、`3/3` Python 安全回归测试、OpenSpec `--strict` 校验与全仓零绝对路径 / `< 1000` 行卫生门禁，完成便携 `x64` `./portable-release/economist-quant-terminal.exe` 终版重打包、实机冒烟验证与 `git push origin main`。

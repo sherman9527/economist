@@ -157,15 +157,15 @@ impl AgentSupervisor {
             if let Ok(resolved_exe) = self.resolve_safe_copilot_exe() {
                 let temp_dir = self.paths.temp_dir();
                 let copilot_home = temp_dir.join("copilot_home");
+                let temp_agent_logs = temp_dir.join("logs").join("agents");
                 let _ = std::fs::create_dir_all(&copilot_home);
+                let _ = std::fs::create_dir_all(&temp_agent_logs);
                 let prompt_owned = format!("{}\n", clean_prompt);
                 let mut cmd = tokio::process::Command::new(resolved_exe);
                 cmd.current_dir(&temp_dir)
                     .env("TEMP", &temp_dir)
                     .env("TMP", &temp_dir)
                     .env("COPILOT_HOME", &copilot_home)
-                    .env("APPDATA", &copilot_home)
-                    .env("LOCALAPPDATA", &copilot_home)
                     .env("PYTHONHOME", "")
                     .env("PYTHONPATH", "")
                     .args(&cli_args)

@@ -12,7 +12,7 @@
   "app": {
     "windows": [],
     "security": {
-      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ipc: http://ipc.localhost https://ipc.localhost; frame-src 'self' blob: data:; object-src 'none'; base-uri 'none'"
+      "csp": "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' ipc: tauri: http://ipc.localhost https://ipc.localhost http://tauri.localhost https://tauri.localhost; worker-src 'self' blob:; frame-src 'self' blob: data:; object-src 'none'; base-uri 'none'"
     }
   },
   "bundle": {

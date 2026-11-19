@@ -28,12 +28,12 @@ $StageDir = Join-Path $RepoRoot "portable-release"
 foreach ($sub in @(
     "",
     ".github\agents",
-    "scripts",
+    "scripts\renderer_pkg",
     "config",
     "plugins\strategies",
     "plugins\factors",
     "data\runs",
-    "reports",
+    "reports\assets",
     "logs\agents",
     "telemetry",
     "webview_data",
@@ -55,8 +55,13 @@ if (Test-Path (Join-Path $RepoRoot "memo.md")) {
 if (Test-Path (Join-Path $RepoRoot ".github\agents")) {
     Copy-Item -Force (Join-Path $RepoRoot ".github\agents\*.agent.md") (Join-Path $StageDir ".github\agents\")
 }
-if (Test-Path (Join-Path $RepoRoot "scripts\analyzer.py")) {
-    Copy-Item -Force (Join-Path $RepoRoot "scripts\analyzer.py") (Join-Path $StageDir "scripts\analyzer.py")
+Get-ChildItem -Path (Join-Path $RepoRoot "scripts") -Filter "*.py" -File |
+    Where-Object { $_.Name -notlike "test_*.py" } |
+    ForEach-Object { Copy-Item -Force $_.FullName (Join-Path $StageDir "scripts\$($_.Name)") }
+Get-ChildItem -Path (Join-Path $RepoRoot "scripts") -Filter "*.ps1" -File |
+    ForEach-Object { Copy-Item -Force $_.FullName (Join-Path $StageDir "scripts\$($_.Name)") }
+if (Test-Path (Join-Path $RepoRoot "scripts\renderer_pkg")) {
+    Copy-Item -Force (Join-Path $RepoRoot "scripts\renderer_pkg\*.py") (Join-Path $StageDir "scripts\renderer_pkg\")
 }
 
 $SrcSqliteDb = Join-Path $RepoRoot "data\economist_quant.db"

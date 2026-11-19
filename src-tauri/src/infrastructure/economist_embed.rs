@@ -71,6 +71,27 @@ fn inline_echarts_script_tags(html: &str, echarts_js: &str) -> String {
     out
 }
 
+fn find_opening_head_end(html: &str) -> Option<usize> {
+    let lower = html.to_ascii_lowercase();
+    let mut search_from = 0usize;
+    while let Some(rel) = lower[search_from..].find("<head") {
+        let pos = search_from + rel;
+        let after_kw = pos + "<head".len();
+        let next_ok = lower
+            .as_bytes()
+            .get(after_kw)
+            .map(|b| *b == b'>' || b.is_ascii_whitespace())
+            .unwrap_or(false);
+        if next_ok {
+            if let Some(gt_rel) = lower[after_kw..].find('>') {
+                return Some(after_kw + gt_rel + 1);
+            }
+        }
+        search_from = after_kw;
+    }
+    None
+}
+
 pub(crate) fn prepare_embedded_report_html(raw: &str, echarts_js: Option<&str>) -> String {
     let with_flag = inject_embed_flag_on_html(raw);
     let with_echarts = match echarts_js {
@@ -86,21 +107,22 @@ pub(crate) fn prepare_embedded_report_html(raw: &str, echarts_js: Option<&str>) 
         "img-src data: blob:; font-src data:; connect-src 'none'; object-src 'none'; base-uri 'none';\">",
         "<style data-economist-embed=\"1\">html[data-embed=\"1\"] #ackBtn,html[data-embed=\"1\"] .ack-btn{display:none!important;}</style>"
     );
-    let lower = with_echarts.to_ascii_lowercase();
-    if let Some(head_open) = lower.find("<head>") {
-        let insert_at = head_open + "<head>".len();
+    if let Some(insert_at) = find_opening_head_end(&with_echarts) {
         let mut out = String::with_capacity(with_echarts.len() + embed_csp_and_style.len());
         out.push_str(&with_echarts[..insert_at]);
         out.push_str(embed_csp_and_style);
         out.push_str(&with_echarts[insert_at..]);
         out
-    } else if let Some(head_close) = lower.find("</head>") {
-        let mut out = String::with_capacity(with_echarts.len() + embed_csp_and_style.len());
-        out.push_str(&with_echarts[..head_close]);
-        out.push_str(embed_csp_and_style);
-        out.push_str(&with_echarts[head_close..]);
-        out
     } else {
-        format!("{}{}", embed_csp_and_style, with_echarts)
+        let lower = with_echarts.to_ascii_lowercase();
+        if let Some(head_close) = lower.find("</head>") {
+            let mut out = String::with_capacity(with_echarts.len() + embed_csp_and_style.len());
+            out.push_str(&with_echarts[..head_close]);
+            out.push_str(embed_csp_and_style);
+            out.push_str(&with_echarts[head_close..]);
+            out
+        } else {
+            format!("{}{}", embed_csp_and_style, with_echarts)
+        }
     }
 }
