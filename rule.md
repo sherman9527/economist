@@ -106,5 +106,10 @@
 - **现象**：`fetch_top_turnover_clist_meta` 按换手率降序拉取前 8 页（`800` 只）元数据；当某只入围候选股或存量持仓股（如 `600103.SH` 青山纸业日内换手降至 `2.8%`）排在全市场第 `801+` 名时，`clist_meta` 缺失该股记录，回退默认值将其 `industry_sw1` 硬编码为 `"高端装备"` 且 `main_inflow_wan = 0.0`（导致 FWL 行业正交中性化污染、`F5` 因子失真及 `-12%` 主力净流出排雷漏检），同时 `INSERT OR REPLACE INTO stock_universe_cache` 会把此前已缓存的非空行业覆写为空串 `""`。
 - **标准解法**：在 `./src-tauri/src/application/scan_pipeline.rs` 入围池与存量持仓合并后，对所有缺失 `clist_meta` 的代码调用东财批量接口 `ulist.np/get?fltt=2&invt=2&fields=f12,f14,f26,f62,f100&secids=...`（单次 `~11ms` 补齐 100% 真实行业与主力净流入），未命中兜底改为 `"未分类"`；同时 `./src-tauri/src/infrastructure/sqlite_market_repo.rs` 改用 `ON CONFLICT(symbol) DO UPDATE SET` 保留历史非空 `industry_sw1`、`listing_days` 及同日主力资金流缓存。
 
+### Pitfall #22：`portfolio_snapshots` 基准指数硬编码 `1.000` 与 `save_ledger` 先后顺序导致大跌市真实正超额被掩盖
+- **现象**：`save_ledger` 在新交易日插入 `portfolio_snapshots` 时将 `csi1000_nav` 与 `cni2000_nav` 硬编码为 `1.000`，且 `portfolio_seeder` 在 `save_ledger` 之后判断 `existing_snaps.is_empty()` 永远为 `false`（漏建建仓前一日 `1.0000` 净值锚点）；在小微盘暴跌日（如中证1000两日累计 `-6.68%`、国证2000累计 `-7.38%`），`90%` 现金防守仓位虽取得 `+4.23%` 显著正超额，却因基准锁死 `1.000` 被误显为 `-2.44%` 负超额。
+- **标准解法**：在 `./src-tauri/src/application/portfolio_seeder.rs` 按最早委托日检查并补齐建仓前交易日 `1.0000` 基准锚点，并发拉取东财中证1000（`secid=1.000852`）与国证2000（`secid=0.399303`）日线与实时行情序列归一计算真实基准净值并回写 `./src-tauri/src/infrastructure/sqlite_repo.rs::update_snapshot_benchmarks`，同时 `save_ledger` 在跨日写入时自动承接上一交易日基准净值直至实时基准同步完成。
+
+
 
 

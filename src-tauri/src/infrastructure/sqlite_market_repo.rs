@@ -328,6 +328,31 @@ impl SqliteRepository {
         let _ = conn.execute_batch("PRAGMA wal_checkpoint(PASSIVE);");
         Ok(deleted)
     }
+
+    pub fn update_snapshot_benchmarks(
+        &self,
+        benchmarks: &[(String, f64, f64)],
+    ) -> Result<(), String> {
+        if benchmarks.is_empty() {
+            return Ok(());
+        }
+        let mut conn = self.connect()?;
+        let tx = conn.transaction().map_err(|e| e.to_string())?;
+        let now_iso = chrono::Utc::now().to_rfc3339();
+        for (snap_date, csi1000_nav, cni2000_nav) in benchmarks {
+            tx.execute(
+                "UPDATE portfolio_snapshots
+                 SET csi1000_nav = ?2,
+                     cni2000_nav = ?3,
+                     excess_pct = (portfolio_nav - ?2) * 100.0,
+                     updated_at = ?4
+                 WHERE snap_date = ?1",
+                rusqlite::params![snap_date, csi1000_nav, cni2000_nav, now_iso],
+            )
+            .map_err(|e| format!("更新基准指数净值失败: {}", e))?;
+        }
+        tx.commit().map_err(|e| e.to_string())
+    }
 }
 
 #[cfg(test)]
@@ -398,6 +423,76 @@ mod tests {
         assert_eq!(ind, "造纸");
         assert_eq!(days, 7475);
         assert!((flow - (-10_287.3)).abs() < 1e-3);
+    }
+
+    #[test]
+    fn updates_benchmark_navs_and_carries_forward_across_save_ledger() {
+        use crate::domain::portfolio_ledger::{BuyOrderCommand, PortfolioLedger};
+        use crate::domain::types::{FeeSchedule, Fen};
+
+        let tmp_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join(".temp");
+        let _ = std::fs::create_dir_all(&tmp_dir);
+        let db_path = tmp_dir.join(format!("test_bench_nav_{}.db", std::process::id()));
+        let _ = std::fs::remove_file(&db_path);
+
+        let repo = SqliteRepository::new(&db_path).expect("init repo");
+        let mut ledger = PortfolioLedger::new(
+            Fen::INITIAL_CAPITAL_100W,
+            "2026-11-18",
+            FeeSchedule::default(),
+        );
+        ledger
+            .execute_buy(BuyOrderCommand {
+                order_id: "ORD-BENCH-1".to_string(),
+                rec_id: None,
+                symbol: Symbol::parse("300905.SZ").unwrap(),
+                name_zh: "宝丽迪".to_string(),
+                industry_sw1: "化学纤维".to_string(),
+                quote_price_fen: Fen::from_yuan(30.02),
+                prev_close_fen: Fen::from_yuan(29.00),
+                is_st: false,
+                shares: 1000,
+                stop_loss_price_fen: Fen::from_yuan(27.91),
+                rationale_zh: "OOS首推测试".to_string(),
+                trade_date: "2026-11-18".to_string(),
+                next_trade_date: "2026-11-19".to_string(),
+                created_at_iso: "2026-11-18T14:56:00+08:00".to_string(),
+            })
+            .unwrap();
+        repo.save_ledger(&ledger).unwrap();
+        repo.update_snapshot_benchmarks(&[(
+            "2026-11-18".to_string(),
+            0.933223,
+            0.926185,
+        )])
+        .unwrap();
+
+        let snaps = repo.list_equity_snapshots().unwrap();
+        let s = snaps.iter().find(|r| r.snap_date == "2026-11-18").unwrap();
+        assert!((s.csi1000_nav - 0.933223).abs() < 1e-6);
+        assert!((s.cni2000_nav - 0.926185).abs() < 1e-6);
+        assert!((s.excess_pct - (s.portfolio_nav - 0.933223) * 100.0).abs() < 1e-4);
+
+        let mut next_day = repo
+            .load_ledger(
+                Fen::INITIAL_CAPITAL_100W,
+                "2026-11-19",
+                FeeSchedule::default(),
+            )
+            .unwrap();
+        next_day.update_mark_price("300905.SZ", Fen::from_yuan(30.50));
+        repo.save_ledger(&next_day).unwrap();
+        let snaps2 = repo.list_equity_snapshots().unwrap();
+        let s2 = snaps2.iter().find(|r| r.snap_date == "2026-11-19").unwrap();
+        let _ = std::fs::remove_file(&db_path);
+        let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
+        let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
+        assert!(
+            (s2.csi1000_nav - 0.933223).abs() < 1e-6,
+            "new day save_ledger must carry forward prior benchmark NAV instead of resetting to 1.0"
+        );
     }
 }
 

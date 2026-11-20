@@ -386,12 +386,23 @@ impl SqliteRepository {
         }
 
         let nav = (ledger.total_equity_fen().0 as f64) / (ledger.initial_capital_fen.0.max(1) as f64);
+        let (carry_csi, carry_cni): (f64, f64) = tx
+            .query_row(
+                "SELECT csi1000_nav, cni2000_nav
+                 FROM portfolio_snapshots
+                 WHERE snap_date <= ?1
+                 ORDER BY snap_date DESC
+                 LIMIT 1",
+                params![ledger.current_trade_date],
+                |r| Ok((r.get(0)?, r.get(1)?)),
+            )
+            .unwrap_or((1.0, 1.0));
         let now_iso = chrono::Utc::now().to_rfc3339();
         tx.execute(
             "INSERT INTO portfolio_snapshots (
                 snap_date, cash_fen, market_value_fen, total_equity_fen,
                 total_fees_paid_fen, portfolio_nav, csi1000_nav, cni2000_nav, excess_pct, updated_at
-             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, 1.000, 1.000, ?7, ?8)
+             ) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10)
              ON CONFLICT(snap_date) DO UPDATE SET
                 cash_fen = excluded.cash_fen,
                 market_value_fen = excluded.market_value_fen,
@@ -407,7 +418,9 @@ impl SqliteRepository {
                 ledger.total_equity_fen().0,
                 ledger.total_fees_paid_fen.0,
                 nav,
-                (nav - 1.0) * 100.0,
+                carry_csi,
+                carry_cni,
+                (nav - carry_csi) * 100.0,
                 now_iso,
             ],
         )

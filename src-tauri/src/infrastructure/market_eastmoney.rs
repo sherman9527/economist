@@ -263,10 +263,47 @@ pub async fn fetch_top_turnover_clist_meta(
     map
 }
 
-pub async fn fetch_eastmoney_klines(
+pub const SECID_CSI1000: &str = "1.000852";
+pub const SECID_CNI2000: &str = "0.399303";
+
+fn latest_close_on_or_before(bars: &[SimpleBar], target_date: &str) -> Option<f64> {
+    bars.iter()
+        .rev()
+        .find(|b| b.time.as_str() <= target_date && b.close > 0.0)
+        .or_else(|| bars.iter().find(|b| b.close > 0.0))
+        .map(|b| b.close)
+}
+
+pub fn compute_benchmark_nav_series(
+    snap_dates: &[String],
+    csi1000_bars: &[SimpleBar],
+    cni2000_bars: &[SimpleBar],
+) -> Vec<(String, f64, f64)> {
+    let Some(base_date) = snap_dates.first() else {
+        return Vec::new();
+    };
+    let base_csi = latest_close_on_or_before(csi1000_bars, base_date);
+    let base_cni = latest_close_on_or_before(cni2000_bars, base_date);
+    snap_dates
+        .iter()
+        .map(|dt| {
+            let csi_nav = match (latest_close_on_or_before(csi1000_bars, dt), base_csi) {
+                (Some(c), Some(b)) if b > 0.0 => c / b,
+                _ => 1.0,
+            };
+            let cni_nav = match (latest_close_on_or_before(cni2000_bars, dt), base_cni) {
+                (Some(c), Some(b)) if b > 0.0 => c / b,
+                _ => 1.0,
+            };
+            (dt.clone(), csi_nav, cni_nav)
+        })
+        .collect()
+}
+
+pub async fn fetch_eastmoney_secid_klines(
     client: &reqwest::Client,
     kline_url: &str,
-    symbol: &Symbol,
+    secid: &str,
     period: &str,
     limit: usize,
 ) -> Result<Vec<SimpleBar>, String> {
@@ -274,9 +311,9 @@ pub async fn fetch_eastmoney_klines(
     let url = format!(
         "{}?secid={}&fields1=f1,f2,f3,f4,f5,f6&fields2=f51,f52,f53,f54,f55,f56,f57,f58,f59,f60,f61&klt={}&fqt=1&end=20500101&lmt={}",
         kline_url,
-        symbol.eastmoney_secid(),
+        secid,
         klt,
-        limit.clamp(20, 240)
+        limit.clamp(5, 240)
     );
     let body = client
         .get(&url)
@@ -288,6 +325,16 @@ pub async fn fetch_eastmoney_klines(
         .await
         .map_err(|e| format!("读取东财K线响应失败: {}", e))?;
     parse_eastmoney_kline_json(&body)
+}
+
+pub async fn fetch_eastmoney_klines(
+    client: &reqwest::Client,
+    kline_url: &str,
+    symbol: &Symbol,
+    period: &str,
+    limit: usize,
+) -> Result<Vec<SimpleBar>, String> {
+    fetch_eastmoney_secid_klines(client, kline_url, &symbol.eastmoney_secid(), period, limit.clamp(20, 240)).await
 }
 
 pub async fn fetch_candidate_pitfall_signals(
@@ -494,5 +541,41 @@ mod tests {
         assert_eq!(parsed[0].0, "600103");
         assert_eq!(parsed[0].1.industry_sw1, "造纸");
         assert!((parsed[0].1.main_net_inflow_wan - (-10287.3094)).abs() < 1e-3);
+    }
+
+    #[test]
+    fn computes_benchmark_nav_series_anchored_at_pre_inception_close() {
+        let mk_bar = |time: &str, close: f64| SimpleBar {
+            time: time.to_string(),
+            open: close,
+            close,
+            high: close,
+            low: close,
+            volume: 1.0,
+            amount_yuan: 1.0,
+            turnover_pct: 1.0,
+        };
+        let csi = vec![
+            mk_bar("2026-11-18", 6052.82),
+            mk_bar("2026-11-19", 5938.90),
+            mk_bar("2026-11-20", 5648.63),
+        ];
+        let cni = vec![
+            mk_bar("2026-11-18", 8023.45),
+            mk_bar("2026-11-19", 7834.50),
+            mk_bar("2026-11-20", 7431.20),
+        ];
+        let dates = vec![
+            "2026-11-18".to_string(),
+            "2026-11-19".to_string(),
+            "2026-11-20".to_string(),
+        ];
+        let series = compute_benchmark_nav_series(&dates, &csi, &cni);
+        assert_eq!(series.len(), 3);
+        assert!((series[0].1 - 1.0).abs() < 1e-6);
+        assert!((series[0].2 - 1.0).abs() < 1e-6);
+        assert!((series[1].1 - (5938.90 / 6052.82)).abs() < 1e-6);
+        assert!((series[2].1 - (5648.63 / 6052.82)).abs() < 1e-6);
+        assert!((series[2].2 - (7431.20 / 8023.45)).abs() < 1e-6);
     }
 }

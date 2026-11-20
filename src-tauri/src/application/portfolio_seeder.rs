@@ -10,7 +10,10 @@ use crate::domain::portfolio_ledger::{
 use crate::domain::strategy_gate::is_st_or_delisting_name;
 use crate::domain::trading_calendar::next_ashare_trading_date_str;
 use crate::domain::types::{Fen, Symbol};
-use crate::infrastructure::market_tencent::{fetch_tencent_full_universe, RawTencentQuote};
+use crate::infrastructure::market_eastmoney::{
+    compute_benchmark_nav_series, fetch_eastmoney_secid_klines, SECID_CNI2000, SECID_CSI1000,
+};
+use crate::infrastructure::market_tencent::{fetch_tencent_full_universe, RawTencentQuote, SimpleBar};
 use crate::infrastructure::plugin_store::PluginBundle;
 use crate::infrastructure::sqlite_repo::EquitySnapshotRow;
 use crate::interface::dto::ScreenerCandidateDto;
@@ -46,6 +49,8 @@ impl TerminalService {
             next_cst,
             now_iso,
         )?;
+        self.sync_benchmark_navs_best_effort(&ledger, bundle, today_cst)
+            .await;
         Ok(ledger)
     }
 
@@ -251,30 +256,40 @@ impl TerminalService {
         }
 
         self.repo.save_ledger(ledger)?;
-        if let Ok(existing_snaps) = self.repo.list_equity_snapshots() {
-            if existing_snaps.is_empty() {
-                self.seed_baseline_equity_curve(ledger, scan, today_cst);
-            }
-        }
+        self.ensure_pre_inception_baseline_snapshot(
+            ledger,
+            scan.kline_cache_1d.values().next().map(|v| v.as_slice()),
+            today_cst,
+        );
         Ok(())
     }
 
-    fn seed_baseline_equity_curve(
+    fn ensure_pre_inception_baseline_snapshot(
         &self,
         ledger: &PortfolioLedger,
-        scan: &ScanExecutionOutput,
+        reference_bars: Option<&[SimpleBar]>,
         today_cst: &str,
     ) {
-        let prev_date = scan
-            .kline_cache_1d
-            .values()
-            .next()
-            .and_then(|bars| {
-                bars.iter()
-                    .rev()
-                    .find(|b| b.time.as_str() < today_cst)
-                    .map(|b| b.time.clone())
-            });
+        let anchor_date = ledger
+            .orders
+            .iter()
+            .map(|o| o.trade_date.as_str())
+            .min()
+            .unwrap_or(today_cst);
+        let has_pre_anchor = self
+            .repo
+            .list_equity_snapshots()
+            .map(|snaps| snaps.iter().any(|s| s.snap_date.as_str() < anchor_date))
+            .unwrap_or(false);
+        if has_pre_anchor {
+            return;
+        }
+        let prev_date = reference_bars.and_then(|bars| {
+            bars.iter()
+                .rev()
+                .find(|b| b.time.as_str() < anchor_date)
+                .map(|b| b.time.clone())
+        });
         if let Some(dt) = prev_date {
             let init_fen = ledger.initial_capital_fen.0;
             let _ = self.repo.upsert_equity_snapshot(&EquitySnapshotRow {
@@ -289,6 +304,31 @@ impl TerminalService {
                 excess_pct: 0.0,
             });
         }
+    }
+
+    async fn sync_benchmark_navs_best_effort(
+        &self,
+        ledger: &PortfolioLedger,
+        bundle: &PluginBundle,
+        today_cst: &str,
+    ) {
+        let kline_url = &bundle.app_cfg.market_sources.eastmoney_kline_url;
+        let (csi_res, cni_res) = tokio::join!(
+            fetch_eastmoney_secid_klines(&self.http, kline_url, SECID_CSI1000, "1d", 60),
+            fetch_eastmoney_secid_klines(&self.http, kline_url, SECID_CNI2000, "1d", 60),
+        );
+        let Ok(csi_bars) = csi_res else {
+            return;
+        };
+        let cni_bars = cni_res.unwrap_or_default();
+        self.ensure_pre_inception_baseline_snapshot(ledger, Some(&csi_bars), today_cst);
+
+        let Ok(snaps) = self.repo.list_equity_snapshots() else {
+            return;
+        };
+        let dates: Vec<String> = snaps.into_iter().map(|s| s.snap_date).collect();
+        let series = compute_benchmark_nav_series(&dates, &csi_bars, &cni_bars);
+        let _ = self.repo.update_snapshot_benchmarks(&series);
     }
 
     pub(crate) async fn resolve_symbol_quote_context(
