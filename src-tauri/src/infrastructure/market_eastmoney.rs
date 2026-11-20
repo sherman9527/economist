@@ -119,6 +119,101 @@ pub fn parse_holder_notice_json_as_of(
     (None, None)
 }
 
+pub fn derive_ulist_url(clist_url: &str) -> String {
+    if let Some(prefix) = clist_url.strip_suffix("/clist/get") {
+        format!("{}/ulist.np/get", prefix)
+    } else {
+        "https://push2.eastmoney.com/api/qt/ulist.np/get".to_string()
+    }
+}
+
+pub fn parse_clist_or_ulist_meta_json(
+    payload: &str,
+    today: chrono::NaiveDate,
+) -> Vec<(String, ClistEnrichmentMeta)> {
+    let Ok(root) = serde_json::from_str::<serde_json::Value>(payload) else {
+        return Vec::new();
+    };
+    let Some(diff) = root
+        .get("data")
+        .and_then(|d| d.get("diff"))
+        .and_then(|d| d.as_array())
+    else {
+        return Vec::new();
+    };
+    let mut page_out = Vec::with_capacity(diff.len());
+    for row in diff {
+        let Some(digits) = row.get("f12").and_then(|v| v.as_str()) else {
+            continue;
+        };
+        let industry_sw1 = row
+            .get("f100")
+            .and_then(|v| v.as_str())
+            .filter(|s| !s.is_empty() && *s != "-")
+            .unwrap_or("通用制造")
+            .to_string();
+        let f62_yuan = row.get("f62").and_then(|v| v.as_f64()).unwrap_or(0.0);
+        let listing_days = row
+            .get("f26")
+            .and_then(|v| {
+                v.as_i64()
+                    .map(|n| n.to_string())
+                    .or_else(|| v.as_str().map(|s| s.to_string()))
+            })
+            .and_then(|s| chrono::NaiveDate::parse_from_str(&s, "%Y%m%d").ok())
+            .map(|dt| (((today - dt).num_days().max(1) * 5) / 7).max(1) as u32)
+            .unwrap_or(250);
+
+        page_out.push((
+            digits.to_string(),
+            ClistEnrichmentMeta {
+                industry_sw1,
+                listing_days,
+                main_net_inflow_wan: f62_yuan / 10_000.0,
+            },
+        ));
+    }
+    page_out
+}
+
+pub async fn fetch_missing_ulist_meta(
+    client: &reqwest::Client,
+    clist_url: &str,
+    symbols: &[Symbol],
+) -> HashMap<String, ClistEnrichmentMeta> {
+    if symbols.is_empty() {
+        return HashMap::new();
+    }
+    let cst = chrono::FixedOffset::east_opt(8 * 3600).expect("valid CST");
+    let today = chrono::Utc::now().with_timezone(&cst).date_naive();
+    let ulist_url = derive_ulist_url(clist_url);
+    let mut out = HashMap::with_capacity(symbols.len());
+
+    for chunk in symbols.chunks(60) {
+        let secids: Vec<String> = chunk.iter().map(|s| s.eastmoney_secid()).collect();
+        let u = format!(
+            "{}?fltt=2&invt=2&fields=f12,f14,f26,f62,f100&secids={}",
+            ulist_url,
+            secids.join(",")
+        );
+        let Ok(resp) = client
+            .get(&u)
+            .header("Referer", "https://quote.eastmoney.com/")
+            .send()
+            .await
+        else {
+            continue;
+        };
+        let Ok(txt) = resp.text().await else {
+            continue;
+        };
+        for (digits, meta) in parse_clist_or_ulist_meta_json(&txt, today) {
+            out.insert(digits, meta);
+        }
+    }
+    out
+}
+
 pub async fn fetch_top_turnover_clist_meta(
     client: &reqwest::Client,
     clist_url: &str,
@@ -153,49 +248,7 @@ pub async fn fetch_top_turnover_clist_meta(
             let Ok(txt) = resp.text().await else {
                 return Vec::new();
             };
-            let Ok(root) = serde_json::from_str::<serde_json::Value>(&txt) else {
-                return Vec::new();
-            };
-            let Some(diff) = root
-                .get("data")
-                .and_then(|d| d.get("diff"))
-                .and_then(|d| d.as_array())
-            else {
-                return Vec::new();
-            };
-            let mut page_out = Vec::with_capacity(diff.len());
-            for row in diff {
-                let Some(digits) = row.get("f12").and_then(|v| v.as_str()) else {
-                    continue;
-                };
-                let industry_sw1 = row
-                    .get("f100")
-                    .and_then(|v| v.as_str())
-                    .filter(|s| !s.is_empty() && *s != "-")
-                    .unwrap_or("通用制造")
-                    .to_string();
-                let f62_yuan = row.get("f62").and_then(|v| v.as_f64()).unwrap_or(0.0);
-                let listing_days = row
-                    .get("f26")
-                    .and_then(|v| {
-                        v.as_i64()
-                            .map(|n| n.to_string())
-                            .or_else(|| v.as_str().map(|s| s.to_string()))
-                    })
-                    .and_then(|s| chrono::NaiveDate::parse_from_str(&s, "%Y%m%d").ok())
-                    .map(|dt| (((today - dt).num_days().max(1) * 5) / 7).max(1) as u32)
-                    .unwrap_or(250);
-
-                page_out.push((
-                    digits.to_string(),
-                    ClistEnrichmentMeta {
-                        industry_sw1,
-                        listing_days,
-                        main_net_inflow_wan: f62_yuan / 10_000.0,
-                    },
-                ));
-            }
-            page_out
+            parse_clist_or_ulist_meta_json(&txt, today)
         });
     }
 
@@ -429,5 +482,17 @@ mod tests {
         let (ratio, dt) = parse_holder_notice_json(holder_raw);
         assert!((ratio.unwrap() - 18.4).abs() < 1e-6);
         assert_eq!(dt.as_deref(), Some("2026-10-28"));
+
+        assert_eq!(
+            derive_ulist_url("https://push2.eastmoney.com/api/qt/clist/get"),
+            "https://push2.eastmoney.com/api/qt/ulist.np/get"
+        );
+        let ulist_raw = r#"{"rc":0,"data":{"total":1,"diff":[{"f12":"600103","f14":"青山纸业","f26":19970703,"f62":-102873094.0,"f100":"造纸"}]}}"#;
+        let today = chrono::NaiveDate::from_ymd_opt(2026, 11, 20).unwrap();
+        let parsed = parse_clist_or_ulist_meta_json(ulist_raw, today);
+        assert_eq!(parsed.len(), 1);
+        assert_eq!(parsed[0].0, "600103");
+        assert_eq!(parsed[0].1.industry_sw1, "造纸");
+        assert!((parsed[0].1.main_net_inflow_wan - (-10287.3094)).abs() < 1e-3);
     }
 }

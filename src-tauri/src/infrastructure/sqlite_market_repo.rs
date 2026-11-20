@@ -146,11 +146,35 @@ impl SqliteRepository {
         let now_iso = chrono::Utc::now().to_rfc3339();
         let mut stmt = tx
             .prepare(
-                "INSERT OR REPLACE INTO stock_universe_cache (
+                "INSERT INTO stock_universe_cache (
                     symbol, name_zh, exchange, board, industry_sw1, listing_days,
                     latest_price_fen, pct_chg, turnover_pct, total_mv_yi, circ_mv_yi,
                     main_net_inflow_wan, updated_at
-                 ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)",
+                 ) VALUES (?1,?2,?3,?4,?5,?6,?7,?8,?9,?10,?11,?12,?13)
+                 ON CONFLICT(symbol) DO UPDATE SET
+                    name_zh = excluded.name_zh,
+                    exchange = excluded.exchange,
+                    board = excluded.board,
+                    industry_sw1 = CASE
+                        WHEN excluded.industry_sw1 != '' THEN excluded.industry_sw1
+                        ELSE stock_universe_cache.industry_sw1
+                    END,
+                    listing_days = CASE
+                        WHEN excluded.industry_sw1 != '' THEN excluded.listing_days
+                        ELSE stock_universe_cache.listing_days
+                    END,
+                    latest_price_fen = excluded.latest_price_fen,
+                    pct_chg = excluded.pct_chg,
+                    turnover_pct = excluded.turnover_pct,
+                    total_mv_yi = excluded.total_mv_yi,
+                    circ_mv_yi = excluded.circ_mv_yi,
+                    main_net_inflow_wan = CASE
+                        WHEN excluded.industry_sw1 != '' THEN excluded.main_net_inflow_wan
+                        WHEN substr(stock_universe_cache.updated_at, 1, 10) = substr(excluded.updated_at, 1, 10)
+                            THEN stock_universe_cache.main_net_inflow_wan
+                        ELSE 0.0
+                    END,
+                    updated_at = excluded.updated_at",
             )
             .map_err(|e| e.to_string())?;
         for q in quotes.iter().take(6000) {
@@ -305,3 +329,75 @@ impl SqliteRepository {
         Ok(deleted)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::domain::types::Symbol;
+    use std::path::PathBuf;
+
+    #[test]
+    fn cache_universe_snapshot_preserves_industry_when_later_scan_lacks_meta() {
+        let tmp_dir = PathBuf::from(env!("CARGO_MANIFEST_DIR"))
+            .join("..")
+            .join(".temp");
+        let _ = std::fs::create_dir_all(&tmp_dir);
+        let db_path = tmp_dir.join(format!("test_univ_cache_{}.db", std::process::id()));
+        let _ = std::fs::remove_file(&db_path);
+
+        let repo = SqliteRepository::new(&db_path).expect("init repo");
+        let quote = RawTencentQuote {
+            symbol: Symbol::parse("600103.SH").unwrap(),
+            name_zh: "青山纸业".to_string(),
+            latest_yuan: 3.26,
+            prev_close_yuan: 3.33,
+            open_yuan: 3.30,
+            high_yuan: 3.34,
+            low_yuan: 3.24,
+            volume_lots: 641_000.0,
+            amount_wan: 21_000.0,
+            turnover_pct: 2.84,
+            circ_mv_yi: 73.6,
+            total_mv_yi: 73.6,
+            vol_ratio: 0.92,
+            vwap_yuan: 3.28,
+            is_suspended: false,
+            raw_ts: "20261120140000".to_string(),
+        };
+
+        let mut first_meta = HashMap::new();
+        first_meta.insert(
+            "600103".to_string(),
+            ClistEnrichmentMeta {
+                industry_sw1: "造纸".to_string(),
+                listing_days: 7475,
+                main_net_inflow_wan: -10_287.3,
+            },
+        );
+        repo.cache_universe_snapshot(std::slice::from_ref(&quote), &first_meta)
+            .expect("first snapshot");
+
+        // Second scan without meta (e.g., outside top-800 turnover) must NOT wipe industry_sw1 to ""
+        let empty_meta = HashMap::new();
+        repo.cache_universe_snapshot(std::slice::from_ref(&quote), &empty_meta)
+            .expect("second snapshot");
+
+        let conn = repo.connect().unwrap();
+        let (ind, days, flow): (String, i64, f64) = conn
+            .query_row(
+                "SELECT industry_sw1, listing_days, main_net_inflow_wan FROM stock_universe_cache WHERE symbol = '600103.SH'",
+                [],
+                |r| Ok((r.get(0)?, r.get(1)?, r.get(2)?)),
+            )
+            .unwrap();
+        drop(conn);
+        let _ = std::fs::remove_file(&db_path);
+        let _ = std::fs::remove_file(db_path.with_extension("db-wal"));
+        let _ = std::fs::remove_file(db_path.with_extension("db-shm"));
+
+        assert_eq!(ind, "造纸");
+        assert_eq!(days, 7475);
+        assert!((flow - (-10_287.3)).abs() < 1e-3);
+    }
+}
+

@@ -39,7 +39,8 @@ pub async fn execute_live_market_scan(
     };
     use crate::domain::types::{is_limit_up_locked, Fen};
     use crate::infrastructure::market_eastmoney::{
-        fetch_candidate_pitfall_signals, fetch_eastmoney_klines, fetch_top_turnover_clist_meta,
+        fetch_candidate_pitfall_signals, fetch_eastmoney_klines, fetch_missing_ulist_meta,
+        fetch_top_turnover_clist_meta,
     };
     use crate::infrastructure::market_tencent::{
         fetch_tencent_fallback_klines, fetch_tencent_full_universe,
@@ -53,7 +54,7 @@ pub async fn execute_live_market_scan(
     let src = &bundle.app_cfg.market_sources;
 
     // 1. Fetch all 5,500+ (~5,931) active A-shares + EastMoney top-turnover clist metadata concurrently
-    let (quotes_res, clist_meta) = tokio::join!(
+    let (quotes_res, mut clist_meta) = tokio::join!(
         fetch_tencent_full_universe(
             http,
             &src.tencent_batch_url,
@@ -185,6 +186,19 @@ pub async fn execute_live_market_scan(
         }
     }
 
+    // Backfill exact SW1 industry (`f100`), listing date (`f26`), and live main flow (`f62`)
+    // for any shortlisted or held stock outside the initial top-800 turnover pages.
+    let missing_meta_syms: Vec<crate::domain::types::Symbol> = enrich_quotes
+        .iter()
+        .filter(|q| !clist_meta.contains_key(&q.symbol.digits))
+        .map(|q| q.symbol.clone())
+        .collect();
+    if !missing_meta_syms.is_empty() {
+        let extra =
+            fetch_missing_ulist_meta(http, &src.eastmoney_clist_url, &missing_meta_syms).await;
+        clist_meta.extend(extra);
+    }
+
     // 3. Concurrently fetch daily K-lines (EastMoney push2his f61 -> Tencent fallback) & 5D pitfall signals
     let sem = Arc::new(Semaphore::new(8));
     let mut set = JoinSet::new();
@@ -298,7 +312,8 @@ pub async fn execute_live_market_scan(
         let meta = clist_meta.get(&q.symbol.digits);
         let industry_sw1 = meta
             .map(|m| m.industry_sw1.clone())
-            .unwrap_or_else(|| "高端装备".to_string());
+            .filter(|s| !s.trim().is_empty())
+            .unwrap_or_else(|| "未分类".to_string());
         let listing_days = meta.map(|m| m.listing_days).unwrap_or(250);
         let main_inflow_wan = meta.map(|m| m.main_net_inflow_wan).unwrap_or(0.0);
 

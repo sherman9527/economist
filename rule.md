@@ -102,4 +102,9 @@
 - **现象**：遍历 `HashMap<String, Vec<SimpleBar>>` 构建截面样本或对同分标的 `sort_by` 时，进程级随机 SipHash 顺序会导致 IEEE-754 求和舍入与同分截断（Top-`k`）在不同运行间产生非确定性漂移。
 - **标准解法**：在截面中性化前统一按 `symbol` 字典序固定样本排列，并在影子竞技场得分排序与因子分层排序中使用 `.then_with(|| a.symbol.cmp(&b.symbol))` 进行确定性破平。
 
+### Pitfall #21：东财 `clist/get` 前 8 页换手率截断导致第 801+ 名候选/持仓股误贴“高端装备”行业与主力净流漏检
+- **现象**：`fetch_top_turnover_clist_meta` 按换手率降序拉取前 8 页（`800` 只）元数据；当某只入围候选股或存量持仓股（如 `600103.SH` 青山纸业日内换手降至 `2.8%`）排在全市场第 `801+` 名时，`clist_meta` 缺失该股记录，回退默认值将其 `industry_sw1` 硬编码为 `"高端装备"` 且 `main_inflow_wan = 0.0`（导致 FWL 行业正交中性化污染、`F5` 因子失真及 `-12%` 主力净流出排雷漏检），同时 `INSERT OR REPLACE INTO stock_universe_cache` 会把此前已缓存的非空行业覆写为空串 `""`。
+- **标准解法**：在 `./src-tauri/src/application/scan_pipeline.rs` 入围池与存量持仓合并后，对所有缺失 `clist_meta` 的代码调用东财批量接口 `ulist.np/get?fltt=2&invt=2&fields=f12,f14,f26,f62,f100&secids=...`（单次 `~11ms` 补齐 100% 真实行业与主力净流入），未命中兜底改为 `"未分类"`；同时 `./src-tauri/src/infrastructure/sqlite_market_repo.rs` 改用 `ON CONFLICT(symbol) DO UPDATE SET` 保留历史非空 `industry_sw1`、`listing_days` 及同日主力资金流缓存。
+
+
 

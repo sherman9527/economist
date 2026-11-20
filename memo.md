@@ -122,5 +122,10 @@
   - 完成第 5 轮全栈与量化策略终审门禁（`./src-tauri/tests/strategy_review_round5_release_gate.rs` + `./src/__tests__/round5ReleaseSyncUi.test.tsx`）：修复盘前陈旧行情时间戳（`raw_ts`）误触发 `T+1` 结案与入池前早盘低点污染 `T+0` MAE、支持外部热编辑插件版本号自动对齐 SQLite 版本血统、落地收盘后 `15:05 CST` SQLite 幂等防过拟合巡检与 `quant://state-synced` 前端自动刷新、消除 `HashMap` 遍历顺序对截面中性化及影子排名的浮点非确定性，并在 `stage_portable_release.ps1` 中保护便携版运行期已调优插件与 WAL 检查点数据库；
   - 全量通过 `78/78` Rust 测试、`33/33` Vitest 测试、`3/3` Python 安全测试、全仓零绝对路径/`<1000`行卫生门禁及 OpenSpec `--strict` 校验，重打包并热重启 `./portable-release/economist-quant-terminal.exe` 后推送至远程 `origin/main`。
 
+- **Compact #16 (`2026-11-20` · Checkpoint: `Scheduled watchdogs and metadata drift fix`)**：
+  - 完成 Agent 会话注册表 UX 去重优化（`1d8ef76`）、`2026-11-20` 午盘战况复盘及量化自动演进/防走偏/热更新机制深度拆解，并注册交易日盘中（`09:35 / 11:35 / 14:35 CST`）与收盘后（`15:12 CST`）双通道自动巡检守护；
+  - 实盘巡检捕获并修复 Pitfall #21（东财 `clist/get` 前 `800` 名截断导致换手回落的存量持仓 `600103.SH` 青山纸业被误贴 `"高端装备"` 标签、漏检日内 `-1.03亿` 主力净流出及 `stock_universe_cache` 覆写清空）：新增 `ulist.np/get` 批量毫秒级元数据回填、无损 `ON CONFLICT(symbol) DO UPDATE` 缓存保护及 SQLite 持仓行业修正，全量通过 `79/79` Rust 测试后热更新 `./portable-release/economist-quant-terminal.exe` 并同步推送 `origin/main`。
+
+
 
 
